@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:customer_app/core/constants/app_colors.dart';
 import 'package:customer_app/core/constants/app_strings.dart';
 import 'package:customer_app/core/mock/mock_data.dart';
 import 'package:customer_app/core/widgets/app_button.dart';
-import 'package:customer_app/core/widgets/app_text_field.dart';
 import 'package:customer_app/core/widgets/app_badge.dart';
 import 'package:customer_app/core/widgets/price_widget.dart';
 import 'package:customer_app/core/widgets/quantity_selector.dart';
-import 'package:customer_app/core/widgets/product_card.dart';
-import 'package:customer_app/core/widgets/category_card.dart';
 import 'package:customer_app/features/splash/presentation/splash_screen.dart';
 import 'package:customer_app/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:customer_app/features/auth/presentation/login_screen.dart';
 import 'package:customer_app/features/auth/presentation/register_screen.dart';
 import 'package:customer_app/features/auth/presentation/forgot_password_screen.dart';
-import 'package:customer_app/features/home/presentation/home_screen.dart';
-import 'package:customer_app/features/search/presentation/search_screen.dart';
 import 'package:customer_app/features/categories/presentation/categories_screen.dart';
 import 'package:customer_app/features/products/presentation/product_list_screen.dart';
 import 'package:customer_app/features/products/presentation/product_detail_screen.dart';
@@ -82,6 +76,7 @@ void main() {
       await tester.pumpWidget(_wrap(const SplashScreen()));
       expect(find.text(AppStrings.appName), findsOneWidget);
       expect(find.text(AppStrings.appTagline), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
     });
 
     testWidgets('Onboarding Screen renders first slide', (tester) async {
