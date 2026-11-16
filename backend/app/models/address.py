@@ -65,6 +65,19 @@ class UserAddress(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
         nullable=False,
     )
 
+    # Compatibility properties
+    @property
+    def phone(self) -> str:
+        return self.recipient_phone
+
+    @phone.setter
+    def phone(self, value: str) -> None:
+        self.recipient_phone = value
+
+    @property
+    def country(self) -> str:
+        return "India"
+
     # Relationships
     user: Mapped["User"] = relationship(
         "User",

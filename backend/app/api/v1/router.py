@@ -12,6 +12,10 @@ from app.api.v1.endpoints import (
     prescriptions,
     products,
     users,
+    addresses,
+    cart,
+    checkout,
+    admin_checkout,
 )
 
 api_router = APIRouter()
@@ -52,3 +56,15 @@ api_router.include_router(prescriptions.router, prefix="/prescriptions", tags=["
 
 # Pharmacist Clinical Review & Verification Workbench (Rule 65)
 api_router.include_router(admin_prescriptions.router, prefix="/admin/prescriptions", tags=["Pharmacist Verification Queue"])
+
+# Customer Delivery Addresses
+api_router.include_router(addresses.router, prefix="/addresses", tags=["Delivery Addresses"])
+
+# Customer Shopping Cart
+api_router.include_router(cart.router, prefix="/cart", tags=["Customer Shopping Cart"])
+
+# Checkout Preparation & Validation
+api_router.include_router(checkout.router, prefix="/checkout", tags=["Checkout Preparation"])
+
+# Admin Checkout Rules & Delivery Serviceability
+api_router.include_router(admin_checkout.router, prefix="/admin", tags=["Admin Checkout & Serviceability"])

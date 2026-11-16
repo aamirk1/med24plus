@@ -3,6 +3,12 @@
 from app.models.address import UserAddress
 from app.models.audit_log import AuditLog
 from app.models.authentication_event import AuthenticationEvent
+from app.models.cart import Cart, CartItem
+from app.models.checkout import (
+    CheckoutSetting,
+    CheckoutValidation,
+    ServiceablePincode,
+)
 from app.models.otp import OTPVerification
 from app.models.base import (
     Base,
@@ -88,5 +94,10 @@ __all__ = [
     "AuditLog",
     "AuthenticationEvent",
     "OTPVerification",
+    "Cart",
+    "CartItem",
+    "CheckoutValidation",
+    "ServiceablePincode",
+    "CheckoutSetting",
 ]
 
