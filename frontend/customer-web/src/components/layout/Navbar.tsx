@@ -14,11 +14,14 @@ import {
   ShieldCheck,
   ChevronDown,
   Phone,
+  LogOut,
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { useAuth } from "@/context/AuthContext";
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pincode, setPincode] = useState("560034");
   const [searchVal, setSearchVal] = useState("");
@@ -112,13 +115,33 @@ export const Navbar: React.FC = () => {
                               </Link>
 
                               {/* Account / Login */}
-                              <Link
-                                href="/auth/login"
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#087F5B] hover:bg-slate-50 rounded-xl transition"
-                              >
-                                <User className="w-4 h-4" />
-                                <span className="hidden sm:inline">Sign In</span>
-                              </Link>
+                              {isAuthenticated && user ? (
+                                <div className="flex items-center gap-1">
+                                  <Link
+                                    href="/account/profile"
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#087F5B] hover:bg-slate-50 rounded-xl transition"
+                                  >
+                                    <User className="w-4 h-4 text-[#087F5B]" />
+                                    <span className="hidden sm:inline max-w-[100px] truncate">{user.full_name || "My Account"}</span>
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => logout()}
+                                    title="Sign Out"
+                                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg"
+                                  >
+                                    <LogOut className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <Link
+                                  href="/auth/login"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#087F5B] hover:bg-slate-50 rounded-xl transition"
+                                >
+                                  <User className="w-4 h-4" />
+                                  <span className="hidden sm:inline">Sign In</span>
+                                </Link>
+                              )}
 
                               {/* Cart Counter */}
                               <Link

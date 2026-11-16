@@ -2,15 +2,99 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Smartphone, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import { Smartphone, Lock, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services/auth.service";
 
 export default function LoginPage() {
-  const [loginMode, setLoginMode] = useState<"otp" | "password">("otp");
-  const [mobile, setMobile] = useState("");
+  const router = useRouter();
+  const { login, refreshUser } = useAuth();
+
+  const [loginMode, setLoginMode] = useState<"otp" | "password">("password");
+  const [mobile, setMobile] = useState("+919876543210");
+  const [password, setPassword] = useState("Password@123");
+  const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!mobile.trim() || !password) {
+      setErrorMessage("Please enter both your mobile number and password.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await login(mobile.trim(), password);
+      setSuccessMessage("Sign in successful. Redirecting to your account...");
+      setTimeout(() => {
+        router.push("/account/profile");
+      }, 800);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Invalid credentials. Please verify your mobile number and password.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    if (!mobile.trim()) {
+      setErrorMessage("Please enter your 10-digit mobile number.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await authService.sendOtp(mobile.trim(), "login");
+      setOtpSent(true);
+      setSuccessMessage("Verification OTP dispatched to your mobile.");
+      if (res.data?.dev_otp) {
+        setDevOtpHint(res.data.dev_otp);
+        setOtpCode(res.data.dev_otp);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to dispatch verification OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (!otpCode || otpCode.length < 6) {
+      setErrorMessage("Please enter the 6-digit verification code.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authService.verifyOtp(mobile.trim(), otpCode.trim(), "login");
+      await refreshUser();
+      setSuccessMessage("OTP verified successfully. Redirecting to account...");
+      setTimeout(() => {
+        router.push("/account/profile");
+      }, 800);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Invalid verification OTP code.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -27,47 +111,64 @@ export default function LoginPage() {
         <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600">
           <button
             type="button"
-            onClick={() => setLoginMode("otp")}
-            className={`py-1.5 rounded-md transition ${loginMode === "otp" ? "bg-white text-[#087F5B] shadow-xs" : "hover:text-slate-900"}`}
-          >
-            Mobile OTP (Fast)
-          </button>
-          <button
-            type="button"
-            onClick={() => setLoginMode("password")}
+            onClick={() => {
+              setLoginMode("password");
+              setErrorMessage(null);
+            }}
             className={`py-1.5 rounded-md transition ${loginMode === "password" ? "bg-white text-[#087F5B] shadow-xs" : "hover:text-slate-900"}`}
           >
             Password Login
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setLoginMode("otp");
+              setErrorMessage(null);
+            }}
+            className={`py-1.5 rounded-md transition ${loginMode === "otp" ? "bg-white text-[#087F5B] shadow-xs" : "hover:text-slate-900"}`}
+          >
+            Mobile OTP (Fast)
+          </button>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-          <Input
-            label="Mobile Number (+91)"
-            placeholder="Enter 10-digit mobile number"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-            leftIcon={<Smartphone className="w-4 h-4 text-slate-400" />}
-            required
-            helperText="We will send a 6-digit OTP verification code."
-          />
+        {errorMessage && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-          {loginMode === "otp" && otpSent && (
+        {successMessage && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {devOtpHint && loginMode === "otp" && (
+          <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-800">
+            <strong>Development OTP:</strong> {devOtpHint} (Auto-filled)
+          </div>
+        )}
+
+        {loginMode === "password" ? (
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
             <Input
-              label="Enter 6-Digit OTP"
-              placeholder="e.g. 123456"
-              maxLength={6}
+              label="Mobile Number (+91)"
+              placeholder="+919876543210"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              leftIcon={<Smartphone className="w-4 h-4 text-slate-400" />}
               required
-              helperText="Demo mode: Enter any 6-digit code"
             />
-          )}
 
-          {loginMode === "password" && (
             <div className="space-y-1">
               <Input
                 label="Password"
                 type="password"
                 placeholder="Enter your account password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
                 required
               />
@@ -77,24 +178,89 @@ export default function LoginPage() {
                 </Link>
               </div>
             </div>
-          )}
 
-          <Button
-            variant="primary"
-            size="md"
-            className="w-full"
-            onClick={() => {
-              if (loginMode === "otp" && !otpSent) {
-                setOtpSent(true);
-              } else {
-                window.location.href = "/account/orders";
-              }
-            }}
-          >
-            <span>{loginMode === "otp" && !otpSent ? "Get Verification OTP" : "Verify & Sign In"}</span>
-            <ArrowRight className="w-4 h-4 ml-1.5" />
-          </Button>
-        </form>
+            <Button
+              variant="primary"
+              size="md"
+              type="submit"
+              className="w-full flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to Account</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </>
+              )}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={otpSent ? handleVerifyOtp : (e) => { e.preventDefault(); handleSendOtp(); }} className="space-y-4">
+            <Input
+              label="Mobile Number (+91)"
+              placeholder="+919876543210"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              leftIcon={<Smartphone className="w-4 h-4 text-slate-400" />}
+              disabled={otpSent}
+              required
+              helperText="We will send a 6-digit OTP verification code."
+            />
+
+            {otpSent && (
+              <Input
+                label="Enter 6-Digit OTP"
+                placeholder="e.g. 123456"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                required
+              />
+            )}
+
+            <Button
+              variant="primary"
+              size="md"
+              type="submit"
+              className="w-full flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : otpSent ? (
+                <>
+                  <span>Verify & Sign In</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </>
+              ) : (
+                <>
+                  <span>Get Verification OTP</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </>
+              )}
+            </Button>
+
+            {otpSent && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setOtpSent(false)}
+                  className="text-xs text-slate-500 hover:text-slate-800 underline"
+                >
+                  Change Mobile Number
+                </button>
+              </div>
+            )}
+          </form>
+        )}
 
         <div className="pt-2 text-center text-xs text-slate-500 border-t border-slate-100">
           <span>New to Med24Plus? </span>
@@ -111,4 +277,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

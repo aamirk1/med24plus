@@ -2,6 +2,8 @@
 
 from app.models.address import UserAddress
 from app.models.audit_log import AuditLog
+from app.models.authentication_event import AuthenticationEvent
+from app.models.otp import OTPVerification
 from app.models.base import (
     Base,
     AuditMixin,
@@ -82,5 +84,7 @@ __all__ = [
     "Notification",
     "NotificationPreference",
     "AuditLog",
+    "AuthenticationEvent",
+    "OTPVerification",
 ]
 

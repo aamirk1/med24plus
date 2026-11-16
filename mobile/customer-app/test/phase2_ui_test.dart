@@ -22,12 +22,18 @@ import 'package:customer_app/features/orders/presentation/order_history_screen.d
 import 'package:customer_app/features/orders/presentation/order_detail_screen.dart';
 import 'package:customer_app/features/profile/presentation/profile_screen.dart';
 import 'package:customer_app/features/notifications/presentation/notifications_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:customer_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:customer_app/features/common/presentation/about_screen.dart';
 import 'package:customer_app/features/common/presentation/contact_screen.dart';
+import 'mocks/fake_auth_repository.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(
-    home: child,
+  return BlocProvider<AuthBloc>(
+    create: (_) => AuthBloc(authRepository: FakeAuthRepository()),
+    child: MaterialApp(
+      home: child,
+    ),
   );
 }
 

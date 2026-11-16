@@ -1,10 +1,22 @@
 "use client";
 
 import React from "react";
-import { Bell, ShieldCheck, ChevronDown, Building2, UserCircle2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell, ShieldCheck, Building2, UserCircle2 } from "lucide-react";
 import { adminConfig } from "@/config/admin";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export const Header: React.FC = () => {
+  const pathname = usePathname();
+  const { user } = useAdminAuth();
+
+  if (pathname === "/login" || pathname === "/unauthorized") {
+    return null;
+  }
+
+  const displayName = user?.full_name || adminConfig.registeredPharmacistName;
+  const councilId = user?.pharmacist_profile?.registration_number || adminConfig.registrationCouncilId;
+
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-30">
       {/* Branch & License Context */}
@@ -25,7 +37,7 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Right controls: Notifications, Pharmacist identity */}
+      {/* Right controls: Notifications, Identity */}
       <div className="flex items-center gap-4">
         {/* Notification Bell */}
         <button
@@ -37,12 +49,12 @@ export const Header: React.FC = () => {
           <span className="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2 ring-2 ring-white" />
         </button>
 
-        {/* Pharmacist Profile */}
+        {/* User Identity */}
         <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
           <div className="text-right">
-            <p className="text-xs font-bold text-slate-800">{adminConfig.registeredPharmacistName}</p>
+            <p className="text-xs font-bold text-slate-800">{displayName}</p>
             <p className="text-[10px] text-emerald-600 font-medium flex items-center justify-end gap-1">
-              <ShieldCheck className="w-3 h-3" /> {adminConfig.registrationCouncilId}
+              <ShieldCheck className="w-3 h-3" /> {councilId}
             </p>
           </div>
           <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
@@ -53,4 +65,3 @@ export const Header: React.FC = () => {
     </header>
   );
 };
-

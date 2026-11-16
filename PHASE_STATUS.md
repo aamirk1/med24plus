@@ -1,6 +1,6 @@
 # Med24Plus Phase Status & Acceptance Tracker
 
-## Current Status: PHASE 3: COMPLETED (Awaiting User Approval for Phase 4)
+## Current Status: PHASE 4: COMPLETED (Awaiting User Approval for Phase 5)
 
 ---
 
@@ -15,26 +15,31 @@
 ---
 
 ### Phase 3: Database Architecture, PostgreSQL Models & Pharmacy Inventory Foundation Acceptance Criteria
+- **Status**: **COMPLETED & VERIFIED** (All 37 original tables, constraints, FEFO indexing, dev seeding, and 11 tests passed)
+
+---
+
+### Phase 4: Authentication, Authorization, Security & User Management Acceptance Criteria
 
 | Criteria / Objective | Validation Command | Result | Status |
 | :--- | :--- | :--- | :---: |
-| **SQLAlchemy 2.x Declarative Base & Mixins** | Import and inspect `app.models.base` | `UUIDMixin`, `TimestampMixin`, `SoftDeleteMixin`, `AuditMixin`, and cross-dialect `JSONB_COMPAT` implemented. | **PASSED** |
-| **Authentication & User Models** | Inspect metadata in `app.models.user` & `app.models.role` | 8 models created (`users`, `user_profiles`, `user_addresses`, `user_sessions`, `roles`, `permissions`, `role_permissions`, `user_roles`). Phone-first index, password hash only. | **PASSED** |
-| **Staff & Pharmacist Models** | Pytest `test_pharmacist_profile_explicit_verification` | `staff_profiles`, `pharmacist_profiles`, `pharmacist_qualifications`. `is_verified` defaults to `False` and requires explicit verification under Rule 65. | **PASSED** |
-| **Product Catalog Models** | Pytest `test_product_catalog_price_constraints` | `categories`, `brands`, `products`, `product_images`, `product_attributes`. Schedule H/H1/X flags, HSN `3004`, GST rates. Check constraints enforce `selling_price <= mrp` and non-negative values. | **PASSED** |
-| **Pharmacy Inventory & Batch Foundation** | Pytest `test_inventory_batch_quantity_constraints` | `inventory`, `inventory_batches`, `stock_movements`, `stock_adjustments`, `stock_adjustment_items`, `stock_alerts`. Non-negative stock enforced; `reserved <= available`. | **PASSED** |
-| **FEFO Expiry Management Strategy** | Pytest `test_fefo_allocation_sorting` | `ix_batches_fefo` composite index on `(product_id, expiry_date, batch_status)`. FEFO chronological ordering validated. `expiry > mfg_date` constraint enforced. | **PASSED** |
-| **Prescription Metadata & Security** | Metadata & model validation | `prescriptions`, `prescription_items`, `prescription_review_logs`. Private object storage keys only (`storage_object_key`); zero public URLs; tamper-evident review logs. | **PASSED** |
-| **Order & Statutory Invoice Structure** | Inspect `app.models.order` | `orders`, `order_items`, `order_status_history`. Retains immutable product snapshot, statutory batch number, expiry date, HSN, and CGST/SGST/IGST breakdown. | **PASSED** |
-| **Payments, Refunds & Gateway Ledger** | Inspect `app.models.payment` | `payments`, `refunds`, `payment_transactions`. Ledger for Razorpay/UPI/COD. Zero cardholder sensitive data stored. | **PASSED** |
-| **Delivery Logistics & Notifications** | Inspect `app.models.delivery` & `notification` | `delivery_partners`, `deliveries`, `delivery_status_history`, `notifications`, `notification_preferences`. Cold chain temperature handover and OTP hash supported. | **PASSED** |
-| **Audit Log Ledger** | Pytest `test_audit_log_creation` | `audit_logs` tracking actor, action, entity, before/after states without sensitive tokens. | **PASSED** |
-| **Alembic Database Migration** | `alembic upgrade head`, `alembic current`, `downgrade`, `upgrade` | Migration revision `1924f031a0a0` generated and applied to PostgreSQL 16 database. 37 tables created, verified downgrade to base and re-upgrade to head with 0 errors. | **PASSED** |
-| **Development Seed Data** | `python -m app.utils.seed_dev_data` | Safe, fictional demonstration data seeded: 5 roles, 9 permissions, 8 categories, 5 brands, 8 products, 14 batches, 7 inventory summaries. Idempotent and non-destructive. | **PASSED** |
-| **Database Verification Test Suite** | `pytest tests/ -v` | All 11 automated backend tests passed in 0.51s including schema integrity, constraints, decimal precision, and FEFO sorting. | **PASSED** |
-| **Preserve Phase 1 & 2 Frontend Apps** | `npm run build` (both web apps) | Customer Web (22 static pages) and Admin Panel (29 static pages) compiled with exit code 0. | **PASSED** |
-| **Preserve Phase 1 & 2 Mobile App** | `flutter analyze` & `flutter test` | Flutter static analysis: `No issues found!`. All 25 mobile tests passed. | **PASSED** |
-| **Phase 3 Documentation** | File creation & updates | Created `docs/database-design.md`, `docs/database-relationships.md`, `docs/database-indexing.md`, `docs/inventory-architecture.md`, `docs/pharmacy-data-compliance.md`, updated `docs/development-roadmap.md`, `README.md`. | **PASSED** |
+| **Argon2id Password Security** | Pytest `test_password_hashing_argon2id` & `test_weak_password_rejection` | RFC 9106 Argon2id parameters enforced (`time_cost=3, memory_cost=64MB, parallelism=4`). Complexity rules and dictionary blacklist rejection validated. | **PASSED** |
+| **Customer Registration & Normalization** | Pytest `test_customer_registration_success` & `test_duplicate_registration_rejected` | Phone normalization (`+91`), email case folding, unique checks, automatic `customer` role assignment, and unverified initial status. | **PASSED** |
+| **Authentication & Dual-Token Issuance** | Pytest `test_customer_login_success` | 15-minute access token + 7-day rotatable refresh token issued. SHA-256 database token hashing and user profile returned. Zero plaintext credentials leaked. | **PASSED** |
+| **Token Refresh & Replay Reuse Detection** | Pytest `test_token_refresh_rotation_and_reuse_detection` | Token rotation issues fresh tokens. Intercepted / replayed previous refresh token triggers immediate invalidation of the entire session family. | **PASSED** |
+| **Single & Multi-Device Logout** | Pytest `test_logout_single_session` & `test_logout_all_sessions` | `POST /api/v1/auth/logout` revokes current session. `POST /api/v1/auth/logout-all` revokes all active device sessions for user. | **PASSED** |
+| **OTP Service & Verification Flow** | Pytest `test_otp_generation_and_verification` & `test_otp_resend_cooldown` | Cryptographically random 6-digit OTPs with SHA-256 hashing. 5-minute expiry, attempt counter limits, and resend cooldown enforced. | **PASSED** |
+| **Password Reset via OTP** | Pytest `test_password_reset_flow` | 2-step OTP dispatch and password reset flow validates OTP, updates Argon2id password hash, and logs audit event. | **PASSED** |
+| **Account Lockout & Brute-Force Defense** | Pytest `test_account_lockout_after_failed_attempts` | 5 consecutive invalid password attempts lock the account for 15 minutes (`900s`). Lockout logged in `authentication_events`. | **PASSED** |
+| **Role-Based Access Control (RBAC)** | Pytest `test_rbac_access_control` | 6 roles (`super_admin`, `admin`, `pharmacist`, `staff`, `delivery_partner`, `customer`) with distinct permissions. Unauthorized role attempts return HTTP 403 Forbidden. | **PASSED** |
+| **Pharmacist Verification Gating (Rule 65)** | Pytest `test_pharmacist_rule65_verification_gate` | Clinical workspace endpoints check both `pharmacist` role AND verified pharmacy council registration (`is_verified = True`). Unverified pharmacists are blocked. | **PASSED** |
+| **Database Migration & Schema Extensions** | `alembic upgrade head`, `alembic current` | Migration `4a1f8e9b2c3d` added `otp_verifications`, `authentication_events`, and `user_sessions.family_id`. Total 39 tables verified in PostgreSQL 16. | **PASSED** |
+| **Security Headers & Rate Limiting** | Pytest test suite & FastAPI middleware check | CSP, HSTS, X-Frame-Options, X-Content-Type-Options injected. Sliding window counter with Redis/in-memory fallback limits auth endpoint abuse. | **PASSED** |
+| **Super-Administrator CLI Provisioning** | Execute `python -m app.utils.create_admin --help` | Interactive / CLI tool to provision initial super admin accounts with validated phone, password, and RBAC assignment without public registration. | **PASSED** |
+| **Customer Web Authentication Integration** | `npm run build` in `frontend/customer-web` | Next.js 14 App Router compiled cleanly (22 static screens). Password & OTP login, register, forgot-password, user profile, and reactive `AuthProvider` with token storage. | **PASSED** |
+| **Admin Panel Authentication Integration** | `npm run build` in `frontend/admin-panel` | Next.js 14 App Router compiled cleanly (30 static screens). Admin login, role-based navigation filtering, `AdminAuthGuard`, and `/unauthorized` fallback screen. | **PASSED** |
+| **Flutter Mobile BLoC Authentication** | `flutter analyze` & `flutter test` in `mobile/customer-app` | Static analysis: `0 issues found!`. All 33 unit and widget tests passed. `AuthBloc`, `SecureStorageService`, and Dio interceptor with `Completer` race prevention verified. | **PASSED** |
+| **Phase 4 Documentation Suite** | Inspect `med24plus/docs/` | 6 architecture specifications authored: `authentication-architecture.md`, `authorization-rbac.md`, `security-guidelines.md`, `flutter-authentication.md`, `session-management.md`, `api-authentication.md`. | **PASSED** |
 
 ---
 
@@ -42,6 +47,7 @@
 - **Phase 1 Sign-Off**: **COMPLETED**
 - **Phase 2 Sign-Off**: **COMPLETED**
 - **Phase 3 Sign-Off**: **COMPLETED**
+- **Phase 4 Sign-Off**: **COMPLETED**
 - **Date**: 2026-11-16
-- **Next Phase**: **PHASE 4 — AUTHENTICATION & ROLE-BASED ACCESS CONTROL (API)**
-- **Trigger Condition**: Awaiting explicit user prompt: `START PHASE 4`
+- **Next Phase**: **PHASE 5 — PRODUCT CATALOG, INVENTORY MANAGEMENT & SEARCH (API & INTEGRATION)**
+- **Trigger Condition**: Awaiting explicit user prompt: `START PHASE 5`

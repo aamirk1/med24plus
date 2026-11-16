@@ -208,6 +208,11 @@ class UserSession(Base, UUIDMixin, TimestampMixin):
         default=False,
         nullable=False,
     )
+    family_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        index=True,
+        nullable=True,
+    )
 
     # Relationships
     user: Mapped["User"] = relationship(

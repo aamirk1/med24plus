@@ -30,17 +30,18 @@ A complete, production-grade **Single Pharmacy Online Medicine Platform** design
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **Architecture**: React Server Components & Modular Client Widgets
+- **Architecture**: React Server Components, Modular Client Widgets & Context Providers
 
 ### Backend
 - **Framework**: FastAPI (Asynchronous Python)
 - **ORM**: SQLAlchemy 2.0 (Async + Sync engines)
 - **Validation**: Pydantic v2 & Pydantic-Settings
+- **Security & Crypto**: Argon2id (`argon2-cffi`), PyJWT, Cryptography
 - **Migrations**: Alembic
 - **Testing**: Pytest & HTTPX AsyncClient
 
 ### Database & Background Services
-- **Relational Database**: PostgreSQL 16 (37 domain tables)
+- **Relational Database**: PostgreSQL 16 (39 domain tables)
 - **Inventory Engine**: FEFO (First Expiry, First Out) batch tracking
 - **Caching & Broker**: Redis 7
 - **Background Tasks**: Celery / Redis Worker Architecture
@@ -49,9 +50,9 @@ A complete, production-grade **Single Pharmacy Online Medicine Platform** design
 - **Framework**: Flutter 3.41+
 - **Language**: Dart 3.11+
 - **State Management**: flutter_bloc & equatable
-- **Networking**: Dio
+- **Networking**: Centralized Dio Client with Concurrent Token Refresh Race Prevention
 - **Navigation**: GoRouter
-- **Security**: flutter_secure_storage
+- **Security**: flutter_secure_storage (Keychain & EncryptedSharedPreferences)
 
 ---
 
@@ -68,20 +69,51 @@ A complete, production-grade **Single Pharmacy Online Medicine Platform** design
                       /              |             \
                      /               |              \
            [PostgreSQL 16]       [Redis 7]      [Private S3 Bucket]
-           (37 Data Tables)   (Cache & Queue)    (Encrypted Rx)
+           (39 Data Tables)   (Cache & Queue)    (Encrypted Rx)
 ```
 
 See [`docs/architecture.md`](docs/architecture.md) for full architectural blueprints.
 
 ---
 
-## 4. Database Architecture (Phase 3 Foundation)
+## 4. Phase 4: Authentication, Authorization & Security Architecture
 
-Med24Plus features a normalized **37-table PostgreSQL schema** designed specifically for Indian pharmacy compliance:
+Med24Plus Phase 4 delivers an enterprise-grade authentication and authorization foundation:
+
+1. **Dual-Token Lifecycle**:
+   - **Access Token**: Short-lived (15 minutes), stateless JWT carrying user identity, roles, and permissions.
+   - **Refresh Token**: Long-lived (7 days) with strict rotation, SHA-256 database hashing, and token family replay detection (`family_id`).
+   - Replay attacks automatically invalidate the entire compromised token family.
+2. **Password Security (Argon2id)**:
+   - RFC 9106 parameters (3 passes, 64 MiB memory, 4 parallel threads).
+   - Strict complexity enforcement and dictionary blacklist against common passwords.
+3. **Role-Based Access Control (RBAC)**:
+   - 6 Defined Roles: `super_admin`, `admin`, `pharmacist`, `staff`, `delivery_partner`, `customer`.
+   - Granular permission groups for customers, administrators, and pharmacists.
+   - **Rule 65 Compliance**: Pharmacist access to clinical operations is strictly gated by verified license records (`require_verified_pharmacist`).
+4. **OTP Service**:
+   - Cryptographically secure 6-digit OTPs with SHA-256 database hashing and 5-minute expiry.
+   - Rate limiting, cooldown windows, attempt caps, and development-only test verification fallback.
+5. **Account Lockout & Protection**:
+   - 5 failed login attempts trigger an automatic 15-minute account lockout.
+   - Sliding-window rate limiting on login, registration, and OTP endpoints.
+   - HTTP defense-in-depth security headers (CSP, HSTS, X-Frame-Options, etc.).
+6. **Audit Logging**:
+   - Immutable `authentication_events` table tracking all logins, failures, lockouts, password resets, and reuse events.
+7. **Frontend & Mobile Client Integration**:
+   - **Customer Web**: Password and OTP login, registration, password recovery, session persistence via React Context.
+   - **Admin Panel**: Role-based access control, dedicated admin login, route guards, dynamic sidebar navigation, and `/unauthorized` fallback.
+   - **Flutter Mobile**: Feature-based BLoC architecture (`AuthBloc`), `flutter_secure_storage`, and Dio interceptor with `Completer` locking to eliminate token refresh race conditions.
+
+---
+
+## 5. Database Architecture
+
+Med24Plus features a normalized **39-table PostgreSQL schema** designed specifically for Indian pharmacy compliance:
 
 | Domain | Tables | Key Characteristics |
 | :--- | :--- | :--- |
-| **Auth & Users** | `users`, `user_profiles`, `user_addresses`, `user_sessions`, `roles`, `permissions`, `role_permissions`, `user_roles` | Phone-first OTP support, unique Indian mobile index, soft deletion, RBAC. |
+| **Auth & Security** | `users`, `user_profiles`, `user_addresses`, `user_sessions`, `otp_verifications`, `authentication_events`, `roles`, `permissions`, `role_permissions`, `user_roles` | Phone-first OTP, token family tracking, Argon2id hashes, immutable audit ledger. |
 | **Staff & Pharmacists** | `staff_profiles`, `pharmacist_profiles`, `pharmacist_qualifications` | Explicit `is_verified` flag, State Pharmacy Council registration, Form 20/21 links. |
 | **Product Catalog** | `categories`, `brands`, `products`, `product_images`, `product_attributes` | Separation of catalog vs inventory; Schedule H/H1/X flags, HSN `3004`, GST rates. |
 | **Pharmacy Inventory** | `inventory`, `inventory_batches`, `stock_movements`, `stock_adjustments`, `stock_adjustment_items`, `stock_alerts` | Batch-level expiry, FEFO index, non-negative quantity constraints, audit ledger. |
@@ -92,15 +124,18 @@ Med24Plus features a normalized **37-table PostgreSQL schema** designed specific
 | **Notifications & Audit**| `notifications`, `notification_preferences`, `audit_logs` | Immutable statutory compliance audit logs, multi-channel alert preferences. |
 
 Comprehensive design specifications:
-- [`docs/database-design.md`](docs/database-design.md) - Full 37-table schema & column dictionary
-- [`docs/database-relationships.md`](docs/database-relationships.md) - Entity relationships & cascade rules
-- [`docs/database-indexing.md`](docs/database-indexing.md) - Indexing strategy & query patterns
-- [`docs/inventory-architecture.md`](docs/inventory-architecture.md) - Inventory & FEFO allocation engine
+- [`docs/authentication-architecture.md`](docs/authentication-architecture.md) - Authentication & JWT token specifications
+- [`docs/authorization-rbac.md`](docs/authorization-rbac.md) - Role-based access control & permissions
+- [`docs/security-guidelines.md`](docs/security-guidelines.md) - Cryptographic standards, headers & lockout
+- [`docs/flutter-authentication.md`](docs/flutter-authentication.md) - Mobile BLoC authentication & token interceptor
+- [`docs/session-management.md`](docs/session-management.md) - Session family tracking & reuse detection
+- [`docs/api-authentication.md`](docs/api-authentication.md) - REST API authentication endpoints reference
+- [`docs/database-design.md`](docs/database-design.md) - Schema dictionary
 - [`docs/pharmacy-data-compliance.md`](docs/pharmacy-data-compliance.md) - Drugs and Cosmetics Act compliance
 
 ---
 
-## 5. Backend Setup & Database Migrations
+## 6. Backend Setup & CLI Tools
 
 ```bash
 cd backend
@@ -108,7 +143,7 @@ cd backend
 # 1. Activate Python virtual environment
 source .venv/bin/activate
 
-# 2. Install dependencies (if not already installed)
+# 2. Install dependencies
 pip install -r requirements.txt
 
 # 3. Configure environment
@@ -120,13 +155,19 @@ alembic upgrade head
 # 5. Check migration status
 alembic current
 
-# 6. Seed development demonstration records (Categories, Brands, Products, Batches)
+# 6. Seed development accounts & RBAC permissions (Phase 4)
+python -m app.utils.seed_phase4_auth
+
+# 7. Seed pharmacy catalog & inventory batches (Phase 3)
 python -m app.utils.seed_dev_data
 
-# 7. Run full backend & database test suite
+# 8. (Optional) Provision Super-Administrator via CLI
+python -m app.utils.create_admin --phone +919999999999 --password SecurePassword@123 --name "Super Admin"
+
+# 9. Run automated backend test suite (24 tests)
 pytest tests/ -v
 
-# 8. Start development API server
+# 10. Start development API server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -135,7 +176,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## 6. Frontend Customer Website Setup
+## 7. Frontend Customer Website Setup
 
 ```bash
 cd frontend/customer-web
@@ -154,7 +195,7 @@ Visit `http://localhost:3000` to view the Customer Website.
 
 ---
 
-## 7. Admin Panel Setup
+## 8. Admin Panel Setup
 
 ```bash
 cd frontend/admin-panel
@@ -165,7 +206,7 @@ npm install
 # 2. Start development server
 npm run dev
 
-# 3. Build for production (29 static screens)
+# 3. Build for production (30 static screens)
 npm run build
 ```
 
@@ -173,7 +214,7 @@ Visit `http://localhost:3001` to view the Pharmacist & Operations Console.
 
 ---
 
-## 8. Flutter Mobile Setup
+## 9. Flutter Mobile Setup
 
 ```bash
 cd mobile/customer-app
@@ -184,7 +225,7 @@ flutter pub get
 # 2. Run static analysis (0 issues)
 flutter analyze
 
-# 3. Run automated tests (25 passing tests)
+# 3. Run automated tests (33 passing tests)
 flutter test
 
 # 4. Launch on connected device or simulator
@@ -193,11 +234,12 @@ flutter run
 
 ---
 
-## 9. Development Roadmap & Status
+## 10. Development Roadmap & Status
 
 The platform is developed following a rigorous 12-phase plan:
 - **Phase 1: Project Initialization**: COMPLETED
 - **Phase 2: UI/UX Design System & Screen Layouts**: COMPLETED
 - **Phase 3: Database Architecture, PostgreSQL Models & Pharmacy Inventory Foundation**: COMPLETED
+- **Phase 4: Authentication, Authorization, Security & User Management**: COMPLETED
 
 Current progress is tracked in [`PHASE_STATUS.md`](PHASE_STATUS.md).

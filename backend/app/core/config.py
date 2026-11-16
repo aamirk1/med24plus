@@ -23,10 +23,27 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://:redis_dev_secret_2026@localhost:6379/0"
 
-    # JWT
+    # JWT & Session
     JWT_SECRET_KEY: str = "change_me_super_secret_jwt_key_at_least_32_chars_long"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # OTP Configuration
+    OTP_EXPIRE_MINUTES: int = 5
+    OTP_COOLDOWN_SECONDS: int = 60
+    OTP_MAX_ATTEMPTS: int = 5
+
+    # Account Protection & Lockout
+    MAX_FAILED_LOGIN_ATTEMPTS: int = 5
+    ACCOUNT_LOCKOUT_MINUTES: int = 15
+
+    # Cookie Security
+    AUTH_COOKIE_NAME: str = "med24_access_token"
+    REFRESH_COOKIE_NAME: str = "med24_refresh_token"
+    COOKIE_DOMAIN: Union[str, None] = None
+    COOKIE_SECURE: bool = False  # Set True in production
+    COOKIE_SAMESITE: str = "lax"
 
     # CORS
     CORS_ORIGINS: List[str] = [
