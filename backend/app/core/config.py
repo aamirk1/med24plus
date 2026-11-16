@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "pharmacy_user"
     POSTGRES_PASSWORD: str = "pharmacy_secure_dev_pass_2026"
-    POSTGRES_DB: str = "online_pharmacy_db"
+    POSTGRES_DB: str = "med24plus_db"
     DATABASE_URL: Union[str, None] = None
     SYNC_DATABASE_URL: Union[str, None] = None
 
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
         password = data.get("POSTGRES_PASSWORD", "pharmacy_secure_dev_pass_2026")
         server = data.get("POSTGRES_SERVER", "localhost")
         port = data.get("POSTGRES_PORT", 5432)
-        db = data.get("POSTGRES_DB", "online_pharmacy_db")
+        db = data.get("POSTGRES_DB", "med24plus_db")
         return f"postgresql+asyncpg://{user}:{password}@{server}:{port}/{db}"
 
     @field_validator("SYNC_DATABASE_URL", mode="before")
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
         password = data.get("POSTGRES_PASSWORD", "pharmacy_secure_dev_pass_2026")
         server = data.get("POSTGRES_SERVER", "localhost")
         port = data.get("POSTGRES_PORT", 5432)
-        db = data.get("POSTGRES_DB", "online_pharmacy_db")
+        db = data.get("POSTGRES_DB", "med24plus_db")
         return f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
 
     model_config = SettingsConfigDict(
