@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { RegulatoryNotice } from "@/components/common/RegulatoryNotice";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: `${siteConfig.name} - ${siteConfig.tagline}`,
+  description: "Certified online single retail pharmacy platform in India. Genuine medicines, Schedule H prescription verification by registered pharmacists.",
+  keywords: ["online pharmacy", "India pharmacy", "genuine medicines", "prescription verification", "Med24Plus"],
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col justify-between">
+        <div>
+          <RegulatoryNotice />
+          <Navbar />
+          <main>{children}</main>
+        </div>
+        <Footer />
+      </body>
+    </html>
+  );
+}
+
