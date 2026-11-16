@@ -107,7 +107,41 @@ Med24Plus Phase 4 delivers an enterprise-grade authentication and authorization 
 
 ---
 
-## 5. Database Architecture
+## 5. Phase 5: Product Catalog, Pharmacy Inventory & Stock Management Architecture
+
+Med24Plus Phase 5 delivers an enterprise-grade, statutory-compliant Product Catalog and Pharmacy Inventory Engine:
+
+1. **Separation of Catalog & Stock Ledger**:
+   - `Product` defines clinical, pricing (MRP, DPCO compliant), tax (HSN 3004, GST rates), and regulatory classification (Schedule H/H1/X, prescription mandatory).
+   - Stock availability is **never** a static boolean. It is dynamically computed at query time from active, unexpired, undamaged, non-quarantined batches:
+     $$\text{sellable\_quantity} = \sum (\text{available\_quantity} - \text{reserved\_quantity})$$
+2. **Category & Brand Management**:
+   - Complete hierarchical category tree with circular-reference detection and product-reference deletion protection.
+   - Brand registry supporting manufacturers, logos, and active/inactive status toggling.
+3. **Statutory Inventory & Batch Ledger**:
+   - Every physical medicine unit belongs to an immutable batch (`InventoryBatch`) recording `batch_number`, `mfg_date`, `expiry_date`, `purchase_price`, `mrp`, and status (`ACTIVE`, `QUARANTINED`, `EXPIRED`, `DAMAGED`, `RECALLED`).
+   - Inward stock receiving (`POST /api/v1/admin/inventory/receive-stock`) with automated double-entry ledger logging in `StockMovement`.
+   - Audited stock adjustments (`POST /api/v1/admin/inventory/adjustments`) for cycle counts, breakage, shrinkage, or audit corrections with non-negative quantity validation.
+4. **FEFO (First Expiry, First Out) Allocation Engine**:
+   - Core allocation engine allocating stock strictly in ascending order of `expiry_date`.
+   - Prevents allocation of expired, quarantined, or damaged units.
+   - Provides dry-run preview simulation (`POST /api/v1/admin/inventory/fefo-preview`) and transactional atomic reservations for orders.
+5. **Statutory Expiry & Quarantine Controls (Rule 65 Compliance)**:
+   - Expiry surveillance endpoints categorizing stock into critical brackets:
+     - 0–30 days: Immediate clearance / return-to-vendor.
+     - 31–60 days: Near-expiry warning.
+     - 61–90 days: Expiry watch list.
+     - Past expiry: Zero sellable stock; auto-flagged for statutory quarantine under Drug Rules.
+6. **Product Image Management & Storage Adapter**:
+   - Multiple images per product with primary selection and display order.
+   - Content-type validation (`image/jpeg`, `image/png`, `image/webp`), 5MB payload limit, filename sanitization with UUID hashing, and filesystem/S3 interoperability.
+7. **Frontend & Admin Integration**:
+   - **Customer Web**: Dynamic catalog search, category/brand filters, prescription-required badges, stock availability indicators, and interactive product details.
+   - **Admin Operations Console**: Live catalog management (products, categories, brands), stock receiving modal, batch quarantine/release actions, expiry surveillance dashboard, and low-stock alerts.
+
+---
+
+## 6. Database Architecture
 
 Med24Plus features a normalized **39-table PostgreSQL schema** designed specifically for Indian pharmacy compliance:
 
@@ -132,10 +166,18 @@ Comprehensive design specifications:
 - [`docs/api-authentication.md`](docs/api-authentication.md) - REST API authentication endpoints reference
 - [`docs/database-design.md`](docs/database-design.md) - Schema dictionary
 - [`docs/pharmacy-data-compliance.md`](docs/pharmacy-data-compliance.md) - Drugs and Cosmetics Act compliance
+- [`docs/product-catalog-architecture.md`](docs/product-catalog-architecture.md) - Product & Catalog domain architecture
+- [`docs/product-api-documentation.md`](docs/product-api-documentation.md) - Product Catalog REST API documentation
+- [`docs/inventory-api-documentation.md`](docs/inventory-api-documentation.md) - Pharmacy Inventory REST API documentation
+- [`docs/inventory-workflows.md`](docs/inventory-workflows.md) - Inventory & stock lifecycle operations
+- [`docs/fefo-allocation.md`](docs/fefo-allocation.md) - FEFO batch allocation engine specification
+- [`docs/stock-management.md`](docs/stock-management.md) - Inward receiving, adjustments & valuation
+- [`docs/expiry-management.md`](docs/expiry-management.md) - Statutory expiry brackets & quarantine SOPs
+- [`docs/storage-architecture.md`](docs/storage-architecture.md) - Storage adapter, validation & image assets
 
 ---
 
-## 6. Backend Setup & CLI Tools
+## 7. Backend Setup & CLI Tools
 
 ```bash
 cd backend
@@ -164,7 +206,7 @@ python -m app.utils.seed_dev_data
 # 8. (Optional) Provision Super-Administrator via CLI
 python -m app.utils.create_admin --phone +919999999999 --password SecurePassword@123 --name "Super Admin"
 
-# 9. Run automated backend test suite (24 tests)
+# 9. Run automated backend test suite (25 tests)
 pytest tests/ -v
 
 # 10. Start development API server
@@ -176,7 +218,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## 7. Frontend Customer Website Setup
+## 8. Frontend Customer Website Setup
 
 ```bash
 cd frontend/customer-web
@@ -195,7 +237,7 @@ Visit `http://localhost:3000` to view the Customer Website.
 
 ---
 
-## 8. Admin Panel Setup
+## 9. Admin Panel Setup
 
 ```bash
 cd frontend/admin-panel
@@ -214,7 +256,7 @@ Visit `http://localhost:3001` to view the Pharmacist & Operations Console.
 
 ---
 
-## 9. Flutter Mobile Setup
+## 10. Flutter Mobile Setup
 
 ```bash
 cd mobile/customer-app
@@ -234,12 +276,14 @@ flutter run
 
 ---
 
-## 10. Development Roadmap & Status
+## 11. Development Roadmap & Status
 
 The platform is developed following a rigorous 12-phase plan:
 - **Phase 1: Project Initialization**: COMPLETED
 - **Phase 2: UI/UX Design System & Screen Layouts**: COMPLETED
 - **Phase 3: Database Architecture, PostgreSQL Models & Pharmacy Inventory Foundation**: COMPLETED
 - **Phase 4: Authentication, Authorization, Security & User Management**: COMPLETED
+- **Phase 5: Product Catalog, Pharmacy Inventory & Stock Management APIs**: COMPLETED
+- **Phase 6: Prescription Management & Pharmacist Verification Workflows**: PENDING APPROVAL
 
 Current progress is tracked in [`PHASE_STATUS.md`](PHASE_STATUS.md).

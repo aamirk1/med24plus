@@ -1,36 +1,104 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, AlertCircle, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FormSection } from "@/components/ui/FormSection";
+import { adminCatalogService } from "@/services/admin-catalog.service";
 
 export default function NewProductPage() {
   const router = useRouter();
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
-    brand: "",
+    brand_id: "",
     sku: "",
-    category: "Diabetes Care & Monitoring",
+    category_id: "",
     dosageForm: "Tablet",
+    generic_name: "",
     composition: "",
-    schedule: "SCHEDULE_H",
-    requiresPrescription: true,
+    schedule: "OTC",
+    requiresPrescription: false,
     mrp: "",
     sellingPrice: "",
     gstRate: "12",
     hsnCode: "30049099",
-    packSize: "",
-    storageTemp: "Below 25°C",
+    packSize: "10 Tablets / Strip",
+    storageTemp: "room_temperature",
     description: "",
+    manufacturer: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadSelects() {
+      try {
+        const [catData, brandData] = await Promise.all([
+          adminCatalogService.getCategories({ page_size: 100 }),
+          adminCatalogService.getBrands({ page_size: 100 }),
+        ]);
+        if (catData?.items?.length > 0) {
+          setCategories(catData.items.map((c: any) => ({ id: c.id, name: c.name })));
+          setFormData((prev) => ({ ...prev, category_id: catData.items[0].id }));
+        }
+        if (brandData?.items?.length > 0) {
+          setBrands(brandData.items.map((b: any) => ({ id: b.id, name: b.name })));
+          setFormData((prev) => ({ ...prev, brand_id: brandData.items[0].id, manufacturer: brandData.items[0].name }));
+        }
+      } catch (e) {
+        console.warn("Could not load categories/brands:", e);
+      }
+    }
+    loadSelects();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Mock product created successfully in catalog.");
-    router.push("/catalog/products");
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const mrpNum = parseFloat(formData.mrp);
+      const sellNum = parseFloat(formData.sellingPrice);
+
+      if (sellNum > mrpNum) {
+        setErrorMessage("Selling price cannot exceed Maximum Retail Price (MRP).");
+        setIsSubmitting(false);
+        return;
+      }
+
+      await adminCatalogService.createProduct({
+        name: formData.name.trim(),
+        sku: formData.sku.trim(),
+        generic_name: formData.generic_name.trim() || formData.name.trim(),
+        composition: formData.composition.trim() || undefined,
+        category_id: formData.category_id,
+        brand_id: formData.brand_id,
+        manufacturer: formData.manufacturer.trim() || "Licensed Manufacturer",
+        description: formData.description.trim() || undefined,
+        pack_size: formData.packSize.trim(),
+        dosage_form: formData.dosageForm,
+        storage_temperature: formData.storageTemp,
+        requires_prescription: formData.requiresPrescription,
+        schedule_classification: formData.schedule,
+        mrp: mrpNum,
+        selling_price: sellNum,
+        hsn_code: formData.hsnCode.trim(),
+        gst_rate: parseFloat(formData.gstRate),
+        is_active: true,
+      });
+
+      router.push("/catalog/products");
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create product.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -50,6 +118,13 @@ export default function NewProductPage() {
         subtitle="Specify therapeutic salt composition, Indian clinical schedule, and inventory defaults."
       />
 
+      {errorMessage && (
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-xs text-red-700">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormSection
           title="Basic Product Identity"
@@ -63,7 +138,7 @@ export default function NewProductPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. Augmentin 625 Duo Tablets"
+                placeholder="e.g. Paracetamol 650mg Tablets"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
@@ -72,16 +147,23 @@ export default function NewProductPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Brand / Manufacturer *
+                Brand *
               </label>
-              <input
-                type="text"
+              <select
                 required
-                placeholder="e.g. GlaxoSmithKline Pharmaceuticals"
-                value={formData.brand}
-                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                value={formData.brand_id}
+                onChange={(e) => {
+                  const br = brands.find((b) => b.id === e.target.value);
+                  setFormData({ ...formData, brand_id: e.target.value, manufacturer: br?.name || formData.manufacturer });
+                }}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
-              />
+              >
+                {brands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -91,7 +173,7 @@ export default function NewProductPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. MED-AUG-625"
+                placeholder="e.g. MED-PCM-650"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                 className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
@@ -100,31 +182,51 @@ export default function NewProductPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Therapeutic Category
+                Therapeutic Category *
               </label>
               <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                required
+                value={formData.category_id}
+                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
               >
-                <option value="Diabetes Care & Monitoring">Diabetes Care & Monitoring</option>
-                <option value="Cardiac & BP Support">Cardiac & BP Support</option>
-                <option value="Vitamins, Minerals & Daily Health">Vitamins, Minerals & Daily Health</option>
-                <option value="Cold, Cough & Respiratory">Cold, Cough & Respiratory</option>
-                <option value="First Aid & Surgical Supplies">First Aid & Surgical Supplies</option>
-                <option value="Ayurvedic & Herbal Wellness">Ayurvedic & Herbal Wellness</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Dosage Form & Pack Size
+                Dosage Form *
+              </label>
+              <select
+                value={formData.dosageForm}
+                onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+              >
+                <option value="Tablet">Tablet</option>
+                <option value="Capsule">Capsule</option>
+                <option value="Syrup">Syrup</option>
+                <option value="Injection">Injection</option>
+                <option value="Ointment">Ointment / Gel</option>
+                <option value="Drops">Eye / Ear Drops</option>
+                <option value="Inhaler">Inhaler / Respule</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Generic Composition (Salts & Strength) *
               </label>
               <input
                 type="text"
-                placeholder="e.g. Strip of 10 Tablets"
-                value={formData.packSize}
-                onChange={(e) => setFormData({ ...formData, packSize: e.target.value })}
+                required
+                placeholder="e.g. Paracetamol IP 650mg"
+                value={formData.generic_name}
+                onChange={(e) => setFormData({ ...formData, generic_name: e.target.value, composition: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
               />
             </div>
@@ -132,77 +234,59 @@ export default function NewProductPage() {
         </FormSection>
 
         <FormSection
-          title="Clinical & Indian Regulatory Classification"
-          description="Drugs and Cosmetics Act, 1940 compliance classification."
+          title="Clinical & Statutory Scheduling (Rule 65)"
+          description="Indian Drugs & Cosmetics Rules prescription classifications."
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Active Salt Composition
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Amoxicillin (500mg) + Clavulanic Acid (125mg)"
-                value={formData.composition}
-                onChange={(e) => setFormData({ ...formData, composition: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
-              />
-            </div>
-
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Statutory Drug Schedule *
+                Schedule Classification *
               </label>
               <select
                 value={formData.schedule}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData({
-                    ...formData,
-                    schedule: val,
-                    requiresPrescription: val === "SCHEDULE_H" || val === "SCHEDULE_H1",
-                  });
+                  const sch = e.target.value;
+                  const reqRx = sch !== "OTC";
+                  setFormData({ ...formData, schedule: sch, requiresPrescription: reqRx });
                 }}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
               >
-                <option value="OTC">General Sale (OTC / Non-Rx)</option>
-                <option value="SCHEDULE_H">Schedule H (Prescription Mandatory)</option>
-                <option value="SCHEDULE_H1">Schedule H1 (High-Alert 3-Year Register)</option>
-                <option value="AYUSH">AYUSH (Herbal / Proprietary)</option>
-                <option value="DEVICE">Medical Device / Equipment</option>
+                <option value="OTC">OTC (Over the Counter)</option>
+                <option value="SCHEDULE_H">Schedule H (Prescription Required)</option>
+                <option value="SCHEDULE_H1">Schedule H1 (High-Risk Antibiotic / Narcotic)</option>
+                <option value="SCHEDULE_X">Schedule X (Strict Narcotics - Restricted)</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Storage & Handling Temp
+            <div className="flex items-center gap-3 pt-6">
+              <input
+                type="checkbox"
+                id="req-rx"
+                checked={formData.requiresPrescription}
+                onChange={(e) => setFormData({ ...formData, requiresPrescription: e.target.checked })}
+                className="w-4 h-4 accent-[#087F5B] rounded"
+              />
+              <label htmlFor="req-rx" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                Mandatory Doctor Prescription Upload (Rx)
               </label>
-              <select
-                value={formData.storageTemp}
-                onChange={(e) => setFormData({ ...formData, storageTemp: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
-              >
-                <option value="Below 25°C">Store below 25°C (Room Temp)</option>
-                <option value="2°C to 8°C">2°C – 8°C (Cold-Chain Insulin/Vaccine)</option>
-                <option value="Protect from Light">Store in dry place, protect from light</option>
-              </select>
             </div>
           </div>
         </FormSection>
 
         <FormSection
-          title="Pricing & Indian GST Configuration"
-          description="MRP, retail rate, and tax compliance identifiers."
+          title="Pricing, Taxation & Pack Size"
+          description="Statutory MRP, selling rate, HSN classification, and Indian GST rate."
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Maximum Retail Price (MRP ₹) *
+                MRP (₹) *
               </label>
               <input
                 type="number"
+                step="0.01"
                 required
-                placeholder="220"
+                placeholder="100.00"
                 value={formData.mrp}
                 onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
@@ -215,8 +299,9 @@ export default function NewProductPage() {
               </label>
               <input
                 type="number"
+                step="0.01"
                 required
-                placeholder="195"
+                placeholder="85.00"
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
@@ -225,47 +310,50 @@ export default function NewProductPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                GST Rate (%)
+                HSN Code *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.hsnCode}
+                onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
+                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                GST Rate (%) *
               </label>
               <select
                 value={formData.gstRate}
                 onChange={(e) => setFormData({ ...formData, gstRate: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
               >
-                <option value="0">0% (Exempt)</option>
-                <option value="5">5% (Essential life-saving drugs)</option>
-                <option value="12">12% (Standard formulations)</option>
-                <option value="18">18% (Devices / Cosmetics)</option>
+                <option value="0">0% (Essential formulations)</option>
+                <option value="5">5% (Life-saving items)</option>
+                <option value="12">12% (Standard medicaments)</option>
+                <option value="18">18% (Devices & cosmetics)</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                HSN Code
-              </label>
-              <input
-                type="text"
-                placeholder="30049099"
-                value={formData.hsnCode}
-                onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
-                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
-              />
             </div>
           </div>
         </FormSection>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
-          <Link
-            href="/catalog/products"
-            className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-          >
-            Cancel
+          <Link href="/catalog/products">
+            <button
+              type="button"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition"
+            >
+              Cancel
+            </button>
           </Link>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-[#087F5B] hover:bg-[#066649] rounded-lg shadow-sm transition"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
+            {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             <span>Save Product to Catalog</span>
           </button>
         </div>
@@ -273,4 +361,3 @@ export default function NewProductPage() {
     </div>
   );
 }
-

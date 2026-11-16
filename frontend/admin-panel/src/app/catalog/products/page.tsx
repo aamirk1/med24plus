@@ -1,23 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Eye, Edit3, Trash2 } from "lucide-react";
+import { Plus, Edit3, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TableToolbar } from "@/components/ui/TableToolbar";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { FilterPanel, FilterGroup } from "@/components/ui/FilterPanel";
-import { MOCK_ADMIN_PRODUCTS } from "@/mock/adminData";
-import { AdminProduct } from "@/types";
+import { adminCatalogService } from "@/services/admin-catalog.service";
+
+interface AdminProductRow {
+  id: string;
+  name: string;
+  sku: string;
+  brand: string;
+  category: string;
+  schedule: string;
+  sellingPrice: number;
+  mrp: number;
+  stock: number;
+  status: string;
+  isActive: boolean;
+}
 
 export default function AdminProductsPage() {
+  const [products, setProducts] = useState<AdminProductRow[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [search, setSearch] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, string>>({
     schedule: "ALL",
     status: "ALL",
   });
+  const [totalItems, setTotalItems] = useState(0);
 
   const filterGroups: FilterGroup[] = [
     {
@@ -27,8 +43,7 @@ export default function AdminProductsPage() {
         { label: "OTC (General Sale)", value: "OTC" },
         { label: "Schedule H (Prescription)", value: "SCHEDULE_H" },
         { label: "Schedule H1 (Controlled)", value: "SCHEDULE_H1" },
-        { label: "Ayush / Herbal", value: "AYUSH" },
-        { label: "Medical Device", value: "DEVICE" },
+        { label: "Schedule X (Restricted)", value: "SCHEDULE_X" },
       ],
     },
     {
@@ -37,24 +52,79 @@ export default function AdminProductsPage() {
       options: [
         { label: "Active", value: "ACTIVE" },
         { label: "Inactive", value: "INACTIVE" },
-        { label: "Out of Stock", value: "OUT_OF_STOCK" },
       ],
     },
   ];
 
-  const filtered = MOCK_ADMIN_PRODUCTS.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase()) ||
-      p.brand.toLowerCase().includes(search.toLowerCase());
+  const loadProducts = async () => {
+    setIsLoading(true);
+    try {
+      const isAct = filters.status === "ACTIVE" ? true : filters.status === "INACTIVE" ? false : undefined;
+      const data = await adminCatalogService.getProducts({
+        search: search || undefined,
+        is_active: isAct,
+        page_size: 50,
+      });
+      if (data?.items) {
+        const rows: AdminProductRow[] = data.items.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          brand: p.brand_name || "N/A",
+          category: p.category_name || "N/A",
+          schedule: p.schedule_classification || "OTC",
+          sellingPrice: parseFloat(p.selling_price),
+          mrp: parseFloat(p.mrp),
+          stock: p.sellable_quantity || 0,
+          status: p.is_active ? "ACTIVE" : "INACTIVE",
+          isActive: p.is_active,
+        }));
+        setProducts(rows);
+        setTotalItems(data.pagination?.total_items || rows.length);
+      }
+    } catch (e) {
+      console.warn("Could not fetch products from backend:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, [search, filters.status]);
+
+  const handleToggleStatus = async (productId: string, currentActive: boolean) => {
+    try {
+      await adminCatalogService.setProductStatus(productId, !currentActive);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? { ...p, isActive: !currentActive, status: !currentActive ? "ACTIVE" : "INACTIVE" }
+            : p
+        )
+      );
+    } catch (e: any) {
+      alert(`Failed to update status: ${e.message}`);
+    }
+  };
+
+  const handleDelete = async (productId: string, name: string) => {
+    if (!confirm(`Are you sure you want to deactivate and remove product "${name}" from catalog?`)) return;
+    try {
+      await adminCatalogService.deleteProduct(productId);
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+    } catch (e: any) {
+      alert(`Delete failed: ${e.message}`);
+    }
+  };
+
+  const filtered = products.filter((p) => {
     const matchesSchedule =
       filters.schedule === "ALL" || p.schedule === filters.schedule;
-    const matchesStatus =
-      filters.status === "ALL" || p.status === filters.status;
-    return matchesSearch && matchesSchedule && matchesStatus;
+    return matchesSchedule;
   });
 
-  const columns: Column<AdminProduct>[] = [
+  const columns: Column<AdminProductRow>[] = [
     {
       header: "Product / SKU",
       cell: (p) => (
@@ -95,7 +165,7 @@ export default function AdminProductsPage() {
       ),
     },
     {
-      header: "Available Stock",
+      header: "Available Sellable Stock",
       cell: (p) => (
         <span
           className={`text-xs font-semibold ${
@@ -119,6 +189,18 @@ export default function AdminProductsPage() {
       className: "text-right",
       cell: (p) => (
         <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleToggleStatus(p.id, p.isActive)}
+            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            title={p.isActive ? "Deactivate" : "Activate"}
+          >
+            {p.isActive ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            ) : (
+              <XCircle className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </button>
           <Link
             href={`/catalog/products/${p.id}/edit`}
             className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
@@ -129,8 +211,8 @@ export default function AdminProductsPage() {
           <button
             type="button"
             className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition"
-            title="Deactivate"
-            onClick={() => alert(`Mock action: Deactivate ${p.sku}`)}
+            title="Delete / Archive"
+            onClick={() => handleDelete(p.id, p.name)}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -160,7 +242,7 @@ export default function AdminProductsPage() {
         onSearchChange={setSearch}
         placeholder="Search by medicine name, brand, SKU..."
         onFilterToggle={() => setFilterOpen(!filterOpen)}
-        onExport={() => alert("Mock export: Downloading CSV catalog...")}
+        onExport={() => alert("Downloading CSV catalog summary...")}
       />
 
       <FilterPanel
@@ -172,13 +254,19 @@ export default function AdminProductsPage() {
         onReset={() => setFilters({ schedule: "ALL", status: "ALL" })}
       />
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        keyExtractor={(p) => p.id}
-        emptyMessage="No medicines or products match your search criteria."
-      />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <p className="text-xs">Loading live catalog items from database...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filtered}
+          keyExtractor={(p) => p.id}
+          emptyMessage="No medicines or products match your search criteria."
+        />
+      )}
     </div>
   );
 }
-

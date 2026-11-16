@@ -1,31 +1,69 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/mock/data";
+import { catalogService } from "@/services/catalog.service";
+import { MedicineCategory, Product } from "@/types";
+import { Loader2 } from "lucide-react";
 
 export default function CategoryDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const category =
-    MOCK_CATEGORIES.find((c) => c.slug === slug) || MOCK_CATEGORIES[0];
+  const [category, setCategory] = useState<MedicineCategory | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const products = MOCK_PRODUCTS.filter(
-    (p) => p.categorySlug === category.slug
-  );
+  useEffect(() => {
+    async function load() {
+      if (!slug) return;
+      setIsLoading(true);
+      try {
+        const cats = await catalogService.getCategories();
+        const found = cats.find((c) => c.slug === slug) || {
+          id: slug,
+          name: slug.charAt(0).toUpperCase() + slug.slice(1).replace("-", " "),
+          slug,
+          description: "Verified medications in this therapeutic class.",
+          iconName: "Pill",
+          itemCount: 0,
+        };
+        setCategory(found);
+
+        const res = await catalogService.getProducts({
+          category_id: found.id,
+          page_size: 20,
+        });
+        setProducts(res.items);
+      } catch (e) {
+        console.error("Failed to load category products:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center space-y-3 text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+        <p className="text-xs font-medium">Loading category products...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 text-left">
       <Breadcrumb
         items={[
           { label: "Categories", href: "/categories" },
-          { label: category.name },
+          { label: category?.name || slug },
         ]}
       />
 
@@ -33,8 +71,8 @@ export default function CategoryDetailPage() {
         <span className="text-[11px] font-bold uppercase tracking-wider text-[#087F5B]">
           Therapeutic Category
         </span>
-        <h1 className="text-2xl font-bold text-[#172B24]">{category.name}</h1>
-        <p className="text-xs text-slate-600 max-w-2xl">{category.description}</p>
+        <h1 className="text-2xl font-bold text-[#172B24]">{category?.name}</h1>
+        <p className="text-xs text-slate-600 max-w-2xl">{category?.description}</p>
       </div>
 
       <div className="space-y-4">
@@ -68,4 +106,3 @@ export default function CategoryDetailPage() {
     </div>
   );
 }
-
