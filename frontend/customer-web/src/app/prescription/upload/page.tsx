@@ -7,26 +7,89 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { prescriptionService, Prescription } from "@/services/prescription.service";
 import {
   UploadCloud,
-  FileCheck2,
-  ShieldCheck,
   CheckCircle2,
   AlertTriangle,
-  Info,
+  FileText,
+  X,
+  Loader2,
+  Clock,
   PhoneCall,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function PrescriptionUploadPage() {
-  const [fileSelected, setFileSelected] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [patientName, setPatientName] = useState("");
+  const [patientAge, setPatientAge] = useState("");
+  const [patientGender, setPatientGender] = useState("Other");
+  const [doctorName, setDoctorName] = useState("");
+  const [doctorRegistrationNo, setDoctorRegistrationNo] = useState("");
+  const [doctorClinic, setDoctorClinic] = useState("");
+  const [prescriptionDate, setPrescriptionDate] = useState(new Date().toISOString().split("T")[0]);
+  const [customerNotes, setCustomerNotes] = useState("");
+  const [confirmedRx, setConfirmedRx] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [submittedRx, setSubmittedRx] = useState<Prescription | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const incoming = Array.from(e.target.files);
+      const combined = [...selectedFiles, ...incoming].slice(0, 5);
+      setSelectedFiles(combined);
+    }
   };
 
-  if (submitted) {
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedFiles.length === 0) {
+      setErrorMessage("Please select at least one prescription document (JPEG, PNG, or PDF).");
+      return;
+    }
+
+    if (!confirmedRx) {
+      setErrorMessage("You must certify that this is an authentic medical prescription.");
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      if (patientName) formData.append("patient_name", patientName);
+      if (patientAge) formData.append("patient_age", patientAge);
+      if (patientGender) formData.append("patient_gender", patientGender);
+      if (doctorName) formData.append("doctor_name", doctorName);
+      if (doctorRegistrationNo) formData.append("doctor_registration_no", doctorRegistrationNo);
+      if (doctorClinic) formData.append("doctor_clinic_or_hospital", doctorClinic);
+      if (prescriptionDate) formData.append("prescription_date", prescriptionDate);
+      if (customerNotes) formData.append("customer_notes", customerNotes);
+
+      const res = await prescriptionService.uploadPrescription(formData);
+      if (res.success && res.data) {
+        setSubmittedRx(res.data);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to upload prescription. Please verify file format and size.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submittedRx) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-6">
         <div className="w-16 h-16 rounded-full bg-[#E6F4EF] text-[#087F5B] flex items-center justify-center mx-auto">
@@ -36,31 +99,33 @@ export default function PrescriptionUploadPage() {
           <span className="text-xs font-bold text-[#087F5B] bg-[#E6F4EF] px-2.5 py-1 rounded-full uppercase tracking-wider">
             Prescription Submitted to Pharmacist
           </span>
-          <h1 className="text-2xl font-bold text-[#172B24]">Ref: #RX-2026-0842</h1>
+          <h1 className="text-2xl font-bold font-mono text-[#172B24]">
+            Ref: #{submittedRx.prescription_number || submittedRx.prescription_reference}
+          </h1>
           <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-            Our Registered Pharmacist is reviewing your prescription. You will receive a telephone call or WhatsApp confirmation with your medication list and total invoice.
+            Our Registered Pharmacist is auditing your prescription under Rule 65. You can track verification progress in real-time.
           </p>
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 text-xs text-left border border-slate-200 space-y-2">
+        <div className="bg-slate-50 rounded-2xl p-5 text-xs text-left border border-slate-200 space-y-2.5">
           <div className="flex items-center gap-2 font-bold text-[#172B24]">
-            <ClockIcon className="w-4 h-4 text-[#087F5B]" />
+            <Clock className="w-4 h-4 text-[#087F5B]" />
             <span>Expected Pharmacist Review: Within 15 Minutes</span>
           </div>
-          <p className="text-slate-500 text-[11px]">
-            Pharmacy Contact: +91 8000 124 247 • Central Dispensing Unit, Bengaluru
+          <p className="text-slate-500 text-[11px] leading-relaxed">
+            Registered Pharmacy: Central Dispensing Hub • Drugs &amp; Cosmetics Rules 1945 Verification Workbench
           </p>
         </div>
 
         <div className="flex justify-center gap-3">
-          <Link href="/account/prescriptions">
+          <Link href={`/account/prescriptions/${submittedRx.id}`}>
             <Button variant="primary" size="md">
-              View Prescription Vault
+              View Prescription Details
             </Button>
           </Link>
-          <Link href="/">
+          <Link href="/account/prescriptions">
             <Button variant="outline" size="md">
-              Return Home
+              Return to Vault
             </Button>
           </Link>
         </div>
@@ -97,66 +162,163 @@ export default function PrescriptionUploadPage() {
         </ul>
       </div>
 
+      {/* Error alert */}
+      {errorMessage && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 flex items-start gap-2">
+          <X className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <p>{errorMessage}</p>
+        </div>
+      )}
+
       {/* Upload Form */}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-subtle space-y-5">
-        <div
-          onClick={() => setFileSelected(!fileSelected)}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
-            fileSelected
-              ? "border-[#087F5B] bg-[#E6F4EF]/30"
-              : "border-slate-300 hover:border-[#087F5B] bg-slate-50/50"
-          }`}
+        {/* Dropzone */}
+        <label
+          htmlFor="rx-file-input"
+          className="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition border-slate-300 hover:border-[#087F5B] bg-slate-50/50"
         >
-          <UploadCloud className={`w-10 h-10 mx-auto mb-2 ${fileSelected ? "text-[#087F5B]" : "text-slate-400"}`} />
+          <UploadCloud className="w-10 h-10 mx-auto mb-2 text-[#087F5B]" />
           <h4 className="text-sm font-bold text-[#172B24]">
-            {fileSelected ? "Prescription Attached: Doctor_Prescription_Scan.pdf" : "Drag & drop prescription image or PDF here"}
+            Drag &amp; drop prescription documents here, or click to browse
           </h4>
           <p className="text-xs text-slate-500 mt-1">
-            Supports clear JPG, PNG or PDF up to 10MB
+            Supports clear JPG, PNG or PDF (up to 5 pages, max 10MB each)
           </p>
-          <button type="button" className="mt-3 text-xs font-bold text-[#087F5B] hover:underline">
-            {fileSelected ? "Click to change document" : "Browse Files from Device"}
-          </button>
-        </div>
+          <input
+            id="rx-file-input"
+            type="file"
+            multiple
+            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </label>
 
+        {/* Selected files list */}
+        {selectedFiles.length > 0 && (
+          <div className="space-y-2">
+            <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Selected Documents ({selectedFiles.length}/5):
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedFiles.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs"
+                >
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileText className="w-4 h-4 text-[#087F5B] shrink-0" />
+                    <span className="truncate font-mono font-medium text-slate-800">{file.name}</span>
+                    <span className="text-[10px] text-slate-400 shrink-0">
+                      ({(file.size / 1024).toFixed(0)} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="text-slate-400 hover:text-red-500 p-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Patient and Doctor metadata fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Patient Name" defaultValue="Aarav Sharma" required />
-          <Input label="Contact Mobile Number (+91)" defaultValue="+91 98451 22340" required helperText="For pharmacist verification call" />
-          <Input label="Doctor's Name" placeholder="e.g. Dr. K. S. Murthy" />
-          <Input label="Days of Medication Supply" placeholder="e.g. 30 Days / 1 Month" />
+          <Input
+            label="Patient Name"
+            placeholder="e.g. Aarav Sharma"
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              label="Age"
+              placeholder="e.g. 35"
+              type="number"
+              value={patientAge}
+              onChange={(e) => setPatientAge(e.target.value)}
+            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
+              <select
+                value={patientGender}
+                onChange={(e) => setPatientGender(e.target.value)}
+                className="w-full h-10 px-3 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <Input
+            label="Doctor's Name"
+            placeholder="e.g. Dr. K. S. Murthy, MBBS"
+            value={doctorName}
+            onChange={(e) => setDoctorName(e.target.value)}
+          />
+
+          <Input
+            label="Medical Council Reg No"
+            placeholder="e.g. KMC-48201-B"
+            value={doctorRegistrationNo}
+            onChange={(e) => setDoctorRegistrationNo(e.target.value)}
+          />
+
+          <Input
+            label="Clinic / Hospital Name"
+            placeholder="e.g. Manipal Hospital, Bengaluru"
+            value={doctorClinic}
+            onChange={(e) => setDoctorClinic(e.target.value)}
+          />
+
+          <Input
+            label="Prescription Date"
+            type="date"
+            value={prescriptionDate}
+            onChange={(e) => setPrescriptionDate(e.target.value)}
+          />
         </div>
 
         <Textarea
           label="Special Instructions for Pharmacist (Optional)"
           placeholder="Mention if you require a specific brand substitution or urgent delivery time slot..."
+          value={customerNotes}
+          onChange={(e) => setCustomerNotes(e.target.value)}
         />
 
         <Checkbox
           id="confirmRx"
-          defaultChecked
+          checked={confirmedRx}
+          onChange={(e) => setConfirmedRx(e.target.checked)}
           label="I certify this is an authentic prescription from a Registered Medical Practitioner"
-          description="In compliance with Indian pharmacy laws, dispensing will take place only after our pharmacist verifies the uploaded document."
+          description="In compliance with Indian pharmacy laws (Rule 65), dispensing will take place only after our registered pharmacist verifies the uploaded document."
         />
 
         <Button
           variant="primary"
           size="lg"
           type="submit"
+          disabled={submitting}
           className="w-full shadow-sm"
         >
-          Submit Prescription for Verification
+          {submitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <span>Verifying &amp; Uploading Prescription...</span>
+            </>
+          ) : (
+            <span>Submit Prescription for Pharmacist Verification</span>
+          )}
         </Button>
       </form>
     </div>
   );
 }
-
-function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
-      <circle cx="12" cy="12" r="10" strokeWidth="2" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6l4 2" />
-    </svg>
-  );
-}
-

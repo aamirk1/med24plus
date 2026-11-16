@@ -28,6 +28,7 @@ from app.models.order import Order, OrderItem, OrderStatusHistory
 from app.models.payment import Payment, PaymentTransaction, Refund
 from app.models.prescription import (
     Prescription,
+    PrescriptionFile,
     PrescriptionItem,
     PrescriptionReviewLog,
 )
@@ -70,6 +71,7 @@ __all__ = [
     "StockAdjustmentItem",
     "StockAlert",
     "Prescription",
+    "PrescriptionFile",
     "PrescriptionItem",
     "PrescriptionReviewLog",
     "Order",

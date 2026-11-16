@@ -12,6 +12,13 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     headers.set("Content-Type", "application/json");
   }
 
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("med24_access_token");
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
   const config: RequestInit = {
     ...options,
     headers,

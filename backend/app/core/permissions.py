@@ -21,6 +21,9 @@ class PermissionEnum(str, Enum):
     ADDRESS_DELETE = "address.delete"
     ORDER_READ_OWN = "order.read_own"
     PRESCRIPTION_READ_OWN = "prescription.read_own"
+    PRESCRIPTION_VIEW_OWN = "prescriptions.view_own"
+    PRESCRIPTION_UPLOAD = "prescriptions.upload"
+    PRESCRIPTION_CANCEL_OWN = "prescriptions.cancel_own"
     NOTIFICATION_READ_OWN = "notification.read_own"
 
     # Admin & Catalog permissions
@@ -59,15 +62,20 @@ class PermissionEnum(str, Enum):
     ORDERS_READ = "orders.read"
     ORDERS_MANAGE = "orders.manage"
     CUSTOMERS_READ = "customers.read"
-    PRESCRIPTIONS_READ = "prescriptions.read"
     STAFF_MANAGE = "staff.manage"
     REPORTS_READ = "reports.read"
     SETTINGS_MANAGE = "settings.manage"
 
-    # Pharmacist permissions
+    # Pharmacist & Prescription Verification permissions
+    PRESCRIPTIONS_READ = "prescriptions.read"
+    PRESCRIPTIONS_VIEW_ALL = "prescriptions.view_all"
+    PRESCRIPTIONS_VIEW_QUEUE = "prescriptions.view_queue"
     PRESCRIPTIONS_REVIEW = "prescriptions.review"
     PRESCRIPTIONS_APPROVE = "prescriptions.approve"
     PRESCRIPTIONS_REJECT = "prescriptions.reject"
+    PRESCRIPTIONS_REQUEST_CLARIFICATION = "prescriptions.request_clarification"
+    PRESCRIPTIONS_VIEW_HISTORY = "prescriptions.view_history"
+    PRESCRIPTIONS_MANAGE = "prescriptions.manage"
     DISPENSING_READ = "dispensing.read"
 
     # Delivery Partner permissions
@@ -86,13 +94,20 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.ADDRESS_DELETE.value,
         PermissionEnum.ORDER_READ_OWN.value,
         PermissionEnum.PRESCRIPTION_READ_OWN.value,
+        PermissionEnum.PRESCRIPTION_VIEW_OWN.value,
+        PermissionEnum.PRESCRIPTION_UPLOAD.value,
+        PermissionEnum.PRESCRIPTION_CANCEL_OWN.value,
         PermissionEnum.NOTIFICATION_READ_OWN.value,
     ],
     RoleEnum.PHARMACIST.value: [
         PermissionEnum.PRESCRIPTIONS_READ.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_ALL.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_QUEUE.value,
         PermissionEnum.PRESCRIPTIONS_REVIEW.value,
         PermissionEnum.PRESCRIPTIONS_APPROVE.value,
         PermissionEnum.PRESCRIPTIONS_REJECT.value,
+        PermissionEnum.PRESCRIPTIONS_REQUEST_CLARIFICATION.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_HISTORY.value,
         PermissionEnum.DISPENSING_READ.value,
         PermissionEnum.INVENTORY_READ.value,
         PermissionEnum.INVENTORY_EXPIRY_READ.value,
@@ -146,6 +161,10 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.ORDERS_MANAGE.value,
         PermissionEnum.CUSTOMERS_READ.value,
         PermissionEnum.PRESCRIPTIONS_READ.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_ALL.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_QUEUE.value,
+        PermissionEnum.PRESCRIPTIONS_VIEW_HISTORY.value,
+        PermissionEnum.PRESCRIPTIONS_MANAGE.value,
         PermissionEnum.STAFF_MANAGE.value,
         PermissionEnum.REPORTS_READ.value,
         PermissionEnum.SETTINGS_MANAGE.value,

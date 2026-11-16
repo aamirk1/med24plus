@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     admin_auth,
+    admin_prescriptions,
     auth,
     brands,
     categories,
@@ -8,6 +9,7 @@ from app.api.v1.endpoints import (
     health,
     inventory,
     pharmacist_auth,
+    prescriptions,
     products,
     users,
 )
@@ -44,3 +46,9 @@ api_router.include_router(products.admin_router, prefix="/admin/products", tags=
 
 # Admin Inventory & Batch Management
 api_router.include_router(inventory.router, prefix="/admin/inventory", tags=["Admin Inventory"])
+
+# Customer Prescriptions Vault & Uploads (Rule 65)
+api_router.include_router(prescriptions.router, prefix="/prescriptions", tags=["Customer Prescriptions"])
+
+# Pharmacist Clinical Review & Verification Workbench (Rule 65)
+api_router.include_router(admin_prescriptions.router, prefix="/admin/prescriptions", tags=["Pharmacist Verification Queue"])

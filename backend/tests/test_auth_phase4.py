@@ -5,6 +5,9 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.config import settings
+from sqlalchemy import select
+from tests.conftest import TestAsyncSessionLocal
+from app.models.user import User
 from app.core.permissions import PermissionEnum, RoleEnum
 from app.core.security import create_access_token, decode_token, get_password_hash, verify_password
 
@@ -266,28 +269,22 @@ async def test_password_reset_flow(client: AsyncClient):
     )
     assert reset_res.status_code == 200
 
-    # 3. Verify new password allows login
-    login_new = await client.post(
-        "/api/v1/auth/login",
-        json={"identifier": target_phone, "password": new_pass},
-    )
-    assert login_new.status_code == 200
-
-    # Reset back to standard for subsequent tests
-    reset_back_res = await client.post(
-        "/api/v1/auth/forgot-password",
-        json={"identifier": target_phone},
-    )
-    back_otp = reset_back_res.json()["data"]["dev_otp"]
-    await client.post(
-        "/api/v1/auth/reset-password",
-        json={
-            "identifier": target_phone,
-            "otp_code": back_otp,
-            "new_password": "Password@123",
-            "confirm_password": "Password@123",
-        },
-    )
+    try:
+        # 3. Verify new password allows login
+        login_new = await client.post(
+            "/api/v1/auth/login",
+            json={"identifier": target_phone, "password": new_pass},
+        )
+        assert login_new.status_code == 200
+    finally:
+        # Reset back to standard for subsequent tests
+        async with TestAsyncSessionLocal() as session:
+            stmt = select(User).where(User.phone == target_phone)
+            res = await session.execute(stmt)
+            u = res.scalar_one_or_none()
+            if u:
+                u.hashed_password = get_password_hash("Password@123")
+                await session.commit()
 
 
 @pytest.mark.asyncio
