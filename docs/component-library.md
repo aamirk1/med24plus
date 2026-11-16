@@ -80,3 +80,4 @@ This document provides a comprehensive catalog of all reusable UI components and
 | **`PriceWidget`** | `lib/core/widgets/price_widget.dart` | INR symbol (`₹`), selling price, crossed-out MRP, and discount tag. |
 | **`QuantitySelector`** | `lib/core/widgets/quantity_selector.dart` | Plus, minus, and quantity display with min/max limits. |
 | **`AppBottomNavBar`** | `lib/core/widgets/bottom_nav_bar.dart` | 5-tab bottom navigation (Home, Categories, Search, Orders, Profile) with active `#087F5B` highlighting. |
+

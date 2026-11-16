@@ -68,3 +68,4 @@ The typography standard across web and mobile is **Inter** (`sans-serif`):
 1. **Prescription Indicator:** Every medicine falling under Schedule H or H1 under Rule 65 prominently features an alert chip indicating doctor prescription requirement.
 2. **First-Expiry-First-Out (FEFO):** Cash memos, order reviews, and inventory batch screens explicitly identify manufacturer batch numbers and shelf-life expiries.
 3. **Statutory Disclaimers:** Visible Form 20/21 retail drug licenses, Supervising Pharmacist council registration number (`PCI-REG-94821`), and GSTIN are displayed on order documents and footers.
+

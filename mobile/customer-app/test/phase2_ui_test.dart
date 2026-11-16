@@ -38,12 +38,14 @@ void main() {
       expect(find.text('Click Me'), findsOneWidget);
     });
 
-    testWidgets('AppBadge.schedule displays Schedule H correctly', (tester) async {
+    testWidgets('AppBadge.schedule displays Schedule H correctly',
+        (tester) async {
       await tester.pumpWidget(_wrap(AppBadge.schedule('SCHEDULE_H')));
       expect(find.text('Schedule H (Rx)'), findsOneWidget);
     });
 
-    testWidgets('PriceWidget displays discount and formatted prices', (tester) async {
+    testWidgets('PriceWidget displays discount and formatted prices',
+        (tester) async {
       await tester.pumpWidget(_wrap(const PriceWidget(
         sellingPrice: 945,
         mrp: 1125,
@@ -54,7 +56,8 @@ void main() {
       expect(find.text('16% OFF'), findsOneWidget);
     });
 
-    testWidgets('QuantitySelector increments and decrements count', (tester) async {
+    testWidgets('QuantitySelector increments and decrements count',
+        (tester) async {
       int qty = 1;
       await tester.pumpWidget(_wrap(StatefulBuilder(
         builder: (context, setState) {
@@ -110,8 +113,10 @@ void main() {
       expect(find.text('All Medicines & Essentials'), findsOneWidget);
     });
 
-    testWidgets('Product Detail Screen renders medicine specifications', (tester) async {
-      await tester.pumpWidget(_wrap(ProductDetailScreen(productId: MockData.products.first.id)));
+    testWidgets('Product Detail Screen renders medicine specifications',
+        (tester) async {
+      await tester.pumpWidget(
+          _wrap(ProductDetailScreen(productId: MockData.products.first.id)));
       expect(find.text('Therapeutic Salt Composition'), findsOneWidget);
     });
 
@@ -130,9 +135,11 @@ void main() {
       expect(find.text('Saved Delivery Addresses'), findsOneWidget);
     });
 
-    testWidgets('Prescription Upload Screen renders Rule 65 notice', (tester) async {
+    testWidgets('Prescription Upload Screen renders Rule 65 notice',
+        (tester) async {
       await tester.pumpWidget(_wrap(const PrescriptionUploadScreen()));
-      expect(find.text('Drugs & Cosmetics Act, 1940 — Rule 65'), findsOneWidget);
+      expect(
+          find.text('Drugs & Cosmetics Act, 1940 — Rule 65'), findsOneWidget);
     });
 
     testWidgets('Order History Screen renders past orders', (tester) async {
@@ -141,7 +148,8 @@ void main() {
     });
 
     testWidgets('Order Detail Screen renders batch memo info', (tester) async {
-      await tester.pumpWidget(_wrap(OrderDetailScreen(orderId: MockData.orders.first.id)));
+      await tester.pumpWidget(
+          _wrap(OrderDetailScreen(orderId: MockData.orders.first.id)));
       expect(find.text('Dispensed Medicines'), findsOneWidget);
     });
 
@@ -156,12 +164,14 @@ void main() {
       expect(find.text('Notifications'), findsOneWidget);
     });
 
-    testWidgets('About Screen renders drug license credentials', (tester) async {
+    testWidgets('About Screen renders drug license credentials',
+        (tester) async {
       await tester.pumpWidget(_wrap(const AboutScreen()));
       expect(find.text('Statutory Drug Licensing Details'), findsOneWidget);
     });
 
-    testWidgets('Contact Screen renders pharmacy helpline numbers', (tester) async {
+    testWidgets('Contact Screen renders pharmacy helpline numbers',
+        (tester) async {
       await tester.pumpWidget(_wrap(const ContactScreen()));
       expect(find.text('Direct Pharmacy Contacts'), findsOneWidget);
       expect(find.text('+91 80 2345 6789'), findsOneWidget);

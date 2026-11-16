@@ -3,7 +3,9 @@ import 'package:customer_app/app/app.dart';
 import 'package:customer_app/core/constants/app_strings.dart';
 
 void main() {
-  testWidgets('App renders home screen with Med24Plus branding and Rx upload CTA', (WidgetTester tester) async {
+  testWidgets(
+      'App renders home screen with Med24Plus branding and Rx upload CTA',
+      (WidgetTester tester) async {
     await tester.pumpWidget(const OnlinePharmacyApp());
     await tester.pumpAndSettle();
 
@@ -20,4 +22,3 @@ void main() {
     expect(find.text(AppStrings.popularCategories), findsOneWidget);
   });
 }
-
