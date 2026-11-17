@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:customer_app/core/constants/app_strings.dart';
-import 'package:customer_app/core/constants/app_colors.dart';
+import 'package:med24plus/core/constants/app_strings.dart';
+import 'package:med24plus/core/constants/app_colors.dart';
 
 void main() {
   group('App Constants Unit Tests', () {

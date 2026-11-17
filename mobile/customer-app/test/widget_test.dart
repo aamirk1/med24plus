@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:customer_app/app/app.dart';
-import 'package:customer_app/core/constants/app_strings.dart';
+import 'package:med24plus/app/app.dart';
+import 'package:med24plus/core/constants/app_strings.dart';
 
 void main() {
   testWidgets(

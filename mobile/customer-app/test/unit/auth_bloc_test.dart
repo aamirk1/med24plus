@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:customer_app/features/auth/domain/entities/user_entity.dart';
-import 'package:customer_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:customer_app/features/auth/presentation/bloc/auth_event.dart';
-import 'package:customer_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:med24plus/features/auth/domain/entities/user_entity.dart';
+import 'package:med24plus/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:med24plus/features/auth/presentation/bloc/auth_event.dart';
+import 'package:med24plus/features/auth/presentation/bloc/auth_state.dart';
 import '../mocks/fake_auth_repository.dart';
 
 void main() {

@@ -1,5 +1,5 @@
-import 'package:customer_app/features/auth/domain/entities/user_entity.dart';
-import 'package:customer_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:med24plus/features/auth/domain/entities/user_entity.dart';
+import 'package:med24plus/features/auth/domain/repositories/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
   UserEntity? currentUser = const UserEntity(
