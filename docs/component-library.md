@@ -4,7 +4,7 @@ This document provides a comprehensive catalog of all reusable UI components and
 
 ---
 
-## 1. Customer Website Components (`frontend/customer-web/src/components/`)
+## 1. Customer Website Components (`frontend/med24plus-web/src/components/`)
 
 ### Foundation & Form Primitives (`components/ui/`)
 - **`Button`**: Supports variants (`primary`, `secondary`, `outline`, `ghost`, `danger`), sizes (`sm`, `md`, `lg`), disabled states, and full-width layout.

@@ -18,9 +18,9 @@ if [ ! -f backend/.env ]; then
 fi
 
 # Customer Web .env
-if [ ! -f frontend/customer-web/.env.local ]; then
-    echo "Creating frontend/customer-web/.env.local..."
-    cp frontend/customer-web/.env.example frontend/customer-web/.env.local
+if [ ! -f frontend/med24plus-web/.env.local ]; then
+    echo "Creating frontend/med24plus-web/.env.local..."
+    cp frontend/med24plus-web/.env.example frontend/med24plus-web/.env.local
 fi
 
 # Admin Panel .env

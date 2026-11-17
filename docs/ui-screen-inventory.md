@@ -4,7 +4,7 @@ This inventory lists all completed UI/UX layouts implemented across the **Custom
 
 ---
 
-## 1. Customer Website (`frontend/customer-web`) — 22 Pages Completed
+## 1. Customer Website (`frontend/med24plus-web`) — 22 Pages Completed
 
 | # | Route | Screen Name | Key Layout Elements | Status |
 | :--- | :--- | :--- | :--- | :--- |

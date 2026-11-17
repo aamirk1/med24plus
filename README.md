@@ -221,7 +221,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ## 8. Frontend Customer Website Setup
 
 ```bash
-cd frontend/customer-web
+cd frontend/med24plus-web
 
 # 1. Install dependencies
 npm install
