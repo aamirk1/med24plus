@@ -15,6 +15,7 @@ class AppTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final bool readOnly;
   final int maxLines;
+  final bool enabled;
 
   const AppTextField({
     super.key,
@@ -31,6 +32,7 @@ class AppTextField extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.maxLines = 1,
+    this.enabled = true,
   });
 
   @override
@@ -56,19 +58,22 @@ class AppTextField extends StatelessWidget {
           keyboardType: keyboardType,
           obscureText: obscureText,
           readOnly: readOnly,
+          enabled: enabled,
           maxLines: maxLines,
           onTap: onTap,
           onChanged: onChanged,
           style: const TextStyle(fontSize: 13, color: AppColors.mainText),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.secondaryText, fontSize: 13),
+            hintStyle:
+                const TextStyle(color: AppColors.secondaryText, fontSize: 13),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             errorText: errorText,
             filled: true,
             fillColor: AppColors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: AppColors.border),
@@ -79,7 +84,8 @@ class AppTextField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide:
+                  const BorderSide(color: AppColors.primary, width: 1.5),
             ),
           ),
         ),
@@ -87,4 +93,3 @@ class AppTextField extends StatelessWidget {
     );
   }
 }
-

@@ -128,6 +128,31 @@ void main() {
         confirmPassword: 'NewPassword@123',
       ));
     });
+
+    test('FirebaseOtpLoginRequested emits [AuthLoading, AuthAuthenticated] on success', () async {
+      final expected = [
+        const AuthLoading(message: 'Authenticating via Firebase...'),
+        AuthAuthenticated(fakeAuthRepository.currentUser!),
+      ];
+
+      expectLater(authBloc.stream, emitsInOrder(expected));
+      authBloc.add(const FirebaseOtpLoginRequested(
+        firebaseIdToken: 'sample_firebase_id_token_xyz',
+      ));
+    });
+
+    test('FirebasePhoneVerifyRequested emits [AuthLoading, AuthAuthenticated] for phone verification', () async {
+      final expected = [
+        const AuthLoading(message: 'Verifying with Firebase...'),
+        AuthAuthenticated(fakeAuthRepository.currentUser!),
+      ];
+
+      expectLater(authBloc.stream, emitsInOrder(expected));
+      authBloc.add(const FirebasePhoneVerifyRequested(
+        firebaseIdToken: 'sample_firebase_id_token_xyz',
+        purpose: 'phone_verification',
+      ));
+    });
   });
 }
 

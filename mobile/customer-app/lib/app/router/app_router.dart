@@ -24,6 +24,37 @@ import '../../features/common/presentation/contact_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Helper function producing a fluid, GPU-accelerated slide-fade page transition (60/120fps).
+CustomTransitionPage<void> _buildSmoothTransitionPage({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.04, 0.0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 class AppRouter {
   AppRouter._();
 
@@ -35,31 +66,51 @@ class AppRouter {
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const SplashScreen(),
+        ),
       ),
 
       // Onboarding
       GoRoute(
         path: '/onboarding',
         name: 'onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const OnboardingScreen(),
+        ),
       ),
 
       // Auth Routes
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: '/register',
         name: 'register',
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const RegisterScreen(),
+        ),
       ),
       GoRoute(
         path: '/forgot-password',
         name: 'forgot_password',
-        builder: (context, state) => const ForgotPasswordScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const ForgotPasswordScreen(),
+        ),
       ),
 
       // Main Shell Route with 5 Bottom Navigation Branches
@@ -125,65 +176,105 @@ class AppRouter {
         ],
       ),
 
-      // Standalone Fullscreen Flow Routes
+      // Standalone Fullscreen Flow Routes with Fluid Animated Transitions
       GoRoute(
         path: '/products',
         name: 'products',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final cat = state.uri.queryParameters['category'];
-          return ProductListScreen(category: cat);
+          return _buildSmoothTransitionPage(
+            context: context,
+            state: state,
+            child: ProductListScreen(category: cat),
+          );
         },
       ),
       GoRoute(
         path: '/product/:id',
         name: 'product_detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? 'p-1';
-          return ProductDetailScreen(productId: id);
+          return _buildSmoothTransitionPage(
+            context: context,
+            state: state,
+            child: ProductDetailScreen(productId: id),
+          );
         },
       ),
       GoRoute(
         path: '/cart',
         name: 'cart',
-        builder: (context, state) => const CartScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const CartScreen(),
+        ),
       ),
       GoRoute(
         path: '/checkout',
         name: 'checkout',
-        builder: (context, state) => const CheckoutScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const CheckoutScreen(),
+        ),
       ),
       GoRoute(
         path: '/addresses',
         name: 'addresses',
-        builder: (context, state) => const AddressesScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const AddressesScreen(),
+        ),
       ),
       GoRoute(
         path: '/prescription-upload',
         name: 'prescription_upload',
-        builder: (context, state) => const PrescriptionUploadScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const PrescriptionUploadScreen(),
+        ),
       ),
       GoRoute(
         path: '/order/:id',
         name: 'order_detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? 'ord-1';
-          return OrderDetailScreen(orderId: id);
+          return _buildSmoothTransitionPage(
+            context: context,
+            state: state,
+            child: OrderDetailScreen(orderId: id),
+          );
         },
       ),
       GoRoute(
         path: '/notifications',
         name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const NotificationsScreen(),
+        ),
       ),
       GoRoute(
         path: '/about',
         name: 'about',
-        builder: (context, state) => const AboutScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const AboutScreen(),
+        ),
       ),
       GoRoute(
         path: '/contact',
         name: 'contact',
-        builder: (context, state) => const ContactScreen(),
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const ContactScreen(),
+        ),
       ),
     ],
   );

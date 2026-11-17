@@ -16,6 +16,7 @@ from app.api.v1.endpoints import (
     cart,
     checkout,
     admin_checkout,
+    notifications,
 )
 from app.modules.orders.routes import (
     admin_orders_router,
@@ -64,6 +65,9 @@ api_router.include_router(admin_prescriptions.router, prefix="/admin/prescriptio
 
 # Customer Delivery Addresses
 api_router.include_router(addresses.router, prefix="/addresses", tags=["Delivery Addresses"])
+
+# Notifications & Firebase Push Alerts
+api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications & Push Alerts"])
 
 # Customer Shopping Cart
 api_router.include_router(cart.router, prefix="/cart", tags=["Customer Shopping Cart"])

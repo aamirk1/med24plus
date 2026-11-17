@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/category_card.dart';
 
@@ -107,9 +108,9 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // Search Trigger Bar
-                    InkWell(
+                    AnimatedTapScale(
                       onTap: () => context.push('/search'),
-                      borderRadius: BorderRadius.circular(10),
+                      scaleDown: 0.98,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
@@ -215,19 +216,23 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      ElevatedButton.icon(
-                        onPressed: () => context.push('/prescription-upload'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.upload_file_outlined, size: 16),
-                        label: const Text(
-                          'Upload Doctor Rx',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      AnimatedTapScale(
+                        onTap: () => context.push('/prescription-upload'),
+                        scaleDown: 0.94,
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.push('/prescription-upload'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.primary,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          icon: const Icon(Icons.upload_file_outlined, size: 16),
+                          label: const Text(
+                            'Upload Doctor Rx',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ],
@@ -326,14 +331,17 @@ class HomeScreen extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final product = MockData.products[index];
-                    return ProductCard(
-                      product: product,
-                      onTap: () => context.push('/product/${product.id}'),
-                      onAddToCart: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${product.name} added to cart')),
-                        );
-                      },
+                    return AnimatedFadeSlide(
+                      delay: Duration(milliseconds: index * 30),
+                      child: ProductCard(
+                        product: product,
+                        onTap: () => context.push('/product/${product.id}'),
+                        onAddToCart: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${product.name} added to cart')),
+                          );
+                        },
+                      ),
                     );
                   },
                   childCount: MockData.products.length,

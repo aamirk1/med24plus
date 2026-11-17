@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import 'animated_entry.dart';
 
 class QuantitySelector extends StatelessWidget {
   final int quantity;
@@ -26,34 +27,57 @@ class QuantitySelector extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.remove, size: 14),
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: quantity > minQuantity ? () => onQuantityChanged(quantity - 1) : null,
-            color: AppColors.mainText,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              '$quantity',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppColors.mainText,
+          AnimatedTapScale(
+            onTap: quantity > minQuantity ? () => onQuantityChanged(quantity - 1) : null,
+            scaleDown: 0.85,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                Icons.remove,
+                size: 14,
+                color: quantity > minQuantity
+                    ? AppColors.mainText
+                    : AppColors.secondaryText.withValues(alpha: 0.4),
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.add, size: 14),
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: quantity < maxQuantity ? () => onQuantityChanged(quantity + 1) : null,
-            color: AppColors.mainText,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, animation) {
+                return ScaleTransition(
+                  scale: animation,
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: Text(
+                '$quantity',
+                key: ValueKey<int>(quantity),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainText,
+                ),
+              ),
+            ),
+          ),
+          AnimatedTapScale(
+            onTap: quantity < maxQuantity ? () => onQuantityChanged(quantity + 1) : null,
+            scaleDown: 0.85,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                Icons.add,
+                size: 14,
+                color: quantity < maxQuantity
+                    ? AppColors.mainText
+                    : AppColors.secondaryText.withValues(alpha: 0.4),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
-

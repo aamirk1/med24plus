@@ -115,6 +115,62 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> loginWithFirebaseOtp({
+    required String firebaseIdToken,
+  }) async {
+    final result = await remoteDataSource.verifyFirebaseOtp(
+      firebaseIdToken: firebaseIdToken,
+      purpose: 'login',
+    );
+
+    final tokenData = result['tokens'] as Map<String, dynamic>?;
+    if (tokenData != null) {
+      await secureStorage.saveTokens(
+        accessToken: tokenData['access_token'] as String,
+        refreshToken: tokenData['refresh_token'] as String,
+      );
+    }
+
+    final userJson = result['user'] as Map<String, dynamic>?;
+    if (userJson != null) {
+      final user = UserModel.fromJson(userJson);
+      await secureStorage.saveUserData(jsonEncode(user.toJson()));
+      return user;
+    }
+
+    final user = await remoteDataSource.getMe();
+    await secureStorage.saveUserData(jsonEncode(user.toJson()));
+    return user;
+  }
+
+  @override
+  Future<bool> verifyFirebaseOtp({
+    required String firebaseIdToken,
+    required String purpose,
+    String? newPassword,
+    String? confirmPassword,
+  }) async {
+    final result = await remoteDataSource.verifyFirebaseOtp(
+      firebaseIdToken: firebaseIdToken,
+      purpose: purpose,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+    return result['verified'] == true;
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String fcmToken,
+    String deviceType = 'android',
+  }) async {
+    await remoteDataSource.registerDeviceToken(
+      fcmToken: fcmToken,
+      deviceType: deviceType,
+    );
+  }
+
+  @override
   Future<bool> hasSavedSession() async {
     return await secureStorage.hasValidSession();
   }

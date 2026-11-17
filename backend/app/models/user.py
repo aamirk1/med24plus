@@ -10,6 +10,7 @@ from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDMixin
 if TYPE_CHECKING:
     from app.models.address import UserAddress
     from app.models.delivery import Delivery
+    from app.models.device_token import UserDeviceToken
     from app.models.notification import Notification, NotificationPreference
     from app.models.order import Order
     from app.models.prescription import Prescription
@@ -124,6 +125,11 @@ class User(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
         "Delivery",
         back_populates="assigned_agent",
         foreign_keys="Delivery.assigned_agent_id",
+    )
+    device_tokens: Mapped[List["UserDeviceToken"]] = relationship(
+        "UserDeviceToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (

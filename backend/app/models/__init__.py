@@ -29,6 +29,7 @@ from app.models.inventory import (
     StockAlert,
     StockMovement,
 )
+from app.models.device_token import UserDeviceToken
 from app.models.notification import Notification, NotificationPreference
 from app.models.order import (
     Invoice,
@@ -112,6 +113,7 @@ __all__ = [
     "DeliveryStatusHistory",
     "Notification",
     "NotificationPreference",
+    "UserDeviceToken",
     "AuditLog",
     "AuthenticationEvent",
     "OTPVerification",

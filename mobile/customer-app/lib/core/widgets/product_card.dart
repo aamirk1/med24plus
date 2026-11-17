@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../mock/mock_data.dart';
+import 'animated_entry.dart';
 import 'app_badge.dart';
 import 'price_widget.dart';
 
@@ -18,43 +19,53 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AnimatedTapScale(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      scaleDown: 0.97,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Placeholder with Badge
-            Stack(
-              children: [
-                Container(
-                  height: 110,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.medication_liquid_outlined,
-                      size: 40,
-                      color: AppColors.primary.withValues(alpha: 0.3),
+            // Image Placeholder with Badge & Hero Transition
+            Hero(
+              tag: 'product_card_img_${product.id}',
+              child: Stack(
+                children: [
+                  Container(
+                    height: 110,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.medication_liquid_outlined,
+                        size: 40,
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: AppBadge.schedule(product.schedule),
-                ),
-              ],
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: AppBadge.schedule(product.schedule),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -105,11 +116,11 @@ class ProductCard extends StatelessWidget {
                   mrp: product.mrp,
                   fontSize: 13,
                 ),
-                InkWell(
+                AnimatedTapScale(
                   onTap: onAddToCart,
-                  borderRadius: BorderRadius.circular(6),
+                  scaleDown: 0.90,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight,
                       borderRadius: BorderRadius.circular(6),
@@ -121,6 +132,7 @@ class ProductCard extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -133,4 +145,3 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
-

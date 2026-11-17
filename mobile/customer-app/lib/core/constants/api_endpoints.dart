@@ -18,4 +18,14 @@ class ApiEndpoints {
   static const String forgotPassword = '/auth/forgot-password';
   static const String resetPassword = '/auth/reset-password';
   static const String changePassword = '/auth/change-password';
+
+  // Firebase Phone Auth OTP
+  static const String firebaseVerifyOtp = '/auth/firebase/verify-otp';
+
+  // Notifications & Device Tokens
+  static const String registerDeviceToken = '/notifications/device-token';
+  static const String deleteDeviceToken = '/notifications/device-token';
+  static const String notifications = '/notifications';
+  static const String unreadNotificationsCount = '/notifications/unread-count';
+  static const String markAllNotificationsRead = '/notifications/mark-all-read';
 }

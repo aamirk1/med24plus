@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import 'bloc/auth_bloc.dart';
@@ -128,121 +129,151 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Register with Med24Plus',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.mainText,
+                  const AnimatedFadeSlide(
+                    delay: Duration(milliseconds: 30),
+                    child: Text(
+                      'Register with Med24Plus',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.mainText,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Get verified prescription deliveries & doorstep refills',
-                    style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+                  const AnimatedFadeSlide(
+                    delay: Duration(milliseconds: 60),
+                    child: Text(
+                      'Get verified prescription deliveries & doorstep refills',
+                      style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
-                  AppTextField(
-                    label: 'Full Patient Name *',
-                    hint: 'e.g. Rahul Verma',
-                    controller: _nameController,
-                    prefixIcon: const Icon(Icons.person_outline, size: 18),
-                  ),
-                  const SizedBox(height: 16),
-
-                  AppTextField(
-                    label: 'Mobile Number *',
-                    hint: '10-digit mobile number',
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Center(
-                        widthFactor: 0.0,
-                        child: Text(
-                          '+91',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.mainText,
-                          ),
-                        ),
-                      ),
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 90),
+                    child: AppTextField(
+                      label: 'Full Patient Name *',
+                      hint: 'e.g. Rahul Verma',
+                      controller: _nameController,
+                      prefixIcon: const Icon(Icons.person_outline, size: 18),
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  AppTextField(
-                    label: 'Email Address (Optional)',
-                    hint: 'For GST cash memo delivery',
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.mail_outline, size: 18),
-                  ),
-                  const SizedBox(height: 16),
-
-                  AppTextField(
-                    label: 'Create Password *',
-                    hint: 'Min 8 chars, uppercase, digit & symbol',
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    prefixIcon: const Icon(Icons.lock_outline, size: 18),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        size: 18,
-                        color: AppColors.secondaryText,
-                      ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  AppTextField(
-                    label: 'Confirm Password *',
-                    hint: 'Re-enter your password',
-                    controller: _confirmPasswordController,
-                    obscureText: _obscurePassword,
-                    prefixIcon: const Icon(Icons.lock_outline, size: 18),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: _agreeTerms,
-                        onChanged: (val) => setState(() => _agreeTerms = val ?? true),
-                        activeColor: AppColors.primary,
-                      ),
-                      const Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 10),
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 120),
+                    child: AppTextField(
+                      label: 'Mobile Number *',
+                      hint: '10-digit mobile number',
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Center(
+                          widthFactor: 0.0,
                           child: Text(
-                            'I agree to the Terms of Service & Drugs and Cosmetics Act Prescription Dispensing Policy.',
-                            style: TextStyle(fontSize: 11, color: AppColors.secondaryText, height: 1.4),
+                            '+91',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.mainText,
+                            ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  AppButton(
-                    text: isLoading ? 'Registering...' : 'Register Account',
-                    isFullWidth: true,
-                    isLoading: isLoading,
-                    onPressed: isLoading ? null : _handleRegister,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.pop(),
-                      child: const Text(
-                        'Already have an account? Sign In',
-                        style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 150),
+                    child: AppTextField(
+                      label: 'Email Address (Optional)',
+                      hint: 'For GST cash memo delivery',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.mail_outline, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 180),
+                    child: AppTextField(
+                      label: 'Create Password *',
+                      hint: 'Min 8 chars, uppercase, digit & symbol',
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      prefixIcon: const Icon(Icons.lock_outline, size: 18),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 18,
+                          color: AppColors.secondaryText,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 210),
+                    child: AppTextField(
+                      label: 'Confirm Password *',
+                      hint: 'Re-enter your password',
+                      controller: _confirmPasswordController,
+                      obscureText: _obscurePassword,
+                      prefixIcon: const Icon(Icons.lock_outline, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 240),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: _agreeTerms,
+                          onChanged: (val) => setState(() => _agreeTerms = val ?? true),
+                          activeColor: AppColors.primary,
+                        ),
+                        const Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text(
+                              'I agree to the Terms of Service & Drugs and Cosmetics Act Prescription Dispensing Policy.',
+                              style: TextStyle(fontSize: 11, color: AppColors.secondaryText, height: 1.4),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 270),
+                    child: AppButton(
+                      text: isLoading ? 'Registering...' : 'Register Account',
+                      isFullWidth: true,
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : _handleRegister,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 300),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () => context.pop(),
+                        child: const Text(
+                          'Already have an account? Sign In',
+                          style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ),

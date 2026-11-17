@@ -70,7 +70,14 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = "rzp_secret_placeholder"
     RAZORPAY_WEBHOOK_SECRET: str = "rzp_webhook_secret_placeholder"
     RAZORPAY_BASE_URL: str = "https://api.razorpay.com/v1"
-    MSG91_AUTH_KEY: str = "msg91_auth_placeholder"
+
+    # Third-party SMS Service Provider credentials (commented out in favor of Firebase Phone Auth & OTP)
+    # MSG91_AUTH_KEY: str = "msg91_auth_placeholder"
+    # FAST2SMS_API_KEY: str = "fast2sms_api_key_placeholder"
+
+    # Firebase Admin SDK & Push Notifications (FCM)
+    FIREBASE_CREDENTIALS_PATH: Union[str, None] = None
+    FIREBASE_PROJECT_ID: str = "med24plus-app"
 
     @property
     def is_live_payment_configured(self) -> bool:

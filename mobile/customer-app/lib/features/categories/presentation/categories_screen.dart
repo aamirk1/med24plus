@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/category_card.dart';
 
 class CategoriesScreen extends StatelessWidget {
@@ -26,13 +27,15 @@ class CategoriesScreen extends StatelessWidget {
         itemCount: MockData.categories.length,
         itemBuilder: (context, index) {
           final cat = MockData.categories[index];
-          return CategoryCard(
-            category: cat,
-            onTap: () => context.push('/products?category=${cat.name}'),
+          return AnimatedFadeSlide(
+            delay: Duration(milliseconds: index * 35),
+            child: CategoryCard(
+              category: cat,
+              onTap: () => context.push('/products?category=${cat.name}'),
+            ),
           );
         },
       ),
     );
   }
 }
-

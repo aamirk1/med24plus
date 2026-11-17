@@ -90,3 +90,32 @@ class PasswordResetRequested extends AuthEvent {
   List<Object?> get props => [identifier, otpCode, newPassword, confirmPassword];
 }
 
+class FirebaseOtpLoginRequested extends AuthEvent {
+  final String firebaseIdToken;
+
+  const FirebaseOtpLoginRequested({
+    required this.firebaseIdToken,
+  });
+
+  @override
+  List<Object?> get props => [firebaseIdToken];
+}
+
+class FirebasePhoneVerifyRequested extends AuthEvent {
+  final String firebaseIdToken;
+  final String purpose;
+  final String? newPassword;
+  final String? confirmPassword;
+
+  const FirebasePhoneVerifyRequested({
+    required this.firebaseIdToken,
+    required this.purpose,
+    this.newPassword,
+    this.confirmPassword,
+  });
+
+  @override
+  List<Object?> get props => [firebaseIdToken, purpose, newPassword, confirmPassword];
+}
+
+

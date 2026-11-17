@@ -158,6 +158,7 @@ Med24Plus features a normalized **39-table PostgreSQL schema** designed specific
 | **Notifications & Audit**| `notifications`, `notification_preferences`, `audit_logs` | Immutable statutory compliance audit logs, multi-channel alert preferences. |
 
 Comprehensive design specifications:
+- [`docs/firebase-push-and-otp-architecture.md`](docs/firebase-push-and-otp-architecture.md) - Firebase Push Notifications (FCM) & Phone OTP architecture
 - [`docs/authentication-architecture.md`](docs/authentication-architecture.md) - Authentication & JWT token specifications
 - [`docs/authorization-rbac.md`](docs/authorization-rbac.md) - Role-based access control & permissions
 - [`docs/security-guidelines.md`](docs/security-guidelines.md) - Cryptographic standards, headers & lockout
@@ -290,3 +291,7 @@ The platform is developed following a rigorous 12-phase plan:
 - **Phase 9: Payment Gateway Integration (Razorpay / UPI / NetBanking / COD) & Webhooks**: READY TO START (Pending User Approval)
 
 Current progress is tracked in [`PHASE_STATUS.md`](PHASE_STATUS.md).
+
+
+cd /var/www/med24plus
+./infrastructure/scripts/deploy-prod.sh

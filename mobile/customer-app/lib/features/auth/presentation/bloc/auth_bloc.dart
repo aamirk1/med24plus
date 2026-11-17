@@ -14,6 +14,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SendOtpRequested>(_onSendOtpRequested);
     on<OtpVerificationRequested>(_onOtpVerificationRequested);
     on<PasswordResetRequested>(_onPasswordResetRequested);
+    on<FirebaseOtpLoginRequested>(_onFirebaseOtpLoginRequested);
+    on<FirebasePhoneVerifyRequested>(_onFirebasePhoneVerifyRequested);
   }
 
   Future<void> _onAppStarted(
@@ -151,5 +153,54 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthFailure(errorMsg));
     }
   }
+
+  Future<void> _onFirebaseOtpLoginRequested(
+    FirebaseOtpLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Authenticating via Firebase...'));
+    try {
+      final user = await authRepository.loginWithFirebaseOtp(
+        firebaseIdToken: event.firebaseIdToken,
+      );
+      emit(AuthAuthenticated(user));
+    } catch (e) {
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
+      emit(AuthFailure(errorMsg));
+    }
+  }
+
+  Future<void> _onFirebasePhoneVerifyRequested(
+    FirebasePhoneVerifyRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Verifying with Firebase...'));
+    try {
+      final success = await authRepository.verifyFirebaseOtp(
+        firebaseIdToken: event.firebaseIdToken,
+        purpose: event.purpose,
+        newPassword: event.newPassword,
+        confirmPassword: event.confirmPassword,
+      );
+      if (success) {
+        if (event.purpose == 'password_reset') {
+          emit(const PasswordResetSuccess('Password reset successfully via Firebase. Please sign in.'));
+        } else {
+          final user = await authRepository.getCurrentUser();
+          if (user != null) {
+            emit(AuthAuthenticated(user));
+          } else {
+            emit(const AuthUnauthenticated('Mobile verified via Firebase. Please sign in.'));
+          }
+        }
+      } else {
+        emit(const AuthFailure('Firebase verification failed.'));
+      }
+    } catch (e) {
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
+      emit(AuthFailure(errorMsg));
+    }
+  }
 }
+
 

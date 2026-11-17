@@ -116,3 +116,23 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=8, description="New strong password")
     confirm_password: str = Field(..., min_length=8, description="Confirm new password")
 
+
+class FirebaseVerifyOtpRequest(BaseModel):
+    firebase_id_token: str = Field(..., description="Firebase Phone Auth ID Token received from client")
+    purpose: str = Field(
+        "login",
+        pattern="^(login|phone_verification|password_reset)$",
+        description="Verification intent: 'login', 'phone_verification', or 'password_reset'",
+    )
+    new_password: Optional[str] = Field(None, min_length=8, description="Required only if purpose is password_reset")
+    confirm_password: Optional[str] = Field(None, min_length=8, description="Required only if purpose is password_reset")
+
+
+class FirebasePhoneAuthResponse(BaseModel):
+    verified: bool = True
+    phone: str
+    tokens: Optional[TokenData] = None
+    user: Optional[UserResponse] = None
+    message: str
+
+

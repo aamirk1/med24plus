@@ -9,6 +9,8 @@ from app.middleware.rate_limit import RateLimiter
 from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
+    FirebasePhoneAuthResponse,
+    FirebaseVerifyOtpRequest,
     ForgotPasswordRequest,
     LoginRequest,
     RefreshTokenRequest,
@@ -21,6 +23,7 @@ from app.schemas.auth import (
 )
 from app.schemas.common import APIResponse
 from app.services.auth_service import AuthService
+from app.services.firebase_service import FirebaseService
 from app.services.otp_service import OTPService
 
 router = APIRouter()
@@ -396,6 +399,184 @@ async def verify_otp(
         message=message,
         data={"verified": True},
     )
+
+
+@router.post(
+    "/firebase/verify-otp",
+    response_model=APIResponse[FirebasePhoneAuthResponse],
+    dependencies=[Depends(RateLimiter(times=10, seconds=60))],
+)
+async def verify_firebase_phone_otp(
+    payload: FirebaseVerifyOtpRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Verify Firebase Phone Auth OTP ID Token.
+    Provides secure phone-verified authentication, signup/login, and password reset
+    without requiring third-party SMS providers.
+    """
+    firebase_service = FirebaseService()
+    success, decoded_token, err = await firebase_service.verify_phone_id_token(payload.firebase_id_token)
+
+    if not success or not decoded_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "message": err or "Invalid Firebase OTP verification token.",
+                "error": {"code": "FIREBASE_TOKEN_INVALID"},
+            },
+        )
+
+    verified_phone = decoded_token.get("phone_number")
+    if not verified_phone:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "message": "Token does not contain a verified mobile number.",
+                "error": {"code": "PHONE_NUMBER_NOT_VERIFIED"},
+            },
+        )
+
+    auth_service = AuthService(db)
+    from app.services.auth_service import normalize_phone
+    from app.core.permissions import RoleEnum, get_permissions_for_roles
+
+    try:
+        norm_phone = normalize_phone(verified_phone)
+    except ValueError:
+        norm_phone = verified_phone.strip()
+
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("User-Agent")
+
+    # 1. Login or Auto-Register Flow
+    if payload.purpose == "login":
+        user = await auth_service.user_repo.get_by_phone(norm_phone)
+        if not user:
+            # Auto-provision new customer account verified via Firebase OTP
+            dummy_pass = f"Pass_{uuid.uuid4().hex[:12]}!"
+            hashed_pass = auth_service.password_service.hash_password(dummy_pass)
+            user = await auth_service.user_repo.create_user(
+                phone=norm_phone,
+                email=None,
+                hashed_password=hashed_pass,
+                full_name="Pharmacy Customer",
+                is_phone_verified=True,
+                is_email_verified=False,
+            )
+            customer_role = await auth_service.role_repo.get_by_slug(RoleEnum.CUSTOMER.value)
+            if customer_role:
+                await auth_service.user_repo.assign_role(user.id, customer_role.id)
+        else:
+            user.is_phone_verified = True
+
+        role_slugs = await auth_service.user_repo.get_user_role_slugs(user)
+        permissions = list(get_permissions_for_roles(role_slugs))
+
+        token_data = await auth_service.token_service.issue_token_pair(
+            user_id=user.id,
+            roles=role_slugs,
+            permissions=permissions,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            device_info="Firebase Phone Auth",
+        )
+        _set_auth_cookies(response, token_data["access_token"], token_data["refresh_token"])
+
+        user_resp = UserResponse(
+            id=user.id,
+            full_name=user.full_name,
+            phone=user.phone,
+            email=user.email,
+            is_active=user.is_active,
+            is_phone_verified=user.is_phone_verified,
+            is_email_verified=user.is_email_verified,
+            status=user.status,
+            roles=role_slugs,
+        )
+
+        tokens_resp = TokenData(
+            access_token=token_data["access_token"],
+            refresh_token=token_data["refresh_token"],
+            token_type=token_data["token_type"],
+            expires_in=token_data["expires_in"],
+            user=user_resp,
+        )
+
+        await db.commit()
+        return APIResponse(
+            success=True,
+            message="Authenticated successfully via Firebase Phone OTP.",
+            data=FirebasePhoneAuthResponse(
+                verified=True,
+                phone=norm_phone,
+                tokens=tokens_resp,
+                user=user_resp,
+                message="Login successful",
+            ),
+        )
+
+    # 2. Phone Verification Flow
+    elif payload.purpose == "phone_verification":
+        user = await auth_service.user_repo.get_by_phone(norm_phone)
+        if user:
+            user.is_phone_verified = True
+            await db.commit()
+
+        return APIResponse(
+            success=True,
+            message="Phone number successfully verified via Firebase.",
+            data=FirebasePhoneAuthResponse(
+                verified=True,
+                phone=norm_phone,
+                message="Mobile number verified.",
+            ),
+        )
+
+    # 3. Password Reset Flow
+    elif payload.purpose == "password_reset":
+        if not payload.new_password or not payload.confirm_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"success": False, "message": "New password and confirmation are required."},
+            )
+        if payload.new_password != payload.confirm_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"success": False, "message": "Passwords do not match."},
+            )
+        is_strong, reason = auth_service.password_service.validate_strength(payload.new_password)
+        if not is_strong:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"success": False, "message": reason},
+            )
+
+        user = await auth_service.user_repo.get_by_phone(norm_phone)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"success": False, "message": "Account with this mobile number does not exist."},
+            )
+
+        user.hashed_password = auth_service.password_service.hash_password(payload.new_password)
+        await auth_service.session_repo.revoke_all_for_user(user.id)
+        await db.commit()
+
+        return APIResponse(
+            success=True,
+            message="Password reset successfully via Firebase verified credentials.",
+            data=FirebasePhoneAuthResponse(
+                verified=True,
+                phone=norm_phone,
+                message="Password reset completed. Please log in.",
+            ),
+        )
+
 
 
 @router.post(

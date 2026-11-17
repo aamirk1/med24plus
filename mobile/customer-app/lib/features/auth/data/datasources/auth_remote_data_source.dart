@@ -23,6 +23,16 @@ abstract class AuthRemoteDataSource {
     required String newPassword,
     required String confirmPassword,
   });
+  Future<Map<String, dynamic>> verifyFirebaseOtp({
+    required String firebaseIdToken,
+    String purpose = 'login',
+    String? newPassword,
+    String? confirmPassword,
+  });
+  Future<void> registerDeviceToken({
+    required String fcmToken,
+    String deviceType = 'android',
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -139,6 +149,47 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       return response.data['data']?['reset'] == true;
+    } on DioException catch (e) {
+      throw _parseError(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyFirebaseOtp({
+    required String firebaseIdToken,
+    String purpose = 'login',
+    String? newPassword,
+    String? confirmPassword,
+  }) async {
+    try {
+      final response = await apiClient.dio.post(
+        ApiEndpoints.firebaseVerifyOtp,
+        data: {
+          'firebase_id_token': firebaseIdToken,
+          'purpose': purpose,
+          if (newPassword != null) 'new_password': newPassword,
+          if (confirmPassword != null) 'confirm_password': confirmPassword,
+        },
+      );
+      return response.data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _parseError(e);
+    }
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String fcmToken,
+    String deviceType = 'android',
+  }) async {
+    try {
+      await apiClient.dio.post(
+        ApiEndpoints.registerDeviceToken,
+        data: {
+          'fcm_token': fcmToken,
+          'device_type': deviceType,
+        },
+      );
     } on DioException catch (e) {
       throw _parseError(e);
     }

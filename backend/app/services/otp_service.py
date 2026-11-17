@@ -62,13 +62,27 @@ class OTPService:
             max_attempts=settings.OTP_MAX_ATTEMPTS,
         )
 
-        # 4. Local dev / testing dispatch (simulated provider)
+        # 4. Service Provider OTP Dispatch (Msg91 / Fast2SMS / External Gateway)
+        # -------------------------------------------------------------------------
+        # COMMENTED OUT: Replaced with Firebase Phone Authentication & OTP Services.
+        # Previously configured third-party SMS service provider dispatch:
+        #
+        # if settings.ENVIRONMENT == "development":
+        #     logger.info(f"[DEV ONLY OTP DISPATCH] Target: {target} | Purpose: {purpose} | Code: {otp_code}")
+        #     return True, None, otp_code
+        #
+        # # In production, dispatch via provider (future integration)
+        # logger.info(f"Dispatched OTP to target: {target[:4]}*** (provider dispatch simulated)")
+        # return True, None, None
+        # -------------------------------------------------------------------------
+
+        # Firebase Phone Authentication is now the primary OTP service.
+        # For development / unit testing environments, dev code is retained:
         if settings.ENVIRONMENT == "development":
-            logger.info(f"[DEV ONLY OTP DISPATCH] Target: {target} | Purpose: {purpose} | Code: {otp_code}")
+            logger.info(f"[FIREBASE OTP / DEV FALLBACK] Target: {target} | Purpose: {purpose} | Code: {otp_code}")
             return True, None, otp_code
 
-        # In production, dispatch via provider (future integration)
-        logger.info(f"Dispatched OTP to target: {target[:4]}*** (provider dispatch simulated)")
+        logger.info(f"[FIREBASE OTP] Client should verify via Firebase Phone Auth for: {target[:4]}***")
         return True, None, None
 
     async def verify_otp(

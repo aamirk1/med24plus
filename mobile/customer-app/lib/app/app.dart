@@ -4,6 +4,7 @@ import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 import '../core/constants/app_strings.dart';
 import '../core/network/api_client.dart';
+import '../core/services/push_notification_service.dart';
 import '../core/services/secure_storage_service.dart';
 import '../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
@@ -39,6 +40,8 @@ class _OnlinePharmacyAppState extends State<OnlinePharmacyApp> {
         remoteDataSource: remoteSource,
         secureStorage: storage,
       );
+      // Initialize Firebase Cloud Messaging for Push Notifications
+      PushNotificationService().initialize(apiClient: apiClient);
     }
   }
 

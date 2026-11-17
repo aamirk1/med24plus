@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/product_card.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -15,6 +16,14 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   String _selectedSchedule = 'ALL';
+
+  static const List<Map<String, String>> _filterOptions = [
+    {'value': 'ALL', 'label': 'All Drugs'},
+    {'value': 'OTC', 'label': 'OTC Non-Rx'},
+    {'value': 'SCHEDULE_H', 'label': 'Schedule H (Rx)'},
+    {'value': 'DEVICE', 'label': 'Medical Devices'},
+    {'value': 'AYUSH', 'label': 'Ayurveda & AYUSH'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -43,48 +52,77 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       body: Column(
         children: [
-          // Filter Chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _buildFilterChip('ALL', 'All Drugs'),
-                const SizedBox(width: 8),
-                _buildFilterChip('OTC', 'OTC Non-Rx'),
-                const SizedBox(width: 8),
-                _buildFilterChip('SCHEDULE_H', 'Schedule H (Rx)'),
-                const SizedBox(width: 8),
-                _buildFilterChip('DEVICE', 'Medical Devices'),
-                const SizedBox(width: 8),
-                _buildFilterChip('AYUSH', 'Ayurveda & AYUSH'),
-              ],
+          // Animated Filter Tabs
+          Container(
+            color: AppColors.surface,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: _filterOptions.map((opt) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildAnimatedTabChip(opt['value']!, opt['label']!),
+                  );
+                }).toList(),
+              ),
             ),
           ),
 
-          // Grid
+          // Animated Grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.65,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return ProductCard(
-                  product: product,
-                  onTap: () => context.push('/product/${product.id}'),
-                  onAddToCart: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${product.name} added to cart')),
-                    );
-                  },
-                );
-              },
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: products.isEmpty
+                  ? Center(
+                      key: const ValueKey('no_products_found'),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.medication_outlined,
+                            size: 48,
+                            color: AppColors.secondaryText.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'No formulations found in this category',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.secondaryText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GridView.builder(
+                      key: ValueKey('product_grid_$_selectedSchedule'),
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.65,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return AnimatedFadeSlide(
+                          delay: Duration(milliseconds: index * 25),
+                          child: ProductCard(
+                            product: product,
+                            onTap: () => context.push('/product/${product.id}'),
+                            onAddToCart: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${product.name} added to cart')),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ),
         ],
@@ -92,23 +130,43 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String value, String label) {
+  Widget _buildAnimatedTabChip(String value, String label) {
     final isSelected = _selectedSchedule == value;
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.white : AppColors.secondaryText,
+
+    return AnimatedTapScale(
+      onTap: () => setState(() => _selectedSchedule = value),
+      scaleDown: 0.94,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.background,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 180),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : AppColors.secondaryText,
+          ),
+          child: Text(label),
         ),
       ),
-      selected: isSelected,
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
-      onSelected: (_) => setState(() => _selectedSchedule = value),
     );
   }
 }
-

@@ -71,6 +71,29 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> loginWithFirebaseOtp({
+    required String firebaseIdToken,
+  }) async {
+    return currentUser!;
+  }
+
+  @override
+  Future<bool> verifyFirebaseOtp({
+    required String firebaseIdToken,
+    required String purpose,
+    String? newPassword,
+    String? confirmPassword,
+  }) async {
+    return true;
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String fcmToken,
+    String deviceType = 'android',
+  }) async {}
+
+  @override
   Future<bool> hasSavedSession() async {
     return currentUser != null;
   }

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/app_empty_widget.dart';
 
@@ -85,14 +86,17 @@ class _SearchScreenState extends State<SearchScreen> {
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final product = filtered[index];
-                return ProductCard(
-                  product: product,
-                  onTap: () => context.push('/product/${product.id}'),
-                  onAddToCart: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${product.name} added to cart')),
-                    );
-                  },
+                return AnimatedFadeSlide(
+                  delay: Duration(milliseconds: index * 25),
+                  child: ProductCard(
+                    product: product,
+                    onTap: () => context.push('/product/${product.id}'),
+                    onAddToCart: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${product.name} added to cart')),
+                      );
+                    },
+                  ),
                 );
               },
             ),
