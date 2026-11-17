@@ -1,16 +1,18 @@
+version: "3.8"
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: med24plus_prod_postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-pharmacy_prod_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
+      POSTGRES_DB: ${POSTGRES_DB:-med24plus_prod_db}
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pharmacy_prod_user} -d ${POSTGRES_DB:-med24plus_prod_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,7 +23,7 @@ services:
     image: redis:7-alpine
     container_name: med24plus_prod_redis
     restart: always
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Redis password required}"]
     volumes:
       - redis_prod_data:/data
     healthcheck:
@@ -35,7 +37,7 @@ services:
   backend:
     build:
       context: ../../backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: med24plus_prod_backend
     restart: always
     depends_on:
@@ -43,22 +45,70 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - ../../.env.production
     environment:
       - ENVIRONMENT=production
       - DEBUG=False
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-pharmacy_prod_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-med24plus_prod_db}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-pharmacy_prod_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-med24plus_prod_db}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CORS_ORIGINS=["https://med24plus.serwex.in","https://med24plus-admin.serwex.in","http://localhost:3000","http://localhost:3001"]
+    volumes:
+      - med24plus_private_storage:/app/private_storage
+      - med24plus_static_uploads:/app/static/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
     networks:
       - internal_net
-      - proxy_net
+
+  med24plus-web:
+    build:
+      context: ../../frontend/med24plus-web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://med24plus-api.serwex.in/api/v1
+    container_name: med24plus_prod_web
+    restart: always
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - internal_net
+
+  admin-panel:
+    build:
+      context: ../../frontend/admin-panel
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://med24plus-api.serwex.in/api/v1
+    container_name: med24plus_prod_admin
+    restart: always
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "127.0.0.1:3001:3001"
+    networks:
+      - internal_net
 
 volumes:
   postgres_prod_data:
+    name: med24plus_prod_postgres_data
   redis_prod_data:
+    name: med24plus_prod_redis_data
+  med24plus_private_storage:
+    name: med24plus_prod_private_storage
+  med24plus_static_uploads:
+    name: med24plus_prod_static_uploads
 
 networks:
   internal_net:
-    internal: true
-  proxy_net:
-
+    name: med24plus_prod_network
+    driver: bridge
