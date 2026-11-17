@@ -1,0 +1,186 @@
+import 'package:flutter/material.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/mock/mock_data.dart';
+import '../../../core/widgets/app_badge.dart';
+
+class OrderDetailScreen extends StatelessWidget {
+  final String orderId;
+
+  const OrderDetailScreen({super.key, required this.orderId});
+
+  @override
+  Widget build(BuildContext context) {
+    final order = MockData.orders.firstWhere(
+      (o) => o.id == orderId,
+      orElse: () => MockData.orders.first,
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(order.orderNumber),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        order.orderNumber,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                      ),
+                      AppBadge.orderStatus(order.status),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text('Placed on ${order.date}', style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // FEFO Dispensing Batch Notice
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.shield_outlined, color: AppColors.primary, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Form 20 Statutory Retail Cash Memo generated. Verified by Registered Pharmacist (PCI-REG-94821).',
+                      style: TextStyle(fontSize: 11, color: AppColors.primaryDark, height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Items List
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(14),
+                    child: Text(
+                      'Dispensed Medicines',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                    ),
+                  ),
+                  const Divider(height: 1, color: AppColors.border),
+                  _buildItemRow(
+                    'Accu-Chek Active Blood Glucose Strips',
+                    'Batch: ACC-26-904 | Exp: Apr 2028',
+                    'Qty: 1',
+                    '₹945',
+                  ),
+                  const Divider(height: 1, color: AppColors.border),
+                  _buildItemRow(
+                    'Calcirol D3 60,000 IU Oral Solution',
+                    'Batch: CAL-26-118 | Exp: Oct 2027',
+                    'Qty: 2',
+                    '₹210',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Bill Breakdown
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Payment Details', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText)),
+                  const SizedBox(height: 10),
+                  _buildBillRow('Item Subtotal', '₹1,155'),
+                  const SizedBox(height: 6),
+                  _buildBillRow('Delivery', 'FREE (Compliant Cold-Chain)'),
+                  const SizedBox(height: 6),
+                  _buildBillRow('Payment Mode', order.paymentMethod),
+                  const Divider(height: 20, color: AppColors.border),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.mainText)),
+                      Text(
+                        '₹${order.totalAmount.toStringAsFixed(0)}',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemRow(String title, String batch, String qty, String price) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.mainText)),
+                const SizedBox(height: 2),
+                Text(batch, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                Text(qty, style: const TextStyle(fontSize: 10, color: AppColors.secondaryText)),
+              ],
+            ),
+          ),
+          Text(price, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBillRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
+        Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.mainText)),
+      ],
+    );
+  }
+}
+

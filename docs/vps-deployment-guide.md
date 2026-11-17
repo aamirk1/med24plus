@@ -167,11 +167,11 @@ CORS_ORIGINS=["https://med24plus.serwex.in","https://med24plus-admin.serwex.in"]
 NEXT_PUBLIC_API_URL=https://med24plus-api.serwex.in/api/v1
 ```
 
-Save and lock permissions:
+Save and lock permissions, and create a standard `.env` link for Docker Compose:
 ```bash
 chmod 600 .env.production
+cp .env.production .env
 ```
-
 ---
 
 ## Step 5: Build & Launch Docker Containers
