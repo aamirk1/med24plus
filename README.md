@@ -284,6 +284,9 @@ The platform is developed following a rigorous 12-phase plan:
 - **Phase 3: Database Architecture, PostgreSQL Models & Pharmacy Inventory Foundation**: COMPLETED
 - **Phase 4: Authentication, Authorization, Security & User Management**: COMPLETED
 - **Phase 5: Product Catalog, Pharmacy Inventory & Stock Management APIs**: COMPLETED
-- **Phase 6: Prescription Management & Pharmacist Verification Workflows**: PENDING APPROVAL
+- **Phase 6: Prescription Management & Pharmacist Verification Workflows**: COMPLETED
+- **Phase 7: Shopping Cart & Checkout Preparation System**: COMPLETED
+- **Phase 8: Order Management, Statutory Dispensing & Order Lifecycle**: COMPLETED
+- **Phase 9: Payment Gateway Integration (Razorpay / UPI / NetBanking / COD) & Webhooks**: READY TO START (Pending User Approval)
 
 Current progress is tracked in [`PHASE_STATUS.md`](PHASE_STATUS.md).

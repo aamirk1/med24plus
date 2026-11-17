@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -18,6 +19,7 @@ import {
   checkoutService,
   CheckoutValidationResponse,
 } from "@/services/checkout.service";
+import { orderService } from "@/services/orderService";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -35,6 +37,7 @@ import {
 } from "lucide-react";
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [acknowledgePriceChanges, setAcknowledgePriceChanges] = useState(false);
@@ -44,6 +47,8 @@ export default function CheckoutPage() {
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cartEmpty, setCartEmpty] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   // Expiry countdown in seconds
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
@@ -191,6 +196,28 @@ export default function CheckoutPage() {
       setAddressModalError(err?.message || "Failed to save address.");
     } finally {
       setIsSubmittingAddress(false);
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!selectedAddressId || !validation) return;
+    setIsPlacingOrder(true);
+    setOrderError(null);
+    try {
+      const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `order-${Date.now()}`;
+      const newOrder = await orderService.createOrder(
+        {
+          delivery_address_id: selectedAddressId,
+          acknowledge_price_changes: acknowledgePriceChanges,
+          checkout_validation_id: validation.id,
+        },
+        idempotencyKey
+      );
+      router.push(`/account/orders/${newOrder.id}`);
+    } catch (err: any) {
+      setOrderError(err.message || "Failed to place order. Please review your cart or address.");
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -651,15 +678,24 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Action Button */}
+                {orderError && (
+                  <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>{orderError}</span>
+                  </div>
+                )}
+
                 <Button
                   variant="primary"
                   size="lg"
-                  disabled={!validation.is_eligible_for_checkout || validating}
-                  onClick={() => setShowValidationSuccessModal(true)}
+                  disabled={!validation.is_eligible_for_checkout || validating || isPlacingOrder}
+                  onClick={handlePlaceOrder}
                   className="w-full shadow-sm"
                 >
-                  {validation.is_eligible_for_checkout
-                    ? "Proceed to Payment (Phase 8)"
+                  {isPlacingOrder
+                    ? "Placing Order & Reserving Batches..."
+                    : validation.is_eligible_for_checkout
+                    ? "Confirm & Place Order (Reserve Stock)"
                     : "Checkout Blocked (Resolve Issues)"}
                 </Button>
 

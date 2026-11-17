@@ -17,6 +17,11 @@ from app.api.v1.endpoints import (
     checkout,
     admin_checkout,
 )
+from app.modules.orders.routes import (
+    admin_orders_router,
+    customer_orders_router,
+    pharmacist_orders_router,
+)
 
 api_router = APIRouter()
 
@@ -68,3 +73,8 @@ api_router.include_router(checkout.router, prefix="/checkout", tags=["Checkout P
 
 # Admin Checkout Rules & Delivery Serviceability
 api_router.include_router(admin_checkout.router, prefix="/admin", tags=["Admin Checkout & Serviceability"])
+
+# Phase 8: Order Management, FEFO Allocations & Statutory Dispensing
+api_router.include_router(customer_orders_router, prefix="/orders", tags=["Customer Orders"])
+api_router.include_router(pharmacist_orders_router, prefix="/pharmacist/orders", tags=["Pharmacist Order Review"])
+api_router.include_router(admin_orders_router, prefix="/admin/orders", tags=["Admin Orders Management"])

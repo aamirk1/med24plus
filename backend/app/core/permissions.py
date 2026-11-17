@@ -20,6 +20,9 @@ class PermissionEnum(str, Enum):
     ADDRESS_UPDATE = "address.update"
     ADDRESS_DELETE = "address.delete"
     ORDER_READ_OWN = "order.read_own"
+    ORDERS_VIEW_OWN = "orders.view_own"
+    ORDERS_CREATE = "orders.create"
+    ORDERS_CANCEL_OWN = "orders.cancel_own"
     PRESCRIPTION_READ_OWN = "prescription.read_own"
     PRESCRIPTION_VIEW_OWN = "prescriptions.view_own"
     PRESCRIPTION_UPLOAD = "prescriptions.upload"
@@ -61,6 +64,17 @@ class PermissionEnum(str, Enum):
 
     ORDERS_READ = "orders.read"
     ORDERS_MANAGE = "orders.manage"
+    ORDERS_VIEW_ALL = "orders.view_all"
+    ORDERS_VIEW_DETAILS = "orders.view_details"
+    ORDERS_UPDATE_STATUS = "orders.update_status"
+    ORDERS_REVIEW = "orders.review"
+    ORDERS_APPROVE = "orders.approve"
+    ORDERS_REJECT = "orders.reject"
+    ORDERS_REQUEST_CLARIFICATION = "orders.request_clarification"
+    ORDERS_CANCEL = "orders.cancel"
+    ORDERS_VIEW_HISTORY = "orders.view_history"
+    ORDERS_VIEW_INVOICE = "orders.view_invoice"
+    ORDERS_MANAGE_INVOICE = "orders.manage_invoice"
     CUSTOMERS_READ = "customers.read"
     STAFF_MANAGE = "staff.manage"
     REPORTS_READ = "reports.read"
@@ -93,6 +107,11 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.ADDRESS_UPDATE.value,
         PermissionEnum.ADDRESS_DELETE.value,
         PermissionEnum.ORDER_READ_OWN.value,
+        PermissionEnum.ORDERS_VIEW_OWN.value,
+        PermissionEnum.ORDERS_CREATE.value,
+        PermissionEnum.ORDERS_CANCEL_OWN.value,
+        PermissionEnum.ORDERS_VIEW_INVOICE.value,
+        PermissionEnum.ORDERS_VIEW_HISTORY.value,
         PermissionEnum.PRESCRIPTION_READ_OWN.value,
         PermissionEnum.PRESCRIPTION_VIEW_OWN.value,
         PermissionEnum.PRESCRIPTION_UPLOAD.value,
@@ -109,6 +128,14 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.PRESCRIPTIONS_REQUEST_CLARIFICATION.value,
         PermissionEnum.PRESCRIPTIONS_VIEW_HISTORY.value,
         PermissionEnum.DISPENSING_READ.value,
+        PermissionEnum.ORDERS_VIEW_ALL.value,
+        PermissionEnum.ORDERS_VIEW_DETAILS.value,
+        PermissionEnum.ORDERS_REVIEW.value,
+        PermissionEnum.ORDERS_APPROVE.value,
+        PermissionEnum.ORDERS_REJECT.value,
+        PermissionEnum.ORDERS_REQUEST_CLARIFICATION.value,
+        PermissionEnum.ORDERS_VIEW_HISTORY.value,
+        PermissionEnum.ORDERS_VIEW_INVOICE.value,
         PermissionEnum.INVENTORY_READ.value,
         PermissionEnum.INVENTORY_EXPIRY_READ.value,
         PermissionEnum.INVENTORY_MOVEMENT_READ.value,
@@ -126,6 +153,13 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.INVENTORY_READ.value,
         PermissionEnum.INVENTORY_EXPIRY_READ.value,
         PermissionEnum.ORDERS_READ.value,
+        PermissionEnum.ORDERS_VIEW_ALL.value,
+        PermissionEnum.ORDERS_VIEW_DETAILS.value,
+        PermissionEnum.ORDERS_UPDATE_STATUS.value,
+        PermissionEnum.ORDERS_CANCEL.value,
+        PermissionEnum.ORDERS_VIEW_HISTORY.value,
+        PermissionEnum.ORDERS_VIEW_INVOICE.value,
+        PermissionEnum.ORDERS_MANAGE_INVOICE.value,
         PermissionEnum.CUSTOMERS_READ.value,
     ],
     RoleEnum.ADMIN.value: [
@@ -159,6 +193,17 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.INVENTORY_MANAGE.value,
         PermissionEnum.ORDERS_READ.value,
         PermissionEnum.ORDERS_MANAGE.value,
+        PermissionEnum.ORDERS_VIEW_ALL.value,
+        PermissionEnum.ORDERS_VIEW_DETAILS.value,
+        PermissionEnum.ORDERS_UPDATE_STATUS.value,
+        PermissionEnum.ORDERS_REVIEW.value,
+        PermissionEnum.ORDERS_APPROVE.value,
+        PermissionEnum.ORDERS_REJECT.value,
+        PermissionEnum.ORDERS_REQUEST_CLARIFICATION.value,
+        PermissionEnum.ORDERS_CANCEL.value,
+        PermissionEnum.ORDERS_VIEW_HISTORY.value,
+        PermissionEnum.ORDERS_VIEW_INVOICE.value,
+        PermissionEnum.ORDERS_MANAGE_INVOICE.value,
         PermissionEnum.CUSTOMERS_READ.value,
         PermissionEnum.PRESCRIPTIONS_READ.value,
         PermissionEnum.PRESCRIPTIONS_VIEW_ALL.value,

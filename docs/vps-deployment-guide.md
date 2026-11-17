@@ -188,9 +188,9 @@ docker compose -f docker-compose.prod.yml ps
 You should see:
 - `med24plus_prod_postgres` (Up, healthy)
 - `med24plus_prod_redis` (Up, healthy)
-- `med24plus_prod_backend` (Up, listening on `127.0.0.1:8000`)
-- `med24plus_prod_web` (Up, listening on `127.0.0.1:3000`)
-- `med24plus_prod_admin` (Up, listening on `127.0.0.1:3001`)
+- `med24plus_prod_backend` (Up, listening on `127.0.0.1:8024`)
+- `med24plus_prod_web` (Up, listening on `127.0.0.1:3024`)
+- `med24plus_prod_admin` (Up, listening on `127.0.0.1:3025`)
 
 ---
 
@@ -198,12 +198,12 @@ You should see:
 
 Execute Alembic migrations inside the running backend container:
 ```bash
-docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+docker compose --env-file .env.production -f docker-compose.prod.yml exec backend alembic upgrade head
 ```
 
 Verify backend health check locally:
 ```bash
-curl http://127.0.0.1:8000/api/v1/health
+curl http://127.0.0.1:8024/api/v1/health
 # Response: {"status":"healthy","database":"connected","redis":"connected"}
 ```
 
@@ -295,3 +295,45 @@ Add the following line (runs every midnight at 02:00 AM):
 ```cron
 0 2 * * * docker compose -f /var/www/med24plus/docker-compose.prod.yml exec -T postgres pg_dump -U med24plus_user med24plus_db | gzip > /var/backups/med24plus_db_$(date +\%F).sql.gz
 ```
+
+---
+
+## Step 10: Troubleshooting
+
+### 10.1 Port Already in Use (Conflict with Another Project)
+If your VPS is already running other applications on ports `3000`, `3001`, or `8000`, Med24Plus supports custom ports via `.env.production`:
+1. In `/var/www/med24plus/.env.production`, set your desired available host ports:
+   ```bash
+   BACKEND_PORT=8024
+   WEB_PORT=3024
+   ADMIN_PORT=3025
+   ```
+2. Verify Nginx points to these ports in `/etc/nginx/sites-available/med24plus.conf`:
+   - `med24plus-api.serwex.in` -> `http://127.0.0.1:8024`
+   - `med24plus.serwex.in`     -> `http://127.0.0.1:3024`
+   - `med24plus-admin.serwex.in` -> `http://127.0.0.1:3025`
+3. Reload Nginx and relaunch containers:
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+
+### 10.2 Next.js Build Failure (`npm run build did not complete successfully: exit code 1`)
+If `docker compose ... build` fails at `RUN npm run build`:
+1. **Pull Latest Code**: Ensure you have pulled the latest changes where the `DataTable` `isLoading` prop was fixed:
+   ```bash
+   git pull origin main
+   ```
+2. **VPS Out-Of-Memory (OOM)**: Compiling Next.js pages requires ~1.5GB of RAM. If your VPS has 1GB-2GB of RAM and another project is running, Docker will kill the Node process. Enable a 2GB swap file:
+   ```bash
+   sudo fallocate -l 2G /swapfile
+   sudo chmod 600 /swapfile
+   sudo mkswap /swapfile
+   sudo swapon /swapfile
+   echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+   ```
+3. **Build with Clean Cache**:
+   ```bash
+   docker compose -f docker-compose.prod.yml build --no-cache admin-panel
+   docker compose -f docker-compose.prod.yml up -d
+   ```

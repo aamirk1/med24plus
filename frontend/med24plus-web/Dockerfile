@@ -21,6 +21,7 @@ ARG NEXT_PUBLIC_API_URL=https://med24plus-api.serwex.in/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 RUN npm run build
 

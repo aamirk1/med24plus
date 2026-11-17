@@ -29,12 +29,13 @@ echo "--> Running Database Migrations (Alembic)..."
 docker compose -f docker-compose.prod.yml exec -T backend alembic upgrade head
 
 echo "--> Running Backend Health Check..."
+TARGET_PORT=${BACKEND_PORT:-8024}
 for i in {1..10}; do
-    if curl -s -f http://127.0.0.1:8000/api/v1/health > /dev/null; then
-        echo " Backend is healthy!"
+    if curl -s -f http://127.0.0.1:${TARGET_PORT}/api/v1/health > /dev/null; then
+        echo " Backend is healthy on port ${TARGET_PORT}!"
         break
     fi
-    echo "Waiting for backend... attempt $i/10"
+    echo "Waiting for backend on port ${TARGET_PORT}... attempt $i/10"
     sleep 3
 done
 

@@ -38,6 +38,26 @@ class CartPricingSummary(BaseModel):
     grand_total: Decimal
     rate_breakdowns: List[Dict[str, Any]] = []
 
+    @property
+    def discount_total(self) -> Decimal:
+        return self.total_discount
+
+    @property
+    def tax_total(self) -> Decimal:
+        return self.total_tax
+
+    @property
+    def cgst_amount(self) -> Decimal:
+        return self.cgst_total
+
+    @property
+    def sgst_amount(self) -> Decimal:
+        return self.sgst_total
+
+    @property
+    def igst_amount(self) -> Decimal:
+        return self.igst_total
+
 
 class PricingService:
     """

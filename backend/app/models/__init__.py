@@ -30,7 +30,16 @@ from app.models.inventory import (
     StockMovement,
 )
 from app.models.notification import Notification, NotificationPreference
-from app.models.order import Order, OrderItem, OrderStatusHistory
+from app.models.order import (
+    Invoice,
+    InventoryReservation,
+    Order,
+    OrderBatchAllocation,
+    OrderCancellation,
+    OrderIdempotencyRecord,
+    OrderItem,
+    OrderStatusHistory,
+)
 from app.models.payment import Payment, PaymentTransaction, Refund
 from app.models.prescription import (
     Prescription,
@@ -83,6 +92,11 @@ __all__ = [
     "Order",
     "OrderItem",
     "OrderStatusHistory",
+    "OrderBatchAllocation",
+    "InventoryReservation",
+    "OrderCancellation",
+    "Invoice",
+    "OrderIdempotencyRecord",
     "Payment",
     "Refund",
     "PaymentTransaction",
