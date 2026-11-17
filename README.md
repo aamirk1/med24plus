@@ -213,8 +213,8 @@ pytest tests/ -v
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-- API Health Check: `http://localhost:8000/api/v1/health`
-- Swagger Documentation: `http://localhost:8000/docs`
+- API Health Check: `http://localhost:8024/api/v1/health`
+- Swagger Documentation: `http://localhost:3024/docs`
 
 ---
 
@@ -233,7 +233,7 @@ npm run dev
 npm run build
 ```
 
-Visit `http://localhost:3000` to view the Customer Website.
+Visit `http://localhost:3024` to view the Customer Website.
 
 ---
 
@@ -252,7 +252,7 @@ npm run dev
 npm run build
 ```
 
-Visit `http://localhost:3001` to view the Pharmacist & Operations Console.
+Visit `http://localhost:3025` to view the Pharmacist & Operations Console.
 
 ---
 

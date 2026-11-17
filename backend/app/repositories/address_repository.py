@@ -125,6 +125,7 @@ class AddressRepository:
         await self.unset_default_for_user(address.user_id)
         address.is_default = True
         await self.db.flush()
+        await self.db.refresh(address)
         return address
 
     async def soft_delete(self, address: UserAddress) -> None:

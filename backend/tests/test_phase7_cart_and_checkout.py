@@ -612,6 +612,13 @@ async def test_prescription_approved_authorizes_checkout(
         db_session.add(rx_item)
         await db_session.commit()
 
+    # Add Schedule H medicine to cart
+    await async_client.post(
+        "/api/v1/cart/items",
+        json={"product_id": str(rx_prod.id), "quantity": 1},
+        headers=headers,
+    )
+
     # Validate checkout with approved prescription
     chk_resp = await async_client.post(
         "/api/v1/checkout/validate",

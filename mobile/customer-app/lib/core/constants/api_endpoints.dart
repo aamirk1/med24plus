@@ -4,7 +4,7 @@ class ApiEndpoints {
   // Local development host (Use 10.0.2.2 for Android emulator, localhost for iOS simulator/macOS)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8000/api/v1',
+    defaultValue: 'http://localhost:8024/api/v1',
   );
 
   static const String register = '/auth/register';
@@ -19,4 +19,3 @@ class ApiEndpoints {
   static const String resetPassword = '/auth/reset-password';
   static const String changePassword = '/auth/change-password';
 }
-

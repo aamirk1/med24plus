@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     Numeric,
     String,
     Text,
@@ -23,7 +24,10 @@ if TYPE_CHECKING:
 
 
 class Payment(Base, UUIDMixin, TimestampMixin):
-    """Payment transaction ledger for Indian payment gateways and COD."""
+    """
+    Payment transaction ledger for Indian payment gateways (Razorpay, UPI, NetBanking) and COD.
+    Supports multi-attempt lifecycle, provider synchronization, and financial audit trails.
+    """
     __tablename__ = "payments"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
@@ -31,6 +35,12 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         ForeignKey("orders.id", ondelete="RESTRICT"),
         index=True,
         nullable=False,
+    )
+    customer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        index=True,
+        nullable=True,
     )
     payment_number: Mapped[str] = mapped_column(
         String(50),
@@ -53,6 +63,10 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         nullable=True,
     )
     gateway_signature: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+    gateway_response_reference: Mapped[Optional[str]] = mapped_column(
         String(255),
         nullable=True,
     )
@@ -83,18 +97,88 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         Text,
         nullable=True,
     )
+    failure_code: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+    failure_message: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    initiated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    authorized_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     captured_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
+    failed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # Convenience aliases adhering to Phase 9 specification
+    @property
+    def payment_reference(self) -> str:
+        return self.payment_number
+
+    @payment_reference.setter
+    def payment_reference(self, val: str) -> None:
+        self.payment_number = val
+
+    @property
+    def provider(self) -> str:
+        return self.gateway_name
+
+    @provider.setter
+    def provider(self, val: str) -> None:
+        self.gateway_name = val
+
+    @property
+    def provider_order_id(self) -> Optional[str]:
+        return self.gateway_order_id
+
+    @provider_order_id.setter
+    def provider_order_id(self, val: Optional[str]) -> None:
+        self.gateway_order_id = val
+
+    @property
+    def provider_payment_id(self) -> Optional[str]:
+        return self.gateway_payment_id
+
+    @provider_payment_id.setter
+    def provider_payment_id(self, val: Optional[str]) -> None:
+        self.gateway_payment_id = val
+
+    @property
+    def provider_signature(self) -> Optional[str]:
+        return self.gateway_signature
+
+    @provider_signature.setter
+    def provider_signature(self, val: Optional[str]) -> None:
+        self.gateway_signature = val
 
     # Relationships
     order: Mapped["Order"] = relationship(
         "Order",
         back_populates="payments",
     )
+    customer: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[customer_id],
+    )
     refunds: Mapped[List["Refund"]] = relationship(
         "Refund",
+        back_populates="payment",
+        cascade="all, delete-orphan",
+    )
+    events: Mapped[List["PaymentEvent"]] = relationship(
+        "PaymentEvent",
         back_populates="payment",
         cascade="all, delete-orphan",
     )
@@ -107,11 +191,12 @@ class Payment(Base, UUIDMixin, TimestampMixin):
     __table_args__ = (
         CheckConstraint("amount >= 0", name="check_payment_amount_non_negative"),
         Index("ix_payments_gateway_lookup", "gateway_name", "gateway_payment_id"),
+        Index("ix_payments_customer_status", "customer_id", "status"),
     )
 
 
 class Refund(Base, UUIDMixin, TimestampMixin):
-    """Customer refund processing for cancellations or pharmacist rejections."""
+    """Customer refund ledger for order cancellations, clinical rejections, or partial adjustments."""
     __tablename__ = "refunds"
 
     payment_id: Mapped[uuid.UUID] = mapped_column(
@@ -147,7 +232,7 @@ class Refund(Base, UUIDMixin, TimestampMixin):
         nullable=False,
     )
     reason: Mapped[str] = mapped_column(
-        String(100),
+        String(255),
         nullable=False,
     )
     status: Mapped[str] = mapped_column(
@@ -155,16 +240,62 @@ class Refund(Base, UUIDMixin, TimestampMixin):
         default="pending",
         index=True,
         nullable=False,
-    )
+    )  # requested, pending, processed, failed
     initiated_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    approved_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    initiated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
         nullable=True,
     )
     processed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
+    failure_reason: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # Convenience aliases
+    @property
+    def refund_reference(self) -> str:
+        return self.refund_number
+
+    @refund_reference.setter
+    def refund_reference(self, val: str) -> None:
+        self.refund_number = val
+
+    @property
+    def payment_transaction_id(self) -> uuid.UUID:
+        return self.payment_id
+
+    @payment_transaction_id.setter
+    def payment_transaction_id(self, val: uuid.UUID) -> None:
+        self.payment_id = val
+
+    @property
+    def provider_refund_id(self) -> Optional[str]:
+        return self.gateway_refund_id
+
+    @provider_refund_id.setter
+    def provider_refund_id(self, val: Optional[str]) -> None:
+        self.gateway_refund_id = val
+
+    @property
+    def requested_by_id(self) -> Optional[uuid.UUID]:
+        return self.initiated_by_id
+
+    @requested_by_id.setter
+    def requested_by_id(self, val: Optional[uuid.UUID]) -> None:
+        self.initiated_by_id = val
 
     # Relationships
     payment: Mapped["Payment"] = relationship(
@@ -178,14 +309,204 @@ class Refund(Base, UUIDMixin, TimestampMixin):
         "User",
         foreign_keys=[initiated_by_id],
     )
+    approved_by: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[approved_by_id],
+    )
 
     __table_args__ = (
         CheckConstraint("amount > 0", name="check_refund_amount_positive"),
+        Index("ix_refunds_order_status", "order_id", "status"),
+    )
+
+
+class PaymentEvent(Base, UUIDMixin, TimestampMixin):
+    """Raw and normalized gateway webhook event audit ledger."""
+    __tablename__ = "payment_events"
+
+    provider: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+    provider_event_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
+    event_type: Mapped[str] = mapped_column(
+        String(100),
+        index=True,
+        nullable=False,
+    )
+    payment_transaction_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("payments.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+    provider_order_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        index=True,
+        nullable=True,
+    )
+    provider_payment_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        index=True,
+        nullable=True,
+    )
+    processing_status: Mapped[str] = mapped_column(
+        String(30),
+        default="received",
+        index=True,
+        nullable=False,
+    )  # received, processed, ignored, failed
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    processed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    processing_error: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    event_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(
+        JSONB_COMPAT,
+        nullable=True,
+    )
+
+    # Relationships
+    payment: Mapped[Optional["Payment"]] = relationship(
+        "Payment",
+        back_populates="events",
+    )
+
+    __table_args__ = (
+        Index("ix_payment_events_provider_type", "provider", "event_type"),
+    )
+
+
+class PaymentIdempotencyRecord(Base, UUIDMixin):
+    """Database-level idempotency record preventing duplicate payment and refund submissions."""
+    __tablename__ = "payment_idempotency_records"
+
+    idempotency_key: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+    operation_type: Mapped[str] = mapped_column(
+        String(50),
+        index=True,
+        nullable=False,
+    )  # payment_initiate, payment_verify, refund_initiate, webhook
+    customer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+    order_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("orders.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+    request_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+    response_code: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+    response_payload: Mapped[Optional[Dict[str, Any]]] = mapped_column(
+        JSONB_COMPAT,
+        nullable=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="processing",
+        nullable=False,
+    )  # processing, completed, failed
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        index=True,
+        nullable=False,
+    )
+
+
+class PaymentReconciliation(Base, UUIDMixin, TimestampMixin):
+    """Financial reconciliation record comparing local transactions with gateway provider transactions."""
+    __tablename__ = "payment_reconciliations"
+
+    reconciliation_reference: Mapped[str] = mapped_column(
+        String(50),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+    provider: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+    batch_start_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    batch_end_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    total_records_checked: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+    matched_records: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+    discrepancy_count: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="completed",
+        nullable=False,
+    )  # running, completed, failed
+    discrepancies: Mapped[Optional[List[Dict[str, Any]]]] = mapped_column(
+        JSONB_COMPAT,
+        nullable=True,
+    )
+    performed_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Relationships
+    performed_by: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[performed_by_id],
     )
 
 
 class PaymentTransaction(Base, UUIDMixin):
-    """Raw webhook and communication audit log for payment providers."""
+    """Raw communication audit log for payment providers."""
     __tablename__ = "payment_transactions"
 
     payment_id: Mapped[uuid.UUID] = mapped_column(
@@ -221,4 +542,3 @@ class PaymentTransaction(Base, UUIDMixin):
         "Payment",
         back_populates="transactions",
     )
-

@@ -47,8 +47,8 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:3001",
+        "http://localhost:3024",
+        "http://localhost:3025",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
     ]
@@ -59,10 +59,28 @@ class Settings(BaseSettings):
     STORAGE_ACCESS_KEY: str = "placeholder_key"
     STORAGE_SECRET_KEY: str = "placeholder_secret"
 
-    # Indian Payment & SMS Gateways
+    # Indian Payment Gateway (Razorpay) & Financial Management (Phase 9)
+    PAYMENT_PROVIDER: str = "razorpay"
+    PAYMENT_MODE: str = "sandbox"
+    PAYMENT_CURRENCY: str = "INR"
+    PAYMENT_ENABLED: bool = True
+    PAYMENT_TIMEOUT_SECONDS: int = 900  # 15 minutes session expiry
+    RESERVATION_EXPIRY_MINUTES: int = 30  # 30 minutes reservation release window
     RAZORPAY_KEY_ID: str = "rzp_test_placeholder"
     RAZORPAY_KEY_SECRET: str = "rzp_secret_placeholder"
+    RAZORPAY_WEBHOOK_SECRET: str = "rzp_webhook_secret_placeholder"
+    RAZORPAY_BASE_URL: str = "https://api.razorpay.com/v1"
     MSG91_AUTH_KEY: str = "msg91_auth_placeholder"
+
+    @property
+    def is_live_payment_configured(self) -> bool:
+        """Determines if valid live or registered sandbox credentials are set."""
+        return (
+            bool(self.RAZORPAY_KEY_ID)
+            and not self.RAZORPAY_KEY_ID.startswith("rzp_test_placeholder")
+            and bool(self.RAZORPAY_KEY_SECRET)
+            and not self.RAZORPAY_KEY_SECRET.startswith("rzp_secret_placeholder")
+        )
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

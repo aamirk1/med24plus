@@ -55,7 +55,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-med24plus_prod_db}
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-pharmacy_prod_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-med24plus_prod_db}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
-      - CORS_ORIGINS=["https://med24plus.serwex.in","https://med24plus-admin.serwex.in","http://localhost:3000","http://localhost:3001","http://localhost:3024","http://localhost:3025"]
+      - CORS_ORIGINS=["https://med24plus.serwex.in","https://med24plus-admin.serwex.in","http://localhost:3024","http://localhost:3025","http://localhost:3024","http://localhost:3025"]
     volumes:
       - med24plus_private_storage:/app/private_storage
       - med24plus_static_uploads:/app/static/uploads

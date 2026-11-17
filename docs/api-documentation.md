@@ -1,9 +1,9 @@
 # Med24Plus API Documentation
 
 ## Base URL
-- Local Development: `http://localhost:8000/api/v1`
-- Interactive OpenAPI Swagger UI: `http://localhost:8000/docs`
-- ReDoc UI: `http://localhost:8000/redoc`
+- Local Development: `http://localhost:8024/api/v1`
+- Interactive OpenAPI Swagger UI: `http://localhost:3024/docs`
+- ReDoc UI: `http://localhost:3024/redoc`
 
 ---
 

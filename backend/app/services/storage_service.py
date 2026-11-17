@@ -31,7 +31,7 @@ class StorageService:
         self.upload_dir = Path("static/uploads/products")
         self.upload_dir.mkdir(parents=True, exist_ok=True)
         self.provider = getattr(settings, "STORAGE_PROVIDER", "local")
-        self.public_url_base = getattr(settings, "API_PUBLIC_URL", "http://localhost:8000")
+        self.public_url_base = getattr(settings, "API_PUBLIC_URL", "http://localhost:3024")
 
     def validate_file(self, file: UploadFile) -> str:
         """Validate uploaded image file format, extension, and content type."""
@@ -94,7 +94,7 @@ class StorageService:
             f.write(content)
 
         # Construct public URL
-        # e.g. http://localhost:8000/static/uploads/products/<unique_filename>
+        # e.g. http://localhost:3024/static/uploads/products/<unique_filename>
         # or relative /static/uploads/products/<unique_filename>
         public_url = f"/static/uploads/products/{unique_filename}"
         return public_url

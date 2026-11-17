@@ -60,13 +60,13 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-pharmacy_user}:${POSTGRES_PASSWORD:-pharmacy_secure_dev_pass_2026}@postgres:5432/${POSTGRES_DB:-med24plus_db}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_dev_secret_2026}@redis:6379/0
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change_me_super_secret_jwt_key_at_least_32_chars_long}
-      - CORS_ORIGINS=["http://localhost:3000","http://localhost:3001","http://127.0.0.1:3000","http://127.0.0.1:3001"]
+      - CORS_ORIGINS=["http://localhost:3024","http://localhost:3025"]
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend/app:/app/app:ro
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\" || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8024/api/v1/health')\" || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3

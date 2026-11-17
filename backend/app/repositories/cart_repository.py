@@ -19,9 +19,13 @@ class CartRepository:
         self, customer_id: uuid.UUID, load_items: bool = True
     ) -> Optional[Cart]:
         """Fetch customer's currently active shopping cart with eager-loaded items and products."""
-        stmt = select(Cart).where(
-            Cart.customer_id == customer_id,
-            Cart.status == "active",
+        stmt = (
+            select(Cart)
+            .where(
+                Cart.customer_id == customer_id,
+                Cart.status == "active",
+            )
+            .execution_options(populate_existing=True)
         )
         if load_items:
             stmt = stmt.options(
@@ -121,3 +125,4 @@ class CartRepository:
         """Refresh price snapshot when acknowledged by user."""
         item.unit_price_snapshot = new_price
         await self.db.flush()
+        

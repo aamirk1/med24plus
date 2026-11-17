@@ -96,6 +96,20 @@ class PermissionEnum(str, Enum):
     DELIVERY_READ_ASSIGNED = "delivery.read_assigned"
     DELIVERY_UPDATE_ASSIGNED_STATUS = "delivery.update_assigned_status"
 
+    # Payment Gateway & Financial Management permissions (Phase 9)
+    PAYMENTS_VIEW_OWN = "payments.view_own"
+    PAYMENTS_INITIATE = "payments.initiate"
+    PAYMENTS_VERIFY_OWN = "payments.verify_own"
+    PAYMENTS_VIEW_ALL = "payments.view_all"
+    PAYMENTS_VIEW_DETAILS = "payments.view_details"
+    PAYMENTS_MANAGE = "payments.manage"
+    PAYMENTS_REFUND = "payments.refund"
+    PAYMENTS_VIEW_REFUNDS = "payments.view_refunds"
+    PAYMENTS_MANAGE_REFUNDS = "payments.manage_refunds"
+    PAYMENTS_RECONCILE = "payments.reconcile"
+    PAYMENTS_RESOLVE_DISCREPANCIES = "payments.resolve_discrepancies"
+    PAYMENTS_MANAGE_SETTINGS = "payments.manage_settings"
+
 
 # Default permission mappings by role
 ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
@@ -117,6 +131,9 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.PRESCRIPTION_UPLOAD.value,
         PermissionEnum.PRESCRIPTION_CANCEL_OWN.value,
         PermissionEnum.NOTIFICATION_READ_OWN.value,
+        PermissionEnum.PAYMENTS_VIEW_OWN.value,
+        PermissionEnum.PAYMENTS_INITIATE.value,
+        PermissionEnum.PAYMENTS_VERIFY_OWN.value,
     ],
     RoleEnum.PHARMACIST.value: [
         PermissionEnum.PRESCRIPTIONS_READ.value,
@@ -161,6 +178,9 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.ORDERS_VIEW_INVOICE.value,
         PermissionEnum.ORDERS_MANAGE_INVOICE.value,
         PermissionEnum.CUSTOMERS_READ.value,
+        PermissionEnum.PAYMENTS_VIEW_ALL.value,
+        PermissionEnum.PAYMENTS_VIEW_DETAILS.value,
+        PermissionEnum.PAYMENTS_VIEW_REFUNDS.value,
     ],
     RoleEnum.ADMIN.value: [
         PermissionEnum.DASHBOARD_READ.value,
@@ -213,6 +233,15 @@ ROLE_DEFAULT_PERMISSIONS: Dict[str, List[str]] = {
         PermissionEnum.STAFF_MANAGE.value,
         PermissionEnum.REPORTS_READ.value,
         PermissionEnum.SETTINGS_MANAGE.value,
+        PermissionEnum.PAYMENTS_VIEW_ALL.value,
+        PermissionEnum.PAYMENTS_VIEW_DETAILS.value,
+        PermissionEnum.PAYMENTS_MANAGE.value,
+        PermissionEnum.PAYMENTS_REFUND.value,
+        PermissionEnum.PAYMENTS_VIEW_REFUNDS.value,
+        PermissionEnum.PAYMENTS_MANAGE_REFUNDS.value,
+        PermissionEnum.PAYMENTS_RECONCILE.value,
+        PermissionEnum.PAYMENTS_RESOLVE_DISCREPANCIES.value,
+        PermissionEnum.PAYMENTS_MANAGE_SETTINGS.value,
     ],
     RoleEnum.SUPER_ADMIN.value: [
         # Super admin has all permissions
