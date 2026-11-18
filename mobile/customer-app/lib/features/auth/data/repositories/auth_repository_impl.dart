@@ -27,6 +27,12 @@ class AuthRepositoryImpl implements AuthRepository {
       refreshToken: tokenData.refreshToken,
     );
 
+    // Persist credentials in flutter_secure_storage to prevent re-authentication prompts
+    await secureStorage.saveCredentials(
+      identifier: identifier,
+      password: password,
+    );
+
     if (tokenData.user != null) {
       await secureStorage.saveUserData(jsonEncode(tokenData.user!.toJson()));
       return tokenData.user!;
@@ -52,13 +58,41 @@ class AuthRepositoryImpl implements AuthRepository {
       confirmPassword: confirmPassword,
       email: email,
     );
-    return user;
+
+    // Save user credentials in secure storage immediately
+    await secureStorage.saveCredentials(
+      identifier: phone,
+      password: password,
+    );
+
+    // Auto-login to obtain active session and tokens so the user is never asked again
+    try {
+      final authenticatedUser = await login(
+        identifier: phone,
+        password: password,
+      );
+      return authenticatedUser;
+    } catch (_) {
+      // Return registered user if auto-login network hiccup occurs
+      return user;
+    }
   }
 
   @override
   Future<UserEntity?> getCurrentUser() async {
     final hasSession = await secureStorage.hasValidSession();
     if (!hasSession) {
+      // Check if credentials exist for silent background re-login
+      final hasCreds = await secureStorage.hasSavedCredentials();
+      if (hasCreds) {
+        final savedId = await secureStorage.getSavedIdentifier();
+        final savedPwd = await secureStorage.getSavedPassword();
+        if (savedId != null && savedPwd != null) {
+          try {
+            return await login(identifier: savedId, password: savedPwd);
+          } catch (_) {}
+        }
+      }
       return null;
     }
 

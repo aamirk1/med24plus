@@ -56,16 +56,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     RegisterRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading(message: 'Creating account...'));
+    emit(const AuthLoading(message: 'Creating account & authenticating...'));
     try {
-      await authRepository.register(
+      final user = await authRepository.register(
         fullName: event.fullName,
         phone: event.phone,
         password: event.password,
         confirmPassword: event.confirmPassword,
         email: event.email,
       );
-      emit(const AuthUnauthenticated('Registration successful! Please sign in.'));
+      // Auto-authenticate directly without asking for credentials again
+      emit(AuthAuthenticated(user));
     } catch (e) {
       final errorMsg = e.toString().replaceFirst('Exception: ', '');
       emit(AuthFailure(errorMsg));

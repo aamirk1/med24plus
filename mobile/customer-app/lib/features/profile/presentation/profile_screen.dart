@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/bloc/auth_event.dart';
+import '../../auth/presentation/bloc/auth_state.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -18,60 +22,76 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           children: [
             // User Header Card
-            AnimatedFadeSlide(
-              delay: const Duration(milliseconds: 50),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryLight,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'R',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                final user = authState is AuthAuthenticated ? authState.user : null;
+                final name = user?.fullName ?? 'Patient Guest';
+                final contact = user?.phone ?? user?.email ?? 'Sign in to access prescription records';
+                final initial = (name.isNotEmpty ? name[0] : 'P').toUpperCase();
+
+                return AnimatedFadeSlide(
+                  delay: const Duration(milliseconds: 50),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Rahul Verma',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.mainText,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryLight,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              initial,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            '+91 98450 91823 • Bengaluru',
-                            style: TextStyle(
-                                fontSize: 11, color: AppColors.secondaryText),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.mainText,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                contact,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.secondaryText,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        if (user == null)
+                          TextButton(
+                            onPressed: () => context.push('/login'),
+                            child: const Text('Sign In', style: TextStyle(fontSize: 12)),
+                          ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
 
@@ -149,34 +169,44 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Logout
-            AnimatedFadeSlide(
-              delay: const Duration(milliseconds: 200),
-              child: AnimatedTapScale(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Logged out of Med24Plus.')),
-                  );
-                  context.go('/login');
-                },
-                child: OutlinedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logged out of Med24Plus.')),
-                    );
-                    context.go('/login');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.danger,
-                    side: const BorderSide(color: AppColors.danger),
-                    minimumSize: const Size(double.infinity, 44),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+            // Logout / Sign Out
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is! AuthAuthenticated) {
+                  return const SizedBox.shrink();
+                }
+
+                return AnimatedFadeSlide(
+                  delay: const Duration(milliseconds: 200),
+                  child: AnimatedTapScale(
+                    onTap: () {
+                      context.read<AuthBloc>().add(LogoutRequested());
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged out of Med24Plus.')),
+                      );
+                      context.go('/login');
+                    },
+                    child: OutlinedButton(
+                      onPressed: () {
+                        context.read<AuthBloc>().add(LogoutRequested());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Logged out of Med24Plus.')),
+                        );
+                        context.go('/login');
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.danger,
+                        side: const BorderSide(color: AppColors.danger),
+                        minimumSize: const Size(double.infinity, 44),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Sign Out',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                  child: const Text('Sign Out',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),

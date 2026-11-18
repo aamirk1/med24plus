@@ -97,14 +97,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthUnauthenticated && state.message != null) {
+        if (state is AuthAuthenticated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Account verified & saved! Welcome, ${state.user.fullName ?? 'Patient'}!'),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+          context.go('/home');
+        } else if (state is AuthUnauthenticated && state.message != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message!),
               backgroundColor: AppColors.primary,
             ),
           );
-          context.pop();
+          context.go('/home');
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

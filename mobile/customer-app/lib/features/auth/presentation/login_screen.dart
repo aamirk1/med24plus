@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/firebase_auth_service.dart';
+import '../../../core/services/secure_storage_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
@@ -22,6 +23,30 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController(text: '+919876543210');
   final TextEditingController _passwordController = TextEditingController(text: 'Password@123');
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStoredCredentials();
+  }
+
+  Future<void> _loadStoredCredentials() async {
+    final storage = SecureStorageService();
+    final savedId = await storage.getSavedIdentifier();
+    final savedPwd = await storage.getSavedPassword();
+    if (mounted) {
+      if (savedId != null && savedId.isNotEmpty) {
+        setState(() {
+          _phoneController.text = savedId;
+        });
+      }
+      if (savedPwd != null && savedPwd.isNotEmpty) {
+        setState(() {
+          _passwordController.text = savedPwd;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
