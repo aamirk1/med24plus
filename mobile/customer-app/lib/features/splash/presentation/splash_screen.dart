@@ -171,7 +171,8 @@ class _SplashScreenState extends State<SplashScreen>
       listener: (context, state) {
         if (state is AuthAuthenticated && mounted) {
           setState(() {
-            _statusMessage = 'Welcome back, ${state.user.fullName ?? 'Patient'}!';
+            _statusMessage =
+                'Welcome back, ${state.user.fullName ?? 'Patient'}!';
           });
         }
       },
@@ -209,7 +210,8 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 260,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF10B981).withOpacity(0.12 + (pulse * 0.06)),
+                          color: const Color(0xFF10B981)
+                              .withOpacity(0.12 + (pulse * 0.06)),
                         ),
                       ),
                     ),
@@ -222,7 +224,8 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 300,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF047857).withOpacity(0.18 + (pulse * 0.05)),
+                          color: const Color(0xFF047857)
+                              .withOpacity(0.18 + (pulse * 0.05)),
                         ),
                       ),
                     ),
@@ -313,7 +316,8 @@ class _SplashScreenState extends State<SplashScreen>
                                         errorBuilder: (_, __, ___) => Container(
                                           decoration: BoxDecoration(
                                             color: AppColors.primaryLight,
-                                            borderRadius: BorderRadius.circular(24),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
                                           ),
                                           child: const Icon(
                                             Icons.local_hospital_rounded,
@@ -462,7 +466,8 @@ class _SplashScreenState extends State<SplashScreen>
                                               Color(0xFF6EE7B7),
                                             ],
                                           ),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                           boxShadow: [
                                             BoxShadow(
                                               color: const Color(0xFF34D399)
