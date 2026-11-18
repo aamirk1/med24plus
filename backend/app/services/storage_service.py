@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 from pathlib import Path
@@ -5,6 +6,9 @@ from typing import Optional, Set
 from fastapi import HTTPException, UploadFile, status
 
 from app.core.config import settings
+from app.services.firebase_service import FirebaseService
+
+logger = logging.getLogger("med24plus.storage")
 
 # Supported MIME types and extensions
 ALLOWED_MIME_TYPES: Set[str] = {
@@ -21,17 +25,42 @@ ALLOWED_EXTENSIONS: Set[str] = {
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 
+# ==============================================================================
+# Amazon S3 Storage Implementation (Commented out in favor of Firebase Cloud Storage)
+# ==============================================================================
+# class S3StorageProvider:
+#     """
+#     Legacy Amazon S3 / Cloudflare R2 / MinIO storage provider.
+#     Commented out while Firebase Cloud Storage is active.
+#     """
+#     def __init__(self):
+#         import boto3
+#         self.client = boto3.client(
+#             "s3",
+#             endpoint_url=settings.STORAGE_ENDPOINT,
+#             aws_access_key_id=settings.STORAGE_ACCESS_KEY,
+#             aws_secret_access_key=settings.STORAGE_SECRET_KEY,
+#         )
+#         self.bucket = settings.STORAGE_BUCKET
+#
+#     def upload(self, key: str, data: bytes, content_type: str) -> str:
+#         self.client.put_object(Bucket=self.bucket, Key=key, Body=data, ContentType=content_type)
+#         return f"{settings.STORAGE_ENDPOINT}/{self.bucket}/{key}"
+# ==============================================================================
+
+
 class StorageService:
     """
-    Unified object storage service with transparent fallback between
-    local filesystem (for development/testing) and S3-compatible cloud storage.
+    Unified object storage service for catalog medicine images.
+    Uploads directly to Firebase Cloud Storage with local cache fallback.
     """
 
     def __init__(self):
         self.upload_dir = Path("static/uploads/products")
         self.upload_dir.mkdir(parents=True, exist_ok=True)
-        self.provider = getattr(settings, "STORAGE_PROVIDER", "local")
+        self.provider = getattr(settings, "STORAGE_PROVIDER", "firebase")
         self.public_url_base = getattr(settings, "API_PUBLIC_URL", "http://localhost:3024")
+        self.firebase_service = FirebaseService()
 
     def validate_file(self, file: UploadFile) -> str:
         """Validate uploaded image file format, extension, and content type."""
@@ -60,7 +89,8 @@ class StorageService:
 
     async def save_product_image(self, file: UploadFile, product_id: uuid.UUID) -> str:
         """
-        Validate and persist a product image, returning the public CDN / media URL.
+        Validate and persist a product/medicine image into Firebase Cloud Storage.
+        Returns the public Firebase Cloud Storage URL.
         """
         ext = self.validate_file(file)
 
@@ -88,22 +118,46 @@ class StorageService:
             )
 
         unique_filename = f"{product_id}_{uuid.uuid4().hex[:12]}{ext}"
-        target_path = self.upload_dir / unique_filename
+        blob_path = f"products/{product_id}/{unique_filename}"
+        mime_type = file.content_type or "image/jpeg"
 
-        with open(target_path, "wb") as f:
+        # Also cache locally for dev/offline serving
+        local_target_path = self.upload_dir / unique_filename
+        with open(local_target_path, "wb") as f:
             f.write(content)
 
-        # Construct public URL
-        # e.g. http://localhost:3024/static/uploads/products/<unique_filename>
-        # or relative /static/uploads/products/<unique_filename>
-        public_url = f"/static/uploads/products/{unique_filename}"
-        return public_url
+        # 1. Primary: Upload to Firebase Storage
+        if self.provider == "firebase" or not self.firebase_service.is_simulation_mode:
+            success, url, err = await self.firebase_service.upload_file(
+                destination_blob_name=blob_path,
+                content=content,
+                content_type=mime_type,
+                is_public=True,
+            )
+            if success and url:
+                logger.info(f"[STORAGE] Stored product image in Firebase Storage: {blob_path}")
+                return url
+            else:
+                logger.warning(f"[STORAGE] Firebase Storage upload error ({err}), falling back to local static URL.")
+
+        # 2. Local Fallback URL
+        return f"/static/uploads/products/{unique_filename}"
 
     async def delete_image(self, image_url: str) -> bool:
-        """Remove image file from storage if stored locally."""
+        """Remove image file from Firebase Storage or local filesystem."""
+        if "firebasestorage.googleapis.com" in image_url:
+            try:
+                # Extract blob path from Firebase URL
+                encoded_path = image_url.split("/o/")[1].split("?")[0]
+                blob_name = encoded_path.replace("%2F", "/")
+                await self.firebase_service.delete_file(blob_name)
+                return True
+            except Exception as e:
+                logger.error(f"[STORAGE] Failed to delete Firebase Storage image: {e}")
+                return False
+
         if "/static/uploads/products/" in image_url:
             filename = image_url.split("/static/uploads/products/")[-1]
-            # Safety check: prevent path traversal
             safe_filename = os.path.basename(filename)
             file_path = self.upload_dir / safe_filename
             if file_path.exists() and file_path.is_file():
@@ -116,4 +170,3 @@ class StorageService:
 
 
 storage_service = StorageService()
-

@@ -100,3 +100,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+service-account.json
+*service-account*.json
+*firebase-adminsdk*.json
+*firebase-credentials.json

@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import os
 import time
 import uuid
@@ -8,6 +9,9 @@ from typing import Optional, Set, Tuple
 from fastapi import HTTPException, UploadFile, status
 
 from app.core.config import settings
+from app.services.firebase_service import FirebaseService
+
+logger = logging.getLogger("med24plus.prescription_storage")
 
 # Supported MIME types and extensions for Rule 65 clinical prescriptions
 ALLOWED_PRESCRIPTION_MIME_TYPES: Set[str] = {
@@ -29,19 +33,49 @@ MAX_FILES_PER_PRESCRIPTION = 5
 DEFAULT_SIGNED_URL_EXPIRY_SECONDS = 300  # 5 minutes
 
 
+# ==============================================================================
+# Amazon S3 Private Storage Implementation (Commented out in favor of Firebase Cloud Storage)
+# ==============================================================================
+# class S3PrescriptionProvider:
+#     """
+#     Private Amazon S3 bucket provider for clinical prescriptions under Rule 65.
+#     Commented out while Firebase Cloud Storage is active.
+#     """
+#     def __init__(self):
+#         import boto3
+#         self.client = boto3.client(
+#             "s3",
+#             endpoint_url=settings.STORAGE_ENDPOINT,
+#             aws_access_key_id=settings.STORAGE_ACCESS_KEY,
+#             aws_secret_access_key=settings.STORAGE_SECRET_KEY,
+#         )
+#         self.bucket = settings.STORAGE_BUCKET
+#
+#     def upload_private(self, key: str, data: bytes, content_type: str):
+#         self.client.put_object(
+#             Bucket=self.bucket,
+#             Key=key,
+#             Body=data,
+#             ContentType=content_type,
+#             ServerSideEncryption="AES256"
+#         )
+# ==============================================================================
+
+
 class PrescriptionStorageService:
     """
     Secure private storage service for clinical prescriptions under Rule 65.
-    Prescriptions are strictly isolated from public CDN/static web endpoints,
-    stored in private storage, and only accessible via authenticated access
-    or short-lived HMAC signed tokens.
+    Prescriptions are strictly isolated, stored in private Firebase Cloud Storage,
+    and accessible via authenticated access, short-lived HMAC signed tokens,
+    or Firebase Storage signed URLs.
     """
 
     def __init__(self):
         self.upload_dir = Path("private_storage/prescriptions")
         self.upload_dir.mkdir(parents=True, exist_ok=True)
-        self.provider = getattr(settings, "STORAGE_PROVIDER", "local")
+        self.provider = getattr(settings, "STORAGE_PROVIDER", "firebase")
         self.signing_secret = (getattr(settings, "JWT_SECRET_KEY", "med24_rx_secret") or "med24_rx_secret").encode()
+        self.firebase_service = FirebaseService()
 
     def validate_file_content(self, filename: str, content_type: str, content: bytes) -> Tuple[str, str, str]:
         """
@@ -147,7 +181,7 @@ class PrescriptionStorageService:
         prescription_id: uuid.UUID,
     ) -> Tuple[str, str, int, str, str]:
         """
-        Validates and writes an uploaded file to private storage.
+        Validates and writes an uploaded file to private storage and Firebase Cloud Storage.
         Returns: (safe_storage_key, original_filename, file_size, mime_type, checksum)
         """
         filename = os.path.basename(file.filename or "prescription_document")
@@ -158,6 +192,7 @@ class PrescriptionStorageService:
         # Generate non-guessable storage key
         unique_file_id = uuid.uuid4().hex
         storage_filename = f"rx_{prescription_id.hex}_{unique_file_id}{ext}"
+        blob_path = f"prescriptions/{prescription_id.hex}/{storage_filename}"
         target_path = (self.upload_dir / storage_filename).resolve()
 
         # Path traversal guard
@@ -171,13 +206,27 @@ class PrescriptionStorageService:
                 },
             )
 
+        # Write to local secure directory cache
         with open(target_path, "wb") as f:
             f.write(content)
+
+        # Upload to Firebase Cloud Storage (Private encrypted bucket)
+        if self.provider == "firebase" or not self.firebase_service.is_simulation_mode:
+            success, url, err = await self.firebase_service.upload_file(
+                destination_blob_name=blob_path,
+                content=content,
+                content_type=mime_type,
+                is_public=False,
+            )
+            if success:
+                logger.info(f"[PRESCRIPTION STORAGE] Encrypted prescription uploaded to Firebase Storage: {blob_path}")
+            else:
+                logger.warning(f"[PRESCRIPTION STORAGE] Firebase upload notice ({err}); cached in local secure storage.")
 
         return storage_filename, filename, len(content), mime_type, checksum
 
     def get_file_path(self, storage_key: str) -> Path:
-        """Resolve and verify storage key within the private directory."""
+        """Resolve and verify storage key within the private directory or fetch from Firebase Storage."""
         safe_key = os.path.basename(storage_key)
         target_path = (self.upload_dir / safe_key).resolve()
 
@@ -187,13 +236,44 @@ class PrescriptionStorageService:
                 detail={"success": False, "message": "Illegal path access attempt."},
             )
 
-        if not target_path.exists() or not target_path.is_file():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"success": False, "message": "Prescription document not found on storage server."},
-            )
+        if target_path.exists() and target_path.is_file():
+            return target_path
 
-        return target_path
+        # If not present in local cache, attempt download from Firebase Storage
+        if not self.firebase_service.is_simulation_mode:
+            bucket = self.firebase_service.get_bucket()
+            if bucket:
+                try:
+                    blobs = list(bucket.list_blobs(prefix="prescriptions/"))
+                    matching_blob = next((b for b in blobs if b.name.endswith(safe_key)), None)
+                    if matching_blob:
+                        data = matching_blob.download_as_bytes()
+                        with open(target_path, "wb") as f:
+                            f.write(data)
+                        return target_path
+                except Exception as e:
+                    logger.error(f"[PRESCRIPTION STORAGE] Error downloading from Firebase Storage: {e}")
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Prescription document not found on storage server."},
+        )
+
+    async def get_firebase_signed_url(self, storage_key: str, expires_seconds: int = 900) -> Tuple[bool, str, Optional[str]]:
+        """Generate a time-limited signed download URL directly from Firebase Storage."""
+        safe_key = os.path.basename(storage_key)
+        bucket = self.firebase_service.get_bucket()
+        if not bucket or self.firebase_service.is_simulation_mode:
+            return False, "", "Firebase Storage bucket is not available."
+
+        try:
+            blobs = list(bucket.list_blobs(prefix="prescriptions/"))
+            matching_blob = next((b for b in blobs if b.name.endswith(safe_key)), None)
+            if matching_blob:
+                return await self.firebase_service.get_signed_download_url(matching_blob.name, expires_seconds=expires_seconds)
+            return False, "", "Prescription file not found in Firebase Storage."
+        except Exception as e:
+            return False, "", str(e)
 
     def generate_signed_view_token(self, file_id: uuid.UUID, expires_in: int = DEFAULT_SIGNED_URL_EXPIRY_SECONDS) -> str:
         """
@@ -228,4 +308,3 @@ class PrescriptionStorageService:
 
 
 prescription_storage_service = PrescriptionStorageService()
-

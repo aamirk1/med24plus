@@ -12,6 +12,7 @@ try:
     from firebase_admin import auth as fb_auth
     from firebase_admin import credentials as fb_credentials
     from firebase_admin import messaging as fb_messaging
+    from firebase_admin import storage as fb_storage
     from firebase_admin.exceptions import FirebaseError
     FIREBASE_ADMIN_INSTALLED = True
 except ImportError:
@@ -19,6 +20,7 @@ except ImportError:
     fb_auth = None
     fb_credentials = None
     fb_messaging = None
+    fb_storage = None
     FirebaseError = Exception
 
 
@@ -60,21 +62,38 @@ class FirebaseService:
         except Exception:
             pass
 
-        cred_path = settings.FIREBASE_CREDENTIALS_PATH or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if cred_path and os.path.isfile(cred_path):
+        raw_cred_path = settings.FIREBASE_CREDENTIALS_PATH or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        candidate_paths = []
+        if raw_cred_path:
+            candidate_paths.append(raw_cred_path)
+            if not os.path.isabs(raw_cred_path):
+                backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                candidate_paths.append(os.path.join(backend_dir, raw_cred_path))
+                candidate_paths.append(os.path.join(backend_dir, os.path.basename(raw_cred_path)))
+
+        resolved_path = None
+        for p in candidate_paths:
+            if p and os.path.isfile(p):
+                resolved_path = p
+                break
+
+        if resolved_path:
             try:
-                cred = fb_credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred, {"projectId": settings.FIREBASE_PROJECT_ID})
+                cred = fb_credentials.Certificate(resolved_path)
+                firebase_admin.initialize_app(cred, {
+                    "projectId": settings.FIREBASE_PROJECT_ID,
+                    "storageBucket": settings.FIREBASE_STORAGE_BUCKET,
+                })
                 self._is_initialized = True
                 self._is_simulation_mode = False
-                logger.info(f"[FIREBASE] Initialized Firebase Admin from service account file: {cred_path}")
+                logger.info(f"[FIREBASE] Initialized Firebase Admin from service account file: {resolved_path}")
                 return
             except Exception as e:
                 logger.error(f"[FIREBASE] Failed to initialize Firebase Admin with credentials: {e}")
 
         # In development / sandbox without credential file, run in simulation mode
         logger.info(
-            f"[FIREBASE] No credentials file found at '{cred_path}'. "
+            f"[FIREBASE] No credentials file found at '{raw_cred_path}'. "
             "Running in simulation mode (ideal for local development and unit tests)."
         )
         self._is_simulation_mode = True
@@ -284,3 +303,124 @@ class FirebaseService:
         except Exception as e:
             logger.error(f"[FIREBASE AUTH ERROR] Invalid token: {e}")
             return False, None, f"Invalid or expired Firebase ID token: {str(e)}"
+
+    # =========================================================================
+    # Cloud Storage (Firebase Storage)
+    # =========================================================================
+
+    def get_bucket(self):
+        """Retrieve Firebase Storage Bucket instance."""
+        if self._is_simulation_mode or not FIREBASE_ADMIN_INSTALLED or fb_storage is None:
+            return None
+        try:
+            return fb_storage.bucket()
+        except Exception as e:
+            logger.error(f"[FIREBASE STORAGE ERROR] Failed to access storage bucket: {e}")
+            return None
+
+    async def upload_file(
+        self,
+        destination_blob_name: str,
+        content: bytes,
+        content_type: str,
+        is_public: bool = False,
+    ) -> Tuple[bool, str, Optional[str]]:
+        """
+        Upload binary content to Firebase Storage.
+        Returns: (success: bool, url_or_key: str, error: Optional[str])
+        """
+        if self._is_simulation_mode:
+            logger.info(f"[FIREBASE STORAGE SIMULATION] Uploaded {len(content)} bytes to {destination_blob_name}")
+            simulated_url = f"https://firebasestorage.googleapis.com/v0/b/{settings.FIREBASE_STORAGE_BUCKET}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
+            return True, simulated_url, None
+
+        bucket = self.get_bucket()
+        if not bucket:
+            return False, "", "Firebase Storage bucket is not available."
+
+        try:
+            blob = bucket.blob(destination_blob_name)
+            blob.upload_from_string(content, content_type=content_type)
+            if is_public:
+                try:
+                    blob.make_public()
+                    url = blob.public_url
+                except Exception:
+                    # Fallback to standard URL with media token
+                    url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
+            else:
+                url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
+            return True, url, None
+        except Exception as e:
+            logger.error(f"[FIREBASE STORAGE UPLOAD ERROR] {e}")
+            return False, "", str(e)
+
+    async def get_signed_download_url(
+        self,
+        blob_name: str,
+        expires_seconds: int = 900,
+    ) -> Tuple[bool, str, Optional[str]]:
+        """
+        Generate time-limited signed URL for private documents (e.g. Prescriptions).
+        """
+        from datetime import timedelta
+        if self._is_simulation_mode:
+            url = f"https://firebasestorage.googleapis.com/v0/b/{settings.FIREBASE_STORAGE_BUCKET}/o/{blob_name.replace('/', '%2F')}?alt=media&token=simulated_token"
+            return True, url, None
+
+        bucket = self.get_bucket()
+        if not bucket:
+            return False, "", "Firebase Storage bucket is not available."
+
+        try:
+            blob = bucket.blob(blob_name)
+            url = blob.generate_signed_url(
+                expiration=timedelta(seconds=expires_seconds),
+                method="GET",
+            )
+            return True, url, None
+        except Exception as e:
+            logger.error(f"[FIREBASE STORAGE SIGNED URL ERROR] {e}")
+            return False, "", str(e)
+
+    async def download_file_bytes(
+        self,
+        blob_name: str,
+    ) -> Tuple[bool, Optional[bytes], Optional[str]]:
+        """Download binary content of a file from Firebase Storage."""
+        if self._is_simulation_mode:
+            return False, None, "File not found in simulation mode."
+
+        bucket = self.get_bucket()
+        if not bucket:
+            return False, None, "Firebase Storage bucket is not available."
+
+        try:
+            blob = bucket.blob(blob_name)
+            content = blob.download_as_bytes()
+            return True, content, None
+        except Exception as e:
+            logger.error(f"[FIREBASE STORAGE DOWNLOAD ERROR] {e}")
+            return False, None, str(e)
+
+    async def delete_file(
+        self,
+        blob_name: str,
+    ) -> Tuple[bool, Optional[str]]:
+        """Delete an object from Firebase Storage."""
+        if self._is_simulation_mode:
+            return True, None
+
+        bucket = self.get_bucket()
+        if not bucket:
+            return False, "Firebase Storage bucket is not available."
+
+        try:
+            blob = bucket.blob(blob_name)
+            if blob.exists():
+                blob.delete()
+            return True, None
+        except Exception as e:
+            logger.error(f"[FIREBASE STORAGE DELETE ERROR] {e}")
+            return False, str(e)
+

@@ -14,25 +14,36 @@ from app.services.otp_service import OTPService
 
 @pytest.mark.asyncio
 async def test_firebase_service_initialization():
-    """Verify FirebaseService singleton initializes cleanly in simulation mode."""
+    """Verify FirebaseService singleton initializes cleanly."""
     service = FirebaseService()
     assert service is not None
-    assert service.is_simulation_mode is True
+    assert service._is_initialized is True
 
 
 @pytest.mark.asyncio
 async def test_firebase_push_notification_dispatch():
     """Verify single push notification dispatch via FirebaseService."""
     service = FirebaseService()
-    success, msg_id = await service.send_push_notification(
-        device_token="fcm_sample_device_token_12345",
-        title="Order Dispatched",
-        body="Your chronic care medication package is out for delivery.",
-        data={"order_id": "ord_1001", "type": "delivery_update"},
-    )
-    assert success is True
-    assert msg_id is not None
-    assert "simulated_msg_" in msg_id
+    if service.is_simulation_mode:
+        success, msg_id = await service.send_push_notification(
+            device_token="fcm_sample_device_token_12345",
+            title="Order Dispatched",
+            body="Your chronic care medication package is out for delivery.",
+            data={"order_id": "ord_1001", "type": "delivery_update"},
+        )
+        assert success is True
+        assert msg_id is not None
+        assert "simulated_msg_" in msg_id
+    else:
+        with patch("firebase_admin.messaging.send", return_value="projects/med24plus/messages/real_msg_99"):
+            success, msg_id = await service.send_push_notification(
+                device_token="fcm_sample_device_token_12345",
+                title="Order Dispatched",
+                body="Your chronic care medication package is out for delivery.",
+                data={"order_id": "ord_1001", "type": "delivery_update"},
+            )
+            assert success is True
+            assert msg_id == "projects/med24plus/messages/real_msg_99"
 
 
 @pytest.mark.asyncio
@@ -43,15 +54,31 @@ async def test_firebase_multicast_notification():
         "fcm_token_device_a_1234567890",
         "fcm_token_device_b_1234567890",
     ]
-    result = await service.send_multicast_notification(
-        device_tokens=tokens,
-        title="Prescription Approved",
-        body="Your prescription #RX-2026 has been verified by the pharmacist.",
-        data={"prescription_id": "rx_2026"},
-    )
-    assert result["success_count"] == 2
-    assert result["failure_count"] == 0
-    assert len(result["failed_tokens"]) == 0
+    if service.is_simulation_mode:
+        result = await service.send_multicast_notification(
+            device_tokens=tokens,
+            title="Prescription Approved",
+            body="Your prescription #RX-2026 has been verified by the pharmacist.",
+            data={"prescription_id": "rx_2026"},
+        )
+        assert result["success_count"] == 2
+        assert result["failure_count"] == 0
+        assert len(result["failed_tokens"]) == 0
+    else:
+        mock_response = MagicMock()
+        mock_response.success_count = 2
+        mock_response.failure_count = 0
+        mock_response.responses = [MagicMock(success=True), MagicMock(success=True)]
+        with patch("firebase_admin.messaging.send_each_for_multicast", return_value=mock_response):
+            result = await service.send_multicast_notification(
+                device_tokens=tokens,
+                title="Prescription Approved",
+                body="Your prescription #RX-2026 has been verified by the pharmacist.",
+                data={"prescription_id": "rx_2026"},
+            )
+            assert result["success_count"] == 2
+            assert result["failure_count"] == 0
+            assert len(result["failed_tokens"]) == 0
 
 
 @pytest.mark.asyncio

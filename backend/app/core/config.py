@@ -1,3 +1,4 @@
+import os
 from typing import List, Union
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -53,11 +54,13 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3001",
     ]
 
-    # Storage (S3 / R2 / MinIO)
-    STORAGE_ENDPOINT: str = "https://s3.ap-south-1.amazonaws.com"
-    STORAGE_BUCKET: str = "med24plus-private-prescriptions"
-    STORAGE_ACCESS_KEY: str = "placeholder_key"
-    STORAGE_SECRET_KEY: str = "placeholder_secret"
+    # Storage Configuration (Amazon S3 commented out in favor of Firebase Cloud Storage)
+    # STORAGE_ENDPOINT: str = "https://s3.ap-south-1.amazonaws.com"
+    # STORAGE_BUCKET: str = "med24plus-private-prescriptions"
+    # STORAGE_ACCESS_KEY: str = "placeholder_key"
+    # STORAGE_SECRET_KEY: str = "placeholder_secret"
+    STORAGE_PROVIDER: str = "firebase"
+    FIREBASE_STORAGE_BUCKET: str = "med24plus.firebasestorage.app"
 
     # Indian Payment Gateway (Razorpay) & Financial Management (Phase 9)
     PAYMENT_PROVIDER: str = "razorpay"
@@ -75,9 +78,9 @@ class Settings(BaseSettings):
     # MSG91_AUTH_KEY: str = "msg91_auth_placeholder"
     # FAST2SMS_API_KEY: str = "fast2sms_api_key_placeholder"
 
-    # Firebase Admin SDK & Push Notifications (FCM)
+    # Firebase Admin SDK, Push Notifications (FCM) & Cloud Storage
     FIREBASE_CREDENTIALS_PATH: Union[str, None] = None
-    FIREBASE_PROJECT_ID: str = "med24plus-app"
+    FIREBASE_PROJECT_ID: str = "med24plus"
 
     @property
     def is_live_payment_configured(self) -> bool:
@@ -116,7 +119,11 @@ class Settings(BaseSettings):
         return f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(
+            ".env",
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), ".env"),
+        ),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",

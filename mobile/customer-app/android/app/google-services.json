@@ -1,26 +1,21 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "project_id": "med24plus-app",
-    "storage_bucket": "med24plus-app.appspot.com"
+    "project_number": "347992310075",
+    "project_id": "med24plus",
+    "storage_bucket": "med24plus.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef0123456789",
+        "mobilesdk_app_id": "1:347992310075:android:8bae07419798ec43c2b71e",
         "android_client_info": {
           "package_name": "com.technosolz.med24plus"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "123456789012-sampleclientid.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSySampleApiKeyPlaceholderForMed24Plus"
+          "current_key": "AIzaSyDwU3TkXCqT9Kj4Q2Kb4LcsNFukFhtKB_o"
         }
       ],
       "services": {

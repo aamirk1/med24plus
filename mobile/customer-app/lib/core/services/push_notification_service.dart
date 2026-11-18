@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../firebase_options.dart';
 import '../constants/api_endpoints.dart';
 import '../network/api_client.dart';
 
@@ -10,7 +11,11 @@ import '../network/api_client.dart';
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
-    await Firebase.initializeApp();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
     developer.log(
       'Background push notification received: ${message.messageId} | ${message.notification?.title}',
       name: 'PushNotificationService',
@@ -45,7 +50,9 @@ class PushNotificationService {
     try {
       // 1. Ensure Firebase Core is initialized
       if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
       }
 
       _messaging = FirebaseMessaging.instance;
