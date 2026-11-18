@@ -31,16 +31,25 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryLight,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.local_hospital_rounded,
-                                color: AppColors.primary,
-                                size: 20,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/images/app_icon.png',
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primaryLight,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_hospital_rounded,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),

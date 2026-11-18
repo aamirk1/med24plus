@@ -8,7 +8,8 @@
     <application
         android:label="Med24Plus"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
 
         <!-- Default notification channel for high-priority pharmacy & delivery alerts -->
         <meta-data

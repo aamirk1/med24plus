@@ -8,6 +8,16 @@ import { AdminAuthGuard } from "@/components/layout/AdminAuthGuard";
 export const metadata: Metadata = {
   title: "Med24Plus - Pharmacist & Pharmacy Admin Portal",
   description: "Operations console for single pharmacy inventory, prescription verification and Schedule H drug dispensing management.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

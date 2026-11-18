@@ -240,7 +240,23 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
+                  AnimatedFadeSlide(
+                    delay: const Duration(milliseconds: 20),
+                    child: Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/images/app_icon.png',
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   const AnimatedFadeSlide(
                     delay: Duration(milliseconds: 40),
                     child: Text(
