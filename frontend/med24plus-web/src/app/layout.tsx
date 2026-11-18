@@ -10,6 +10,16 @@ export const metadata: Metadata = {
   title: `${siteConfig.name} - ${siteConfig.tagline}`,
   description: "Certified online single retail pharmacy platform in India. Genuine medicines, Schedule H prescription verification by registered pharmacists.",
   keywords: ["online pharmacy", "India pharmacy", "genuine medicines", "prescription verification", "Med24Plus"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
