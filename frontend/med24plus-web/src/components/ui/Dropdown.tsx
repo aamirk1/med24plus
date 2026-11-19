@@ -44,7 +44,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-semibold text-[#172B24] bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#087F5B]"
+        className="inline-flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-semibold text-[#172B24] bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
       >
         <span>{selectedItem || label}</span>
         <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
@@ -62,7 +62,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               }}
               className={cn(
                 "w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 transition hover:bg-slate-50",
-                selectedItem === item.value ? "text-[#087F5B] font-bold bg-[#E6F4EF]/50" : "text-slate-700",
+                selectedItem === item.value ? "text-[#0D9488] font-bold bg-[#F0FDFA]/50" : "text-slate-700",
                 item.disabled && "opacity-40 cursor-not-allowed"
               )}
             >

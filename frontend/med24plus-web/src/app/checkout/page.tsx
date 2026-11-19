@@ -284,7 +284,7 @@ export default function CheckoutPage() {
             <span
               className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
                 validation.validation_status === "valid"
-                  ? "bg-emerald-100 text-emerald-800"
+                  ? "bg-teal-100 text-teal-800"
                   : validation.validation_status === "valid_with_warnings"
                   ? "bg-amber-100 text-amber-800"
                   : "bg-red-100 text-red-800"
@@ -293,7 +293,7 @@ export default function CheckoutPage() {
               Status: {validation.validation_status.replace(/_/g, " ")}
             </span>
           )}
-          <div className="flex items-center gap-1.5 text-xs text-[#087F5B] bg-[#E6F4EF] px-3 py-1 rounded-full font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-[#0D9488] bg-[#F0FDFA] px-3 py-1 rounded-full font-semibold">
             <Lock className="w-3.5 h-3.5" />
             <span>DPCO & Rule 65 Verified</span>
           </div>
@@ -323,7 +323,7 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-subtle space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#172B24] flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-[#087F5B] text-white text-xs flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-[#0D9488] text-white text-xs flex items-center justify-center">
                   1
                 </span>
                 <span>Select Delivery Destination</span>
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setIsAddressModalOpen(true)}
-                className="text-xs text-[#087F5B] font-semibold hover:underline flex items-center gap-1"
+                className="text-xs text-[#0D9488] font-semibold hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Add New Address
               </button>
@@ -359,7 +359,7 @@ export default function CheckoutPage() {
                     onClick={() => setSelectedAddressId(addr.id)}
                     className={`p-4 rounded-xl border cursor-pointer transition ${
                       selectedAddressId === addr.id
-                        ? "border-[#087F5B] bg-[#E6F4EF]/25 shadow-xs ring-1 ring-[#087F5B]"
+                        ? "border-[#0D9488] bg-[#F0FDFA]/25 shadow-xs ring-1 ring-[#0D9488]"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
@@ -392,18 +392,18 @@ export default function CheckoutPage() {
               <div
                 className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 ${
                   validation.is_address_serviceable
-                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                    ? "bg-teal-50/70 border-teal-200 text-teal-900"
                     : "bg-red-50 border-red-200 text-red-900"
                 }`}
               >
                 {validation.is_address_serviceable ? (
                   <>
-                    <Truck className="w-4 h-4 text-[#087F5B] shrink-0 mt-0.5" />
+                    <Truck className="w-4 h-4 text-[#0D9488] shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold">
                         Serviceable Delivery Zone ({validation.estimated_delivery_hours || 4}-Hour Dispatch)
                       </p>
-                      <p className="text-[11px] mt-0.5 text-emerald-800">
+                      <p className="text-[11px] mt-0.5 text-teal-800">
                         {validation.serviceability_message ||
                           "This address is within our verified Bengaluru delivery geofence."}
                       </p>
@@ -429,14 +429,14 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-subtle space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#172B24] flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-[#087F5B] text-white text-xs flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-[#0D9488] text-white text-xs flex items-center justify-center">
                   2
                 </span>
                 <span>Doctor Prescription Compliance (Rule 65)</span>
               </h2>
               <Link
                 href="/prescription/upload"
-                className="text-xs text-[#087F5B] font-semibold hover:underline flex items-center gap-1"
+                className="text-xs text-[#0D9488] font-semibold hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Upload Prescription
               </Link>
@@ -456,7 +456,7 @@ export default function CheckoutPage() {
                         key={item.id}
                         className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
                           item.prescription_status === "approved"
-                            ? "border-emerald-200 bg-emerald-50/50"
+                            ? "border-teal-200 bg-teal-50/50"
                             : "border-amber-200 bg-amber-50/50"
                         }`}
                       >
@@ -470,7 +470,7 @@ export default function CheckoutPage() {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                               item.prescription_status === "approved"
-                                ? "bg-emerald-100 text-emerald-800"
+                                ? "bg-teal-100 text-teal-800"
                                 : "bg-amber-100 text-amber-800"
                             }`}
                           >
@@ -490,7 +490,7 @@ export default function CheckoutPage() {
                   <span>Need to attach an approved doctor prescription?</span>
                   <Link
                     href="/account/prescriptions"
-                    className="text-[#087F5B] font-semibold hover:underline flex items-center gap-1"
+                    className="text-[#0D9488] font-semibold hover:underline flex items-center gap-1"
                   >
                     <span>View Saved Prescriptions</span>
                     <ExternalLink className="w-3 h-3" />
@@ -499,7 +499,7 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#087F5B]" />
+                <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
                 <span>
                   All items in your cart are Over-The-Counter (OTC) or general healthcare products. No doctor prescription is required.
                 </span>
@@ -545,7 +545,7 @@ export default function CheckoutPage() {
                   type="checkbox"
                   checked={acknowledgePriceChanges}
                   onChange={(e) => setAcknowledgePriceChanges(e.target.checked)}
-                  className="rounded border-amber-400 text-[#087F5B] focus:ring-[#087F5B]"
+                  className="rounded border-amber-400 text-[#0D9488] focus:ring-[#0D9488]"
                 />
                 <span>I acknowledge and accept the updated prices for these medicines</span>
               </label>
@@ -628,7 +628,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {Number(validation.discount_total) > 0 && (
-                    <div className="flex justify-between text-[#087F5B]">
+                    <div className="flex justify-between text-[#0D9488]">
                       <span>Discount:</span>
                       <span>- {formatPriceINR(validation.discount_total)}</span>
                     </div>
@@ -637,7 +637,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between">
                     <span>Delivery Charge:</span>
                     {Number(validation.delivery_fee) === 0 ? (
-                      <span className="text-[#087F5B] font-bold">FREE</span>
+                      <span className="text-[#0D9488] font-bold">FREE</span>
                     ) : (
                       <span>{formatPriceINR(validation.delivery_fee)}</span>
                     )}
@@ -702,7 +702,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={runValidation}
-                  className="w-full text-center text-xs text-slate-400 hover:text-[#087F5B] flex items-center justify-center gap-1 mt-1 transition"
+                  className="w-full text-center text-xs text-slate-400 hover:text-[#0D9488] flex items-center justify-center gap-1 mt-1 transition"
                 >
                   <RefreshCw className="w-3 h-3" /> Refresh Authoritative Quote
                 </button>
@@ -799,7 +799,7 @@ export default function CheckoutPage() {
             <select
               value={newAddressType}
               onChange={(e) => setNewAddressType(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-[#172B24] focus:outline-none focus:ring-2 focus:ring-[#087F5B]"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-[#172B24] focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
             >
               <option value="home">Home</option>
               <option value="work">Work</option>
@@ -834,11 +834,11 @@ export default function CheckoutPage() {
           size="md"
         >
           <div className="space-y-4 text-left text-xs">
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 flex items-start gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-[#087F5B] shrink-0 mt-0.5" />
+            <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 flex items-start gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-[#0D9488] shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">Authoritative Validation Quote Generated</p>
-                <p className="text-[11px] text-emerald-800 mt-0.5">
+                <p className="text-[11px] text-teal-800 mt-0.5">
                   All Phase 7 checks (sellable inventory, DPCO prices, GST extraction, and Rule 65 prescription gating) have passed.
                 </p>
               </div>
@@ -855,7 +855,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Delivery Geofence:</span>
-                <span className="text-emerald-700 font-semibold">Serviceable (4 Hours)</span>
+                <span className="text-teal-700 font-semibold">Serviceable (4 Hours)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Expiry Window:</span>

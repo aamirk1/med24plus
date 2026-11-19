@@ -9,7 +9,7 @@ export default function AboutPage() {
       <Breadcrumb items={[{ label: "About Us" }]} />
 
       <div className="space-y-2 pb-4 border-b border-slate-200">
-        <span className="text-xs font-bold text-[#087F5B] bg-[#E6F4EF] px-2.5 py-1 rounded-full uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#0D9488] bg-[#F0FDFA] px-2.5 py-1 rounded-full uppercase tracking-wider">
           Single Licensed Retail Pharmacy
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#172B24]">About Med24Plus Pharmacy</h1>
@@ -27,7 +27,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 not-prose">
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1.5">
             <div className="flex items-center gap-2 text-sm font-bold text-[#172B24]">
-              <ShieldCheck className="w-4 h-4 text-[#087F5B]" />
+              <ShieldCheck className="w-4 h-4 text-[#0D9488]" />
               <span>Zero Counterfeits Guarantee</span>
             </div>
             <p className="text-[11px] text-slate-500">

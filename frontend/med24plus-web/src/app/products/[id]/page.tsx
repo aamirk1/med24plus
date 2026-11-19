@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center space-y-4 text-slate-500">
-        <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
         <p className="text-sm font-medium">Loading statutory product information & live stock status...</p>
       </div>
     );
@@ -115,12 +115,12 @@ export default function ProductDetailPage() {
                 className="max-h-full max-w-full object-contain"
               />
             ) : (
-              <div className="w-32 h-32 rounded-2xl bg-white shadow-card border border-slate-100 flex items-center justify-center text-[#087F5B]">
+              <div className="w-32 h-32 rounded-2xl bg-white shadow-card border border-slate-100 flex items-center justify-center text-[#0D9488]">
                 <ShoppingBag className="w-16 h-16" />
               </div>
             )}
             {product.discountPercent > 0 && (
-              <span className="absolute top-4 left-4 text-xs font-bold text-[#087F5B] bg-[#E6F4EF] border border-[#C3E7DB] px-2.5 py-1 rounded-full">
+              <span className="absolute top-4 left-4 text-xs font-bold text-[#0D9488] bg-[#F0FDFA] border border-[#CCFBF1] px-2.5 py-1 rounded-full">
                 {product.discountPercent}% OFF
               </span>
             )}
@@ -134,7 +134,7 @@ export default function ProductDetailPage() {
                   key={idx}
                   onClick={() => setActiveImageIdx(idx)}
                   className={`w-16 h-16 rounded-lg border-2 bg-slate-50 flex items-center justify-center transition overflow-hidden ${
-                    activeImageIdx === idx ? "border-[#087F5B]" : "border-slate-200 opacity-60 hover:opacity-100"
+                    activeImageIdx === idx ? "border-[#0D9488]" : "border-slate-200 opacity-60 hover:opacity-100"
                   }`}
                 >
                   <img src={imgUrl} alt={`${product.name} thumbnail`} className="w-full h-full object-cover" />
@@ -144,11 +144,11 @@ export default function ProductDetailPage() {
           )}
 
           {/* Genuine Medicine Assurance */}
-          <div className="rounded-xl bg-[#E6F4EF]/60 border border-[#C3E7DB] p-3.5 flex items-center gap-3 text-xs text-[#066649]">
-            <ShieldCheck className="w-5 h-5 text-[#087F5B] shrink-0" />
+          <div className="rounded-xl bg-[#F0FDFA]/60 border border-[#CCFBF1] p-3.5 flex items-center gap-3 text-xs text-[#0F766E]">
+            <ShieldCheck className="w-5 h-5 text-[#0D9488] shrink-0" />
             <div>
               <span className="font-bold">100% Genuine Medicine</span>
-              <p className="text-[11px] text-[#066649]/80 mt-0.5">
+              <p className="text-[11px] text-[#0F766E]/80 mt-0.5">
                 Sourced directly from licensed manufacturers. Subject to statutory Rule 65 pharmacist verification.
               </p>
             </div>
@@ -191,7 +191,7 @@ export default function ProductDetailPage() {
             </h1>
             <p className="text-xs text-slate-500">
               Manufactured by <span className="font-semibold text-slate-700">{product.manufacturer}</span> • Brand:{" "}
-              <span className="font-semibold text-[#087F5B]">{product.brand}</span>
+              <span className="font-semibold text-[#0D9488]">{product.brand}</span>
             </p>
           </div>
 
@@ -207,8 +207,8 @@ export default function ProductDetailPage() {
 
           {/* Rating */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-xs font-bold text-emerald-800">
-              <Star className="w-3.5 h-3.5 fill-emerald-600 text-emerald-600" />
+            <div className="flex items-center gap-1 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded text-xs font-bold text-teal-800">
+              <Star className="w-3.5 h-3.5 fill-teal-600 text-teal-600" />
               <span>{product.rating}</span>
             </div>
             <span className="text-xs text-slate-500 font-medium">
@@ -234,8 +234,8 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-2">
                 {product.inStock ? (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-[#087F5B]" />
-                    <span className="font-bold text-[#087F5B]">In Stock (Ready for Dispatch)</span>
+                    <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
+                    <span className="font-bold text-[#0D9488]">In Stock (Ready for Dispatch)</span>
                   </>
                 ) : (
                   <>

@@ -43,7 +43,7 @@ export default function AdminGeneralSettingsPage() {
                 type="text"
                 value={settings.platformName}
                 onChange={(e) => setSettings({ ...settings, platformName: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
             <div>
@@ -54,7 +54,7 @@ export default function AdminGeneralSettingsPage() {
                 type="email"
                 value={settings.supportEmail}
                 onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
             <div>
@@ -65,7 +65,7 @@ export default function AdminGeneralSettingsPage() {
                 type="text"
                 value={settings.emergencyHelpline}
                 onChange={(e) => setSettings({ ...settings, emergencyHelpline: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
             <div>
@@ -92,7 +92,7 @@ export default function AdminGeneralSettingsPage() {
                 type="checkbox"
                 checked={settings.feefoStrictEnforcement}
                 onChange={(e) => setSettings({ ...settings, feefoStrictEnforcement: e.target.checked })}
-                className="mt-0.5 rounded text-[#087F5B] focus:ring-[#087F5B]"
+                className="mt-0.5 rounded text-[#0D9488] focus:ring-[#0D9488]"
               />
               <div>
                 <p className="text-xs font-semibold text-slate-900">Enforce Strict FEFO Batch Selection</p>
@@ -107,7 +107,7 @@ export default function AdminGeneralSettingsPage() {
                 type="checkbox"
                 checked={settings.autoQuarantineExpiries}
                 onChange={(e) => setSettings({ ...settings, autoQuarantineExpiries: e.target.checked })}
-                className="mt-0.5 rounded text-[#087F5B] focus:ring-[#087F5B]"
+                className="mt-0.5 rounded text-[#0D9488] focus:ring-[#0D9488]"
               />
               <div>
                 <p className="text-xs font-semibold text-slate-900">Automatic Near-Expiry Quarantine (&lt; 60 Days)</p>
@@ -122,7 +122,7 @@ export default function AdminGeneralSettingsPage() {
         <div className="flex justify-end pt-4 border-t border-slate-200">
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-[#087F5B] hover:bg-[#066649] rounded-lg shadow-sm transition"
+            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-lg shadow-sm transition"
           >
             <Save className="w-4 h-4" />
             <span>Save General Settings</span>

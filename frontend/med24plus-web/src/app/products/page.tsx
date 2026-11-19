@@ -174,7 +174,7 @@ export default function ProductsPage() {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-xs text-[#087F5B] hover:underline flex items-center gap-1 font-medium"
+                className="text-xs text-[#0D9488] hover:underline flex items-center gap-1 font-medium"
               >
                 <RefreshCcw className="w-3 h-3" />
                 <span>Reset</span>
@@ -193,7 +193,7 @@ export default function ProductsPage() {
                   }}
                   className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition ${
                     selectedCategory === "all"
-                      ? "bg-[#E6F4EF] text-[#087F5B] font-bold"
+                      ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
                       : "text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -209,7 +209,7 @@ export default function ProductsPage() {
                     }}
                     className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition ${
                       selectedCategory === cat.slug
-                        ? "bg-[#E6F4EF] text-[#087F5B] font-bold"
+                        ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
                         : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -257,7 +257,7 @@ export default function ProductsPage() {
             <div className="space-y-2 pt-3 border-t border-slate-100">
               <div className="flex items-center justify-between text-xs font-semibold text-[#172B24]">
                 <span>Max Price</span>
-                <span className="text-[#087F5B] font-bold">₹{priceRange}</span>
+                <span className="text-[#0D9488] font-bold">₹{priceRange}</span>
               </div>
               <input
                 type="range"
@@ -269,7 +269,7 @@ export default function ProductsPage() {
                   setPriceRange(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="w-full accent-[#087F5B] cursor-pointer"
+                className="w-full accent-[#0D9488] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-400">
                 <span>₹50</span>
@@ -289,7 +289,7 @@ export default function ProductsPage() {
                   }}
                   className={`w-full text-left text-xs py-1 px-2 rounded-lg transition ${
                     selectedBrand === "all"
-                      ? "bg-[#E6F4EF] text-[#087F5B] font-bold"
+                      ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
                       : "text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -305,7 +305,7 @@ export default function ProductsPage() {
                     }}
                     className={`w-full text-left text-xs py-1 px-2 rounded-lg transition ${
                       selectedBrand.toLowerCase() === brand.name.toLowerCase()
-                        ? "bg-[#E6F4EF] text-[#087F5B] font-bold"
+                        ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
                         : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -321,7 +321,7 @@ export default function ProductsPage() {
         <main className="lg:col-span-3 space-y-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
               <p className="text-xs font-medium">Checking live pharmacy inventory...</p>
             </div>
           ) : products.length > 0 ? (

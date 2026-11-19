@@ -14,7 +14,7 @@ export const PrescriptionBadge: React.FC<PrescriptionBadgeProps> = ({
   if (!required) {
     return (
       <Badge variant="neutral" size="sm" className="gap-1 text-[10px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">
-        <Check className="w-2.5 h-2.5 text-emerald-600" />
+        <Check className="w-2.5 h-2.5 text-teal-600" />
         <span>No Rx Needed</span>
       </Badge>
     );

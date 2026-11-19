@@ -111,7 +111,7 @@ export default function CustomerPrescriptionDetailPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-[#087F5B] mx-auto" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#0D9488] mx-auto" />
         <p className="text-xs text-slate-500">Loading prescription details from vault...</p>
       </div>
     );
@@ -213,10 +213,10 @@ export default function CustomerPrescriptionDetailPage() {
                   setClarificationFiles(Array.from(e.target.files));
                 }
               }}
-              className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#087F5B] file:text-white hover:file:bg-[#066649] cursor-pointer"
+              className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0D9488] file:text-white hover:file:bg-[#0F766E] cursor-pointer"
             />
             {clarificationFiles.length > 0 && (
-              <p className="text-[11px] text-emerald-700 font-medium">
+              <p className="text-[11px] text-teal-700 font-medium">
                 {clarificationFiles.length} file(s) selected: {clarificationFiles.map((f) => f.name).join(", ")}
               </p>
             )}
@@ -226,7 +226,7 @@ export default function CustomerPrescriptionDetailPage() {
               value={clarificationNotes}
               onChange={(e) => setClarificationNotes(e.target.value)}
               placeholder="Add response note for pharmacist (optional)..."
-              className="w-full p-2.5 text-xs rounded-xl border border-amber-300 bg-white focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+              className="w-full p-2.5 text-xs rounded-xl border border-amber-300 bg-white focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
             />
 
             <Button
@@ -300,9 +300,9 @@ export default function CustomerPrescriptionDetailPage() {
               )}
 
               {prescription.valid_until && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                  <span className="text-[10px] uppercase font-bold text-emerald-800 block">Valid Until</span>
-                  <p className="text-emerald-950 font-bold text-xs mt-0.5 font-mono">
+                <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-teal-800 block">Valid Until</span>
+                  <p className="text-teal-950 font-bold text-xs mt-0.5 font-mono">
                     {new Date(prescription.valid_until).toLocaleDateString("en-IN", {
                       day: "2-digit",
                       month: "long",
@@ -327,7 +327,7 @@ export default function CustomerPrescriptionDetailPage() {
           {/* Pharmacist Remarks */}
           {prescription.pharmacist_notes && (
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-subtle space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#087F5B]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0D9488]">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Pharmacist Assessment Note</span>
               </div>
@@ -375,7 +375,7 @@ export default function CustomerPrescriptionDetailPage() {
                             href={file.secure_view_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#087F5B] bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 transition"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#0D9488] bg-white border border-slate-200 rounded-lg hover:bg-teal-50 transition"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             <span>View Full Screen</span>
@@ -404,7 +404,7 @@ export default function CustomerPrescriptionDetailPage() {
                               href={file.secure_view_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs font-bold text-[#087F5B] hover:underline"
+                              className="text-xs font-bold text-[#0D9488] hover:underline"
                             >
                               Open PDF in Viewer &rarr;
                             </a>

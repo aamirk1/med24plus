@@ -24,11 +24,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "", badge = "A
         <div className="flex items-center gap-2">
           <div className="flex items-baseline font-extrabold tracking-tight text-lg text-white">
             <span className="text-[#38BDF8]">Med</span>
-            <span className="text-[#00B074]">24</span>
+            <span className="text-[#0D9488]">24</span>
             <span className="text-[#38BDF8]">Plus</span>
           </div>
           {badge && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
               {badge}
             </span>
           )}

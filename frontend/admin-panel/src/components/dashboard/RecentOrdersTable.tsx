@@ -95,7 +95,7 @@ export const RecentOrdersTable: React.FC = () => {
                       </span>
                     )}
                     {order.rxStatus === "VERIFIED" && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
                         <CheckCircle2 className="w-3 h-3" /> Approved
                       </span>
                     )}

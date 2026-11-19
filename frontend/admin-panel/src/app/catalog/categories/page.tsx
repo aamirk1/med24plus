@@ -98,7 +98,7 @@ export default function AdminCategoriesPage() {
       header: "Category Name",
       cell: (c) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#087F5B] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-teal-50 text-[#0D9488] flex items-center justify-center shrink-0">
             <FolderTree className="w-4 h-4" />
           </div>
           <div>
@@ -130,7 +130,7 @@ export default function AdminCategoriesPage() {
             onClick={() => handleToggleStatus(c)}
           >
             {c.isActive ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
             ) : (
               <XCircle className="w-3.5 h-3.5 text-slate-400" />
             )}
@@ -157,7 +157,7 @@ export default function AdminCategoriesPage() {
           <button
             type="button"
             onClick={handleCreateCategory}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
             <span>Add Category</span>
@@ -173,7 +173,7 @@ export default function AdminCategoriesPage() {
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Loading categories from database...</p>
         </div>
       ) : (

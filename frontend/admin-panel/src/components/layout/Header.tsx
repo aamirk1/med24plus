@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
         <div>
           <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
             {adminConfig.pharmacyName}
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
               Active Unit
             </span>
           </h2>
@@ -53,7 +53,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
           <div className="text-right">
             <p className="text-xs font-bold text-slate-800">{displayName}</p>
-            <p className="text-[10px] text-emerald-600 font-medium flex items-center justify-end gap-1">
+            <p className="text-[10px] text-teal-600 font-medium flex items-center justify-end gap-1">
               <ShieldCheck className="w-3 h-3" /> {councilId}
             </p>
           </div>

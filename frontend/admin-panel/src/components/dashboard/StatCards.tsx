@@ -16,13 +16,13 @@ export const StatCards: React.FC = () => {
       <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-slate-500">Today&apos;s Dispensed Value</span>
-          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+          <div className="p-2 rounded-lg bg-teal-50 text-teal-600">
             <TrendingUp className="w-4 h-4" />
           </div>
         </div>
         <div className="mt-3">
           <p className="text-2xl font-extrabold text-slate-900">{formatPriceINR(42850)}</p>
-          <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-teal-600 font-medium mt-1 flex items-center gap-1">
             <span>+14.8%</span>
             <span className="text-slate-400">vs yesterday (Mock)</span>
           </p>
@@ -57,7 +57,7 @@ export const StatCards: React.FC = () => {
         <div className="mt-3">
           <p className="text-2xl font-extrabold text-slate-900">12</p>
           <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            <CheckCircle className="w-3.5 h-3.5 text-teal-500" />
             <span>5 ready for delivery dispatch</span>
           </p>
         </div>

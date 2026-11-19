@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
                 <div className="border-b border-slate-800/80 py-8">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0">
+                      <div className="p-2 rounded-lg bg-teal-500/10 text-teal-400 shrink-0">
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
@@ -63,9 +63,9 @@ export const Footer: React.FC = () => {
 
                                 <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1 text-[11px] text-slate-300">
                                   <p className="font-semibold text-white">Statutory Drug License Credentials:</p>
-                                  <p>Retail Drug License (Form 20): <span className="font-mono text-emerald-400">KA-BLR-20B-849201</span></p>
-                                  <p>Retail Drug License (Form 21): <span className="font-mono text-emerald-400">KA-BLR-21B-849202</span></p>
-                                  <p>GSTIN: <span className="font-mono text-emerald-400">29AABCM9482Q1Z8</span></p>
+                                  <p>Retail Drug License (Form 20): <span className="font-mono text-teal-400">KA-BLR-20B-849201</span></p>
+                                  <p>Retail Drug License (Form 21): <span className="font-mono text-teal-400">KA-BLR-21B-849202</span></p>
+                                  <p>GSTIN: <span className="font-mono text-teal-400">29AABCM9482Q1Z8</span></p>
                                   <p>Supervising Pharmacist: <span className="text-slate-200">Ramesh Sharma (PCI-REG-94821)</span></p>
                                 </div>
                               </div>
@@ -79,7 +79,7 @@ export const Footer: React.FC = () => {
                                   <li><Link href="/categories/cardiac-care" className="hover:text-white transition">Cardiac & BP</Link></li>
                                   <li><Link href="/categories/vitamins-supplements" className="hover:text-white transition">Vitamins & Supplements</Link></li>
                                   <li><Link href="/categories/ayurveda-herbal" className="hover:text-white transition">Ayurveda & Herbal</Link></li>
-                                  <li><Link href="/prescription/upload" className="text-emerald-400 font-semibold hover:underline">Upload Doctor Prescription</Link></li>
+                                  <li><Link href="/prescription/upload" className="text-teal-400 font-semibold hover:underline">Upload Doctor Prescription</Link></li>
                                 </ul>
                               </div>
 
@@ -101,15 +101,15 @@ export const Footer: React.FC = () => {
                                 <h5 className="text-white font-semibold text-xs tracking-wider uppercase">Retail Pharmacy Unit</h5>
                                 <div className="space-y-2.5 text-slate-400 text-xs">
                                   <div className="flex items-start gap-2">
-                                    <MapPin className="w-4 h-4 text-[#087F5B] shrink-0 mt-0.5" />
+                                    <MapPin className="w-4 h-4 text-[#0D9488] shrink-0 mt-0.5" />
                                     <p>No. 42, 80 Feet Road, 4th Block, Koramangala, Bengaluru, Karnataka - 560034</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Phone className="w-4 h-4 text-[#087F5B] shrink-0" />
+                                    <Phone className="w-4 h-4 text-[#0D9488] shrink-0" />
                                     <span>+91 80 4123 4567</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Mail className="w-4 h-4 text-[#087F5B] shrink-0" />
+                                    <Mail className="w-4 h-4 text-[#0D9488] shrink-0" />
                                     <span>care@med24plus.in</span>
                                   </div>
                                 </div>

@@ -67,7 +67,7 @@ export default function AdminBannersPage() {
           <button
             type="button"
             onClick={() => alert("Mock: Upload promotional creative dialog")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
             <span>Upload New Banner</span>

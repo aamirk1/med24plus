@@ -18,7 +18,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
     <nav aria-label="Breadcrumb" className={cn("flex items-center text-xs text-slate-500", className)}>
       <ol className="flex items-center gap-1.5 flex-wrap">
         <li>
-          <Link href="/" className="hover:text-[#087F5B] flex items-center gap-1">
+          <Link href="/" className="hover:text-[#0D9488] flex items-center gap-1">
             <Home className="w-3.5 h-3.5 text-slate-400" />
             <span className="sr-only">Home</span>
           </Link>
@@ -32,7 +32,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
               </li>
               <li>
                 {item.href && !isLast ? (
-                  <Link href={item.href} className="hover:text-[#087F5B] transition">
+                  <Link href={item.href} className="hover:text-[#0D9488] transition">
                     {item.label}
                   </Link>
                 ) : (

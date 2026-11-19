@@ -92,11 +92,11 @@ export default function PrescriptionUploadPage() {
   if (submittedRx) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-[#E6F4EF] text-[#087F5B] flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-full bg-[#F0FDFA] text-[#0D9488] flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-10 h-10" />
         </div>
         <div className="space-y-2">
-          <span className="text-xs font-bold text-[#087F5B] bg-[#E6F4EF] px-2.5 py-1 rounded-full uppercase tracking-wider">
+          <span className="text-xs font-bold text-[#0D9488] bg-[#F0FDFA] px-2.5 py-1 rounded-full uppercase tracking-wider">
             Prescription Submitted to Pharmacist
           </span>
           <h1 className="text-2xl font-bold font-mono text-[#172B24]">
@@ -109,7 +109,7 @@ export default function PrescriptionUploadPage() {
 
         <div className="bg-slate-50 rounded-2xl p-5 text-xs text-left border border-slate-200 space-y-2.5">
           <div className="flex items-center gap-2 font-bold text-[#172B24]">
-            <Clock className="w-4 h-4 text-[#087F5B]" />
+            <Clock className="w-4 h-4 text-[#0D9488]" />
             <span>Expected Pharmacist Review: Within 15 Minutes</span>
           </div>
           <p className="text-slate-500 text-[11px] leading-relaxed">
@@ -175,9 +175,9 @@ export default function PrescriptionUploadPage() {
         {/* Dropzone */}
         <label
           htmlFor="rx-file-input"
-          className="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition border-slate-300 hover:border-[#087F5B] bg-slate-50/50"
+          className="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition border-slate-300 hover:border-[#0D9488] bg-slate-50/50"
         >
-          <UploadCloud className="w-10 h-10 mx-auto mb-2 text-[#087F5B]" />
+          <UploadCloud className="w-10 h-10 mx-auto mb-2 text-[#0D9488]" />
           <h4 className="text-sm font-bold text-[#172B24]">
             Drag &amp; drop prescription documents here, or click to browse
           </h4>
@@ -207,7 +207,7 @@ export default function PrescriptionUploadPage() {
                   className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs"
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <FileText className="w-4 h-4 text-[#087F5B] shrink-0" />
+                    <FileText className="w-4 h-4 text-[#0D9488] shrink-0" />
                     <span className="truncate font-mono font-medium text-slate-800">{file.name}</span>
                     <span className="text-[10px] text-slate-400 shrink-0">
                       ({(file.size / 1024).toFixed(0)} KB)
@@ -249,7 +249,7 @@ export default function PrescriptionUploadPage() {
               <select
                 value={patientGender}
                 onChange={(e) => setPatientGender(e.target.value)}
-                className="w-full h-10 px-3 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full h-10 px-3 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>

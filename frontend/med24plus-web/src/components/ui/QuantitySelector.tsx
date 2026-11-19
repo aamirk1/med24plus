@@ -38,7 +38,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         disabled={quantity <= min}
         onClick={onDecrement}
         className={cn(
-          "flex items-center justify-center text-slate-500 hover:text-[#087F5B] hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none rounded-l-lg transition",
+          "flex items-center justify-center text-slate-500 hover:text-[#0D9488] hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none rounded-l-lg transition",
           isSm ? "w-6 h-7" : "w-8 h-9"
         )}
         aria-label="Decrease quantity"
@@ -60,7 +60,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         disabled={quantity >= max}
         onClick={onIncrement}
         className={cn(
-          "flex items-center justify-center text-slate-500 hover:text-[#087F5B] hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none rounded-r-lg transition",
+          "flex items-center justify-center text-slate-500 hover:text-[#0D9488] hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none rounded-r-lg transition",
           isSm ? "w-6 h-7" : "w-8 h-9"
         )}
         aria-label="Increase quantity"

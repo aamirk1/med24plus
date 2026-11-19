@@ -60,7 +60,7 @@ export default function AdminReportsPage() {
             <div>
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-bold text-slate-900 text-sm">{r.title}</h3>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
+                <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded shrink-0">
                   {r.schedule}
                 </span>
               </div>
@@ -72,7 +72,7 @@ export default function AdminReportsPage() {
               <button
                 type="button"
                 onClick={() => alert(`Mock: Downloading ${r.title} for ${startDate} to ${endDate}`)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#087F5B] bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0D9488] bg-teal-50 hover:bg-teal-100 rounded-lg transition"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download Report</span>

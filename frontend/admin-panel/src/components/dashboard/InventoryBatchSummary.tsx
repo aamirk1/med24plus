@@ -122,7 +122,7 @@ export const InventoryBatchSummary: React.FC = () => {
                     </span>
                   )}
                   {batch.status === "GOOD" && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-teal-50 text-teal-700 border border-teal-200">
                       <ShieldCheck className="w-3 h-3" /> Good Shelf-Life
                     </span>
                   )}

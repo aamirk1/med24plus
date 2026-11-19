@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
 
       {/* Header Banner */}
       <div className="pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#087F5B] mb-1">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#0D9488] mb-1">
           <ShieldCheck className="w-4 h-4" />
           <span>Google Play & Statutory Healthcare Compliance</span>
         </div>
@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
 
       <div className="space-y-6 text-sm text-slate-700 leading-relaxed">
         {/* Overview */}
-        <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-950 text-xs">
+        <section className="bg-teal-50 border border-teal-200 rounded-xl p-4 text-teal-950 text-xs">
           <p className="font-semibold mb-1">Executive Summary for Patients and Reviewers:</p>
           <p>
             Med24Plus is a licensed community pharmacy application operated by Technosolz under the Drugs and Cosmetics Act, 1940 and Rules, 1945, and compliant with the Digital Personal Data Protection (DPDP) Act, 2023. We do not sell patient data, track users across third-party websites, or use health records for targeted marketing.
@@ -63,7 +63,7 @@ export default function PrivacyPolicyPage() {
         {/* 2. Device Permissions */}
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-[#172B24] flex items-center gap-2">
-            <Bell className="w-5 h-5 text-[#087F5B]" />
+            <Bell className="w-5 h-5 text-[#0D9488]" />
             <span>2. Device Permissions and Purpose</span>
           </h2>
           <p>
@@ -100,7 +100,7 @@ export default function PrivacyPolicyPage() {
         {/* 3. Third-Party Services */}
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-[#172B24] flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#087F5B]" />
+            <FileText className="w-5 h-5 text-[#0D9488]" />
             <span>3. Third-Party Services & SDKs</span>
           </h2>
           <p>
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2 text-xs text-slate-600">
             <li>
-              <strong>Google Firebase Cloud Messaging (FCM):</strong> Delivers encrypted order and prescription status push notifications. (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline">Google Privacy Policy</a>)
+              <strong>Google Firebase Cloud Messaging (FCM):</strong> Delivers encrypted order and prescription status push notifications. (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-teal-700 underline">Google Privacy Policy</a>)
             </li>
             <li>
               <strong>Google Firebase Phone Authentication:</strong> Delivers instant SMS verification codes for passwordless, secure patient sign-in.
@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
         {/* 4. Sensitive Health Data Security */}
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-[#172B24] flex items-center gap-2">
-            <Lock className="w-5 h-5 text-[#087F5B]" />
+            <Lock className="w-5 h-5 text-[#0D9488]" />
             <span>4. Security & Sensitive Health Data Protection</span>
           </h2>
           <p>
@@ -152,7 +152,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>In-App:</strong> Open the Med24Plus mobile application, navigate to <strong>Profile &gt; Account Settings &gt; Delete Account &amp; Data</strong>, and confirm your request.</li>
               <li>
                 <strong>Online Request:</strong> Email our dedicated Privacy &amp; Grievance Officer at{" "}
-                <a href="mailto:privacy@med24plus.in?subject=Account%20and%20Data%20Deletion%20Request" className="text-emerald-700 font-medium underline">
+                <a href="mailto:privacy@med24plus.in?subject=Account%20and%20Data%20Deletion%20Request" className="text-teal-700 font-medium underline">
                   privacy@med24plus.in
                 </a>{" "}
                 with your registered mobile phone number.
@@ -181,7 +181,7 @@ export default function PrivacyPolicyPage() {
         {/* 7. Contact & Grievance Redressal */}
         <section className="space-y-2">
           <h2 className="text-lg font-bold text-[#172B24] flex items-center gap-2">
-            <Mail className="w-5 h-5 text-[#087F5B]" />
+            <Mail className="w-5 h-5 text-[#0D9488]" />
             <span>7. Grievance Officer &amp; Regulatory Contact</span>
           </h2>
           <p className="text-xs text-slate-600">
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
             <p><strong>Entity:</strong> Med24Plus Central Pharmacy (Technosolz)</p>
             <p><strong>Grievance Officer:</strong> Ramesh Sharma (PCI-REG-94821)</p>
             <p><strong>Address:</strong> Ground Floor, Health Horizon Hub, Koramangala 4th Block, Bengaluru, Karnataka - 560001, India</p>
-            <p><strong>Support &amp; Privacy Email:</strong> <a href="mailto:care@med24plus.in" className="text-emerald-700 underline">care@med24plus.in</a> / <a href="mailto:privacy@med24plus.in" className="text-emerald-700 underline">privacy@med24plus.in</a></p>
+            <p><strong>Support &amp; Privacy Email:</strong> <a href="mailto:care@med24plus.in" className="text-teal-700 underline">care@med24plus.in</a> / <a href="mailto:privacy@med24plus.in" className="text-teal-700 underline">privacy@med24plus.in</a></p>
             <p><strong>Helpline:</strong> +91 8000 124 247</p>
           </div>
         </section>

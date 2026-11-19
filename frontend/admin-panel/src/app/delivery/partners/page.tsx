@@ -42,7 +42,7 @@ export default function DeliveryPartnersPage() {
     },
     {
       header: "Average TAT",
-      cell: (dp) => <span className="text-xs font-semibold text-emerald-700">{dp.avgDeliveryTime}</span>,
+      cell: (dp) => <span className="text-xs font-semibold text-teal-700">{dp.avgDeliveryTime}</span>,
     },
     {
       header: "Status",
@@ -69,7 +69,7 @@ export default function DeliveryPartnersPage() {
           <button
             type="button"
             onClick={() => alert("Mock: Add Delivery Partner Dialog")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
             <span>Add Delivery Partner</span>

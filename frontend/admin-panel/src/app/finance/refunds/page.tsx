@@ -37,7 +37,7 @@ export default function AdminRefundsPage() {
         <span
           className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
             r.status === "PROCESSED"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              ? "bg-teal-50 text-teal-700 border border-teal-200"
               : "bg-amber-50 text-amber-700 border border-amber-200"
           }`}
         >

@@ -189,7 +189,7 @@ export default function AdminExpiriesPage() {
           onClick={() => setTab("30")}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
             tab === "30"
-              ? "bg-[#087F5B] text-white"
+              ? "bg-[#0D9488] text-white"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -200,7 +200,7 @@ export default function AdminExpiriesPage() {
           onClick={() => setTab("60")}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
             tab === "60"
-              ? "bg-[#087F5B] text-white"
+              ? "bg-[#0D9488] text-white"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -211,7 +211,7 @@ export default function AdminExpiriesPage() {
           onClick={() => setTab("90")}
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
             tab === "90"
-              ? "bg-[#087F5B] text-white"
+              ? "bg-[#0D9488] text-white"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -232,7 +232,7 @@ export default function AdminExpiriesPage() {
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Computing expiry horizons...</p>
         </div>
       ) : (

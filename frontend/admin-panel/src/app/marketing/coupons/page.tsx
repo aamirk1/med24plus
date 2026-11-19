@@ -16,7 +16,7 @@ export default function AdminCouponsPage() {
       header: "Coupon Code",
       cell: (cp) => (
         <div className="flex items-center gap-2">
-          <Tag className="w-4 h-4 text-[#087F5B]" />
+          <Tag className="w-4 h-4 text-[#0D9488]" />
           <span className="font-mono font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
             {cp.code}
           </span>
@@ -26,7 +26,7 @@ export default function AdminCouponsPage() {
     {
       header: "Discount Offer",
       cell: (cp) => (
-        <span className="text-xs font-semibold text-emerald-700">
+        <span className="text-xs font-semibold text-teal-700">
           {cp.discountType === "PERCENT" ? `${cp.value}% Off` : `₹${cp.value} Flat Off`}
         </span>
       ),
@@ -94,7 +94,7 @@ export default function AdminCouponsPage() {
                 setCoupons((prev) => [newCp, ...prev]);
               }
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
             <span>Create New Coupon</span>

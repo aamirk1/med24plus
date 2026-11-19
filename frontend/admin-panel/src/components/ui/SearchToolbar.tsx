@@ -24,7 +24,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-[#172B24] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#087F5B]"
+        className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-[#172B24] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
       />
       {value && (
         <button

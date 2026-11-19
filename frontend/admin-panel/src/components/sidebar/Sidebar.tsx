@@ -194,7 +194,7 @@ export const Sidebar: React.FC = () => {
                     href={group.href}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
                       pathname === group.href
-                        ? "bg-[#087F5B] text-white"
+                        ? "bg-[#0D9488] text-white"
                         : "text-slate-300 hover:text-white hover:bg-slate-800"
                     }`}
                   >
@@ -243,7 +243,7 @@ export const Sidebar: React.FC = () => {
                             href={sub.href}
                             className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-[11px] font-medium transition ${
                               isSubActive
-                                ? "bg-[#087F5B] text-white"
+                                ? "bg-[#0D9488] text-white"
                                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                             }`}
                           >
@@ -273,7 +273,7 @@ export const Sidebar: React.FC = () => {
               <UserCircle2 className="w-6 h-6 text-slate-400 shrink-0" />
               <div className="min-w-0">
                 <p className="text-xs font-bold text-white truncate">{user.full_name || "Staff Member"}</p>
-                <p className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold truncate">
+                <p className="text-[10px] text-teal-400 uppercase tracking-wider font-semibold truncate">
                   {user.roles.join(", ")}
                 </p>
               </div>
@@ -292,7 +292,7 @@ export const Sidebar: React.FC = () => {
         {/* Compliance / Regulatory Status */}
         <div className="p-3 border border-slate-800 bg-slate-950/80 rounded-xl space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-            <ShieldAlert className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <ShieldAlert className="w-3.5 h-3.5 text-teal-400 shrink-0" />
             <span>Rule 65 Registered</span>
           </div>
           <p className="text-[10px] text-slate-400 leading-snug">

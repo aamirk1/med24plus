@@ -52,7 +52,7 @@ export default function CategoryDetailPage() {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center space-y-3 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
         <p className="text-xs font-medium">Loading category products...</p>
       </div>
     );
@@ -67,8 +67,8 @@ export default function CategoryDetailPage() {
         ]}
       />
 
-      <div className="bg-[#E6F4EF]/50 border border-[#C3E7DB] rounded-2xl p-6 space-y-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#087F5B]">
+      <div className="bg-[#F0FDFA]/50 border border-[#CCFBF1] rounded-2xl p-6 space-y-1">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D9488]">
           Therapeutic Category
         </span>
         <h1 className="text-2xl font-bold text-[#172B24]">{category?.name}</h1>
@@ -78,7 +78,7 @@ export default function CategoryDetailPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>Showing {products.length} product(s)</span>
-          <Link href="/products" className="text-[#087F5B] font-semibold hover:underline">
+          <Link href="/products" className="text-[#0D9488] font-semibold hover:underline">
             View All Products
           </Link>
         </div>

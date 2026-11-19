@@ -9,15 +9,15 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ className, children, variant = "ghost", size = "md", ariaLabel, ...props }, ref) => {
-    const base = "inline-flex items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#087F5B] disabled:opacity-50 disabled:pointer-events-none";
+    const base = "inline-flex items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D9488] disabled:opacity-50 disabled:pointer-events-none";
 
     const variants = {
-      primary: "bg-[#087F5B] text-white hover:bg-[#066649]",
+      primary: "bg-[#0D9488] text-white hover:bg-[#0F766E]",
       secondary: "bg-[#2563EB] text-white hover:bg-[#1D4ED8]",
       outline: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
       ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
       danger: "text-red-600 hover:bg-red-50",
-      light: "bg-[#E6F4EF] text-[#087F5B] hover:bg-[#d0ece1]",
+      light: "bg-[#F0FDFA] text-[#0D9488] hover:bg-[#d0ece1]",
     };
 
     const sizes = {

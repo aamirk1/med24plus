@@ -16,9 +16,9 @@ export const Badge: React.FC<BadgeProps> = ({
   const base = "inline-flex items-center font-medium rounded-full";
 
   const variants = {
-    primary: "bg-[#E6F4EF] text-[#087F5B] border border-[#C3E7DB]",
+    primary: "bg-[#F0FDFA] text-[#0D9488] border border-[#CCFBF1]",
     secondary: "bg-[#DBEAFE] text-[#2563EB] border border-[#BFDBFE]",
-    success: "bg-emerald-50 text-[#16A34A] border border-emerald-200",
+    success: "bg-teal-50 text-[#16A34A] border border-teal-200",
     warning: "bg-amber-50 text-[#D97706] border border-amber-200",
     danger: "bg-red-50 text-[#DC2626] border border-red-200",
     neutral: "bg-slate-100 text-slate-700 border border-slate-200",

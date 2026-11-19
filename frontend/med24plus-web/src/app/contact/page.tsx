@@ -22,13 +22,13 @@ export default function ContactPage() {
         {/* Pharmacy Info Card */}
         <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-subtle space-y-4">
-            <h2 className="text-sm font-bold text-[#172B24] uppercase tracking-wider text-[#087F5B]">
+            <h2 className="text-sm font-bold text-[#172B24] uppercase tracking-wider text-[#0D9488]">
               Licensed Pharmacy Details
             </h2>
 
             <div className="space-y-3.5 text-xs text-slate-700">
               <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-[#087F5B] shrink-0 mt-0.5" />
+                <MapPin className="w-4 h-4 text-[#0D9488] shrink-0 mt-0.5" />
                 <div>
                   <strong className="block text-slate-900 font-semibold">{siteConfig.name}</strong>
                   <p className="text-slate-500 mt-0.5">
@@ -38,27 +38,27 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-[#087F5B] shrink-0" />
+                <Phone className="w-4 h-4 text-[#0D9488] shrink-0" />
                 <div>
                   <span className="text-slate-400 block text-[10px]">Customer Care Helpline</span>
-                  <a href={`tel:${siteConfig.phone}`} className="font-semibold text-slate-900 hover:text-[#087F5B]">
+                  <a href={`tel:${siteConfig.phone}`} className="font-semibold text-slate-900 hover:text-[#0D9488]">
                     {siteConfig.phone}
                   </a>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-[#087F5B] shrink-0" />
+                <Mail className="w-4 h-4 text-[#0D9488] shrink-0" />
                 <div>
                   <span className="text-slate-400 block text-[10px]">Email Enquiries</span>
-                  <a href={`mailto:${siteConfig.email}`} className="font-semibold text-slate-900 hover:text-[#087F5B]">
+                  <a href={`mailto:${siteConfig.email}`} className="font-semibold text-slate-900 hover:text-[#0D9488]">
                     {siteConfig.email}
                   </a>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <Clock className="w-4 h-4 text-[#087F5B] shrink-0" />
+                <Clock className="w-4 h-4 text-[#0D9488] shrink-0" />
                 <div>
                   <span className="text-slate-400 block text-[10px]">Operating Hours</span>
                   <span className="font-semibold text-slate-900">{siteConfig.operatingHours}</span>
@@ -66,7 +66,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-[#E6F4EF] rounded-xl border border-[#C3E7DB] text-xs text-[#066649] space-y-1">
+            <div className="p-3 bg-[#F0FDFA] rounded-xl border border-[#CCFBF1] text-xs text-[#0F766E] space-y-1">
               <div className="flex items-center gap-1.5 font-bold">
                 <Award className="w-4 h-4" />
                 <span>Regulatory Credentials</span>

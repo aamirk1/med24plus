@@ -169,7 +169,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <RefreshCw className="w-8 h-8 text-[#087F5B] animate-spin mx-auto" />
+        <RefreshCw className="w-8 h-8 text-[#0D9488] animate-spin mx-auto" />
         <p className="text-sm font-semibold text-slate-600">Loading your medicine cart...</p>
       </div>
     );
@@ -233,8 +233,8 @@ export default function CartPage() {
           {/* Left: Cart Items List (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
             {/* Free Delivery Callout */}
-            <div className="bg-[#E6F4EF]/70 border border-[#C3E7DB] rounded-xl p-3 flex items-center gap-2.5 text-xs text-[#066649]">
-              <Truck className="w-4 h-4 text-[#087F5B] shrink-0" />
+            <div className="bg-[#F0FDFA]/70 border border-[#CCFBF1] rounded-xl p-3 flex items-center gap-2.5 text-xs text-[#0F766E]">
+              <Truck className="w-4 h-4 text-[#0D9488] shrink-0" />
               <span>
                 {deliveryFee === 0 ? (
                   <><strong>Eligible for Free Delivery!</strong> Order exceeds ₹{freeThreshold}.</>
@@ -274,7 +274,7 @@ export default function CartPage() {
                   }`}
                 >
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#087F5B] shrink-0 overflow-hidden">
+                    <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0D9488] shrink-0 overflow-hidden">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.product_name} className="w-full h-full object-cover" />
                       ) : (
@@ -299,7 +299,7 @@ export default function CartPage() {
 
                       <Link
                         href={`/products/${item.product_slug}`}
-                        className="font-bold text-xs sm:text-sm text-[#172B24] hover:text-[#087F5B] transition block"
+                        className="font-bold text-xs sm:text-sm text-[#172B24] hover:text-[#0D9488] transition block"
                       >
                         {item.product_name}
                       </Link>
@@ -322,7 +322,7 @@ export default function CartPage() {
                           Price Revised (was ₹{item.previous_price})
                         </span>
                       ) : (
-                        <span className="inline-block text-[10px] font-medium text-emerald-700">
+                        <span className="inline-block text-[10px] font-medium text-teal-700">
                           In Stock ({item.sellable_stock} units available)
                         </span>
                       )}
@@ -371,7 +371,7 @@ export default function CartPage() {
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <Link href="/products" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#087F5B] hover:underline">
+              <Link href="/products" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0D9488] hover:underline">
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Continue Shopping</span>
               </Link>
@@ -390,7 +390,7 @@ export default function CartPage() {
                   <span>Total MRP:</span>
                   <span>{formatPriceINR(totalMrp)}</span>
                 </div>
-                <div className="flex justify-between text-[#087F5B]">
+                <div className="flex justify-between text-[#0D9488]">
                   <span>Catalog Discount:</span>
                   <span>- {formatPriceINR(totalSavings)}</span>
                 </div>
@@ -400,7 +400,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Estimated Delivery Fee:</span>
-                  <span>{deliveryFee === 0 ? <strong className="text-[#087F5B]">FREE</strong> : formatPriceINR(deliveryFee)}</span>
+                  <span>{deliveryFee === 0 ? <strong className="text-[#0D9488]">FREE</strong> : formatPriceINR(deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between text-slate-400 text-[11px] pt-1">
                   <span>Included Statutory GST:</span>
@@ -446,7 +446,7 @@ export default function CartPage() {
 
               <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-[10px] text-slate-500 text-center space-y-1">
                 <p className="flex items-center justify-center gap-1 text-slate-700 font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#087F5B]" /> Safe & Licensed Pharmacy
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488]" /> Safe & Licensed Pharmacy
                 </p>
                 <p>Prices and sellable batch availability verified in real-time.</p>
               </div>

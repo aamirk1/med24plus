@@ -40,7 +40,7 @@ export default function AdminStaffPage() {
         <span
           className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold ${
             s.role === "Pharmacist"
-              ? "bg-emerald-50 text-[#087F5B] border border-emerald-200"
+              ? "bg-teal-50 text-[#0D9488] border border-teal-200"
               : "bg-slate-100 text-slate-700"
           }`}
         >
@@ -81,13 +81,13 @@ export default function AdminStaffPage() {
               href="/staff/pharmacists"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4 text-teal-600" />
               <span>Pharmacist Council Registry</span>
             </Link>
             <button
               type="button"
               onClick={() => alert("Mock: Add staff member dialog")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
             >
               <Plus className="w-4 h-4" />
               <span>Add Staff Member</span>

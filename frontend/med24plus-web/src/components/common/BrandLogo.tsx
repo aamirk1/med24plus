@@ -40,7 +40,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <div className="flex flex-col leading-tight">
         <div className="flex items-baseline font-extrabold tracking-tight text-xl md:text-2xl font-sans">
           <span className="text-[#0066CC]">Med</span>
-          <span className="text-[#00B074]">24</span>
+          <span className="text-[#0D9488]">24</span>
           <span className="text-[#0066CC]">Plus</span>
         </div>
         {showTagline && (

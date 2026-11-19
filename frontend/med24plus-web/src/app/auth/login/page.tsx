@@ -115,7 +115,7 @@ export default function LoginPage() {
               setLoginMode("password");
               setErrorMessage(null);
             }}
-            className={`py-1.5 rounded-md transition ${loginMode === "password" ? "bg-white text-[#087F5B] shadow-xs" : "hover:text-slate-900"}`}
+            className={`py-1.5 rounded-md transition ${loginMode === "password" ? "bg-white text-[#0D9488] shadow-xs" : "hover:text-slate-900"}`}
           >
             Password Login
           </button>
@@ -125,7 +125,7 @@ export default function LoginPage() {
               setLoginMode("otp");
               setErrorMessage(null);
             }}
-            className={`py-1.5 rounded-md transition ${loginMode === "otp" ? "bg-white text-[#087F5B] shadow-xs" : "hover:text-slate-900"}`}
+            className={`py-1.5 rounded-md transition ${loginMode === "otp" ? "bg-white text-[#0D9488] shadow-xs" : "hover:text-slate-900"}`}
           >
             Mobile OTP (Fast)
           </button>
@@ -139,8 +139,8 @@ export default function LoginPage() {
         )}
 
         {successMessage && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg text-xs text-teal-800 flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 required
               />
               <div className="text-right">
-                <Link href="/auth/forgot-password" className="text-[11px] text-[#087F5B] font-semibold hover:underline">
+                <Link href="/auth/forgot-password" className="text-[11px] text-[#0D9488] font-semibold hover:underline">
                   Forgot Password?
                 </Link>
               </div>
@@ -264,13 +264,13 @@ export default function LoginPage() {
 
         <div className="pt-2 text-center text-xs text-slate-500 border-t border-slate-100">
           <span>New to Med24Plus? </span>
-          <Link href="/auth/register" className="font-bold text-[#087F5B] hover:underline">
+          <Link href="/auth/register" className="font-bold text-[#0D9488] hover:underline">
             Create an Account
           </Link>
         </div>
 
         <div className="p-3 bg-slate-50 rounded-lg text-[10px] text-slate-500 text-center flex items-center justify-center gap-1.5 border border-slate-100">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#087F5B]" />
+          <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488]" />
           <span>Patient data stored securely as per DPDP Act 2023 guidelines.</span>
         </div>
       </div>

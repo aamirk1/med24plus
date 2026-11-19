@@ -36,7 +36,7 @@ export default function AdminCustomerDetailPage() {
         {/* Profile Card */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#087F5B] flex items-center justify-center font-bold text-lg">
+            <div className="w-12 h-12 rounded-full bg-teal-100 text-[#0D9488] flex items-center justify-center font-bold text-lg">
               {customer.name.charAt(0)}
             </div>
             <div>
@@ -67,7 +67,7 @@ export default function AdminCustomerDetailPage() {
             </div>
             <div className="p-2 bg-slate-50 rounded-lg">
               <p className="text-[10px] text-slate-400 uppercase font-semibold">Total Spent</p>
-              <p className="font-bold text-[#087F5B] text-sm mt-0.5">₹{customer.totalSpentINR.toLocaleString("en-IN")}</p>
+              <p className="font-bold text-[#0D9488] text-sm mt-0.5">₹{customer.totalSpentINR.toLocaleString("en-IN")}</p>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function AdminCustomerDetailPage() {
                     <p className="font-bold text-slate-900">₹{o.totalAmount.toLocaleString("en-IN")}</p>
                     <Link
                       href={`/orders/${o.id}`}
-                      className="text-[11px] font-semibold text-[#087F5B] hover:underline mt-1 block"
+                      className="text-[11px] font-semibold text-[#0D9488] hover:underline mt-1 block"
                     >
                       View Order
                     </Link>

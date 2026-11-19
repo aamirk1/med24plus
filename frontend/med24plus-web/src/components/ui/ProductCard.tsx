@@ -45,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             scheduleType={product.scheduleType}
           />
           {product.discountPercent > 0 && (
-            <span className="text-[10px] font-bold text-[#087F5B] bg-[#E6F4EF] px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-bold text-[#0D9488] bg-[#F0FDFA] px-1.5 py-0.5 rounded">
               {product.discountPercent}% OFF
             </span>
           )}
@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Product Image Placeholder */}
         <Link href={`/products/${product.slug}`} className="block relative aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center p-3 mb-3 overflow-hidden group-hover:bg-slate-100/70 transition">
           <div className="w-16 h-16 rounded-xl bg-white shadow-subtle border border-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-            <ShoppingBag className="w-8 h-8 text-[#087F5B]/70" />
+            <ShoppingBag className="w-8 h-8 text-[#0D9488]/70" />
           </div>
         </Link>
 
@@ -65,7 +65,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Product Title */}
-        <Link href={`/products/${product.slug}`} className="block group-hover:text-[#087F5B] transition">
+        <Link href={`/products/${product.slug}`} className="block group-hover:text-[#0D9488] transition">
           <h3 className="text-xs font-bold text-[#172B24] line-clamp-2 leading-snug">
             {product.name}
           </h3>
@@ -73,8 +73,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mt-2">
-          <div className="flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-emerald-800">
-            <Star className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" />
+          <div className="flex items-center gap-0.5 bg-teal-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-teal-800">
+            <Star className="w-2.5 h-2.5 fill-teal-600 text-teal-600" />
             <span>{product.rating}</span>
           </div>
           <span className="text-[10px] text-slate-400">({product.reviewCount})</span>
@@ -92,8 +92,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         >
           {added ? (
             <>
-              <Check className="w-3.5 h-3.5 text-[#087F5B]" />
-              <span className="text-[#087F5B]">Added</span>
+              <Check className="w-3.5 h-3.5 text-[#0D9488]" />
+              <span className="text-[#0D9488]">Added</span>
             </>
           ) : (
             <>

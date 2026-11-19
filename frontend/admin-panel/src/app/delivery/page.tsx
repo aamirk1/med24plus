@@ -83,8 +83,8 @@ export default function AdminDeliveryPage() {
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs text-slate-500 font-medium">Average Delivery Time</p>
-          <p className="text-2xl font-bold text-emerald-700 mt-1">3.4 hrs</p>
-          <span className="text-[10px] text-emerald-600">Local Bengaluru area</span>
+          <p className="text-2xl font-bold text-teal-700 mt-1">3.4 hrs</p>
+          <span className="text-[10px] text-teal-600">Local Bengaluru area</span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs text-slate-500 font-medium">Cold-Chain Temp Compliance</p>

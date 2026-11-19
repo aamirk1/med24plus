@@ -195,7 +195,7 @@ export default function AdminPrescriptionDetailPage() {
   if (loading) {
     return (
       <div className="py-24 text-center space-y-3 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin text-[#087F5B] mx-auto" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#0D9488] mx-auto" />
         <p className="text-xs">Loading clinical prescription verification dossier...</p>
       </div>
     );
@@ -289,7 +289,7 @@ export default function AdminPrescriptionDetailPage() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowApproveModal(true)}
-                className="bg-[#087F5B] hover:bg-[#066649] text-xs h-9"
+                className="bg-[#0D9488] hover:bg-[#0F766E] text-xs h-9"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
                 <span>Approve Rx</span>
@@ -334,7 +334,7 @@ export default function AdminPrescriptionDetailPage() {
                     onClick={() => setActiveFileIndex(i)}
                     className={`px-2 py-1 text-[11px] font-bold rounded-md transition ${
                       activeFileIndex === i
-                        ? "bg-white text-[#087F5B] shadow-xs"
+                        ? "bg-white text-[#0D9488] shadow-xs"
                         : "text-slate-500 hover:text-slate-900"
                     }`}
                   >
@@ -358,7 +358,7 @@ export default function AdminPrescriptionDetailPage() {
                       href={activeFile.secure_view_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#087F5B] bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 transition shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0D9488] bg-white border border-slate-200 rounded-lg hover:bg-teal-50 transition shadow-xs"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Inspect High-Resolution PDF</span>
@@ -377,7 +377,7 @@ export default function AdminPrescriptionDetailPage() {
                       href={activeFile.secure_view_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-semibold text-[#087F5B] hover:underline inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-[#0D9488] hover:underline inline-flex items-center gap-1"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Open in Full Resolution Window</span>
@@ -457,7 +457,7 @@ export default function AdminPrescriptionDetailPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddItem(!showAddItem)}
-                  className="text-xs font-semibold text-[#087F5B] hover:underline inline-flex items-center gap-1"
+                  className="text-xs font-semibold text-[#0D9488] hover:underline inline-flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Extract Medicine</span>
@@ -467,8 +467,8 @@ export default function AdminPrescriptionDetailPage() {
 
             {/* Add Item Form */}
             {showAddItem && (
-              <form onSubmit={handleAddMedicineItem} className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-3 text-xs">
-                <h4 className="font-bold text-emerald-950">Add Line Item From Rx Document:</h4>
+              <form onSubmit={handleAddMedicineItem} className="p-3 bg-teal-50/60 rounded-xl border border-teal-200 space-y-3 text-xs">
+                <h4 className="font-bold text-teal-950">Add Line Item From Rx Document:</h4>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
@@ -476,25 +476,25 @@ export default function AdminPrescriptionDetailPage() {
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     required
-                    className="p-2 rounded-lg border border-emerald-300 bg-white"
+                    className="p-2 rounded-lg border border-teal-300 bg-white"
                   />
                   <input
                     type="text"
                     placeholder="Dosage Schedule (e.g. 1-0-1)"
                     value={newItemDosage}
                     onChange={(e) => setNewItemDosage(e.target.value)}
-                    className="p-2 rounded-lg border border-emerald-300 bg-white"
+                    className="p-2 rounded-lg border border-teal-300 bg-white"
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-emerald-800">Approved Qty:</span>
+                    <span className="text-[11px] text-teal-800">Approved Qty:</span>
                     <input
                       type="number"
                       min={1}
                       value={newItemQty}
                       onChange={(e) => setNewItemQty(parseInt(e.target.value) || 1)}
-                      className="w-16 p-1.5 rounded-lg border border-emerald-300 bg-white"
+                      className="w-16 p-1.5 rounded-lg border border-teal-300 bg-white"
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -535,7 +535,7 @@ export default function AdminPrescriptionDetailPage() {
                         {item.dosage || "Standard Dose"} • Qty Prescribed: {item.quantity_prescribed} • Qty Approved: {item.quantity_approved}
                       </p>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-[#087F5B] rounded-full uppercase">
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-teal-100 text-[#0D9488] rounded-full uppercase">
                       {item.verification_status}
                     </span>
                   </div>
@@ -599,7 +599,7 @@ export default function AdminPrescriptionDetailPage() {
                 type="date"
                 value={validUntilDate}
                 onChange={(e) => setValidUntilDate(e.target.value)}
-                className="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -610,7 +610,7 @@ export default function AdminPrescriptionDetailPage() {
                 value={approveNotes}
                 onChange={(e) => setApproveNotes(e.target.value)}
                 placeholder="e.g. Verified doctor registration on State Medical Council. Approved 30-day course."
-                className="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -628,7 +628,7 @@ export default function AdminPrescriptionDetailPage() {
                 size="sm"
                 onClick={handleApprove}
                 disabled={approving}
-                className="bg-[#087F5B] hover:bg-[#066649] text-white"
+                className="bg-[#0D9488] hover:bg-[#0F766E] text-white"
               >
                 {approving ? "Approving..." : "Confirm Statutory Approval"}
               </Button>

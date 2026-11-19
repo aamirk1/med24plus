@@ -128,7 +128,7 @@ export default function AdminOrdersPage() {
       cell: (o) => (
         <Link
           href={`/orders/${o.id}`}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#087F5B] bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#0D9488] bg-teal-50 hover:bg-teal-100 rounded-lg transition"
         >
           <Eye className="w-3.5 h-3.5" />
           <span>Manage</span>
@@ -164,7 +164,7 @@ export default function AdminOrdersPage() {
             { label: "Processing", count: metrics.processing, color: "text-indigo-600" },
             { label: "Ready", count: metrics.ready_for_dispatch, color: "text-cyan-600" },
             { label: "Dispatched", count: metrics.dispatched, color: "text-purple-600" },
-            { label: "Delivered", count: metrics.delivered, color: "text-emerald-600" },
+            { label: "Delivered", count: metrics.delivered, color: "text-teal-600" },
             { label: "Cancelled", count: metrics.cancelled, color: "text-red-600" },
           ].map((m) => (
             <div key={m.label} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -202,7 +202,7 @@ export default function AdminOrdersPage() {
             }}
             className={`px-3 py-2 border-b-2 font-medium transition whitespace-nowrap ${
               activeTab === tab.value
-                ? "border-[#087F5B] text-[#087F5B] font-bold"
+                ? "border-[#0D9488] text-[#0D9488] font-bold"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -220,7 +220,7 @@ export default function AdminOrdersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#087F5B]"
+              className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
             />
             <button
               onClick={handleSearch}
@@ -234,7 +234,7 @@ export default function AdminOrdersPage() {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
             <p className="text-xs">Loading medication orders from live database...</p>
           </div>
         ) : (

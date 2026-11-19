@@ -31,19 +31,19 @@ export default function HomePage() {
                       return (
                       <div className="space-y-12 pb-16">
                         {/* 5. Hero Banner Section */}
-                        <section className="relative overflow-hidden bg-gradient-to-b from-[#E6F4EF]/70 via-white to-slate-50 pt-8 pb-14 border-b border-slate-100">
+                        <section className="relative overflow-hidden bg-gradient-to-b from-[#F0FDFA]/70 via-white to-slate-50 pt-8 pb-14 border-b border-slate-100">
                           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                               {/* Left Content */}
                               <div className="lg:col-span-7 space-y-6 text-left">
-                                <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-semibold">
-                                  <span className="w-2 h-2 rounded-full bg-[#087F5B] animate-pulse" />
+                                <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-800 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                                  <span className="w-2 h-2 rounded-full bg-[#0D9488] animate-pulse" />
                                   Licensed Indian Retail Community Pharmacy • Form 20/21
                                 </div>
 
                                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#172B24] tracking-tight leading-tight">
                                     Authentic Medicines, <br />
-                                    <span className="text-[#087F5B]">Pharmacist Verified</span>, <br />
+                                    <span className="text-[#0D9488]">Pharmacist Verified</span>, <br />
                                     Delivered With Care.
                                   </h1>
 
@@ -55,7 +55,7 @@ export default function HomePage() {
                                         <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                           <Link
                                             href="/prescription/upload"
-                                            className="inline-flex items-center justify-center gap-2 bg-[#087F5B] hover:bg-[#066649] text-white px-6 py-3.5 rounded-xl font-bold text-xs shadow-md transition"
+                                            className="inline-flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#0F766E] text-white px-6 py-3.5 rounded-xl font-bold text-xs shadow-md transition"
                                           >
                                             <UploadCloud className="w-4 h-4" />
                                             <span>Upload Doctor&apos;s Prescription</span>
@@ -73,7 +73,7 @@ export default function HomePage() {
                                     {/* Trust Indicators */}
                                     <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-200/80">
                                       <div className="flex items-center gap-2 text-xs text-slate-600">
-                                        <ShieldCheck className="w-4 h-4 text-[#087F5B] shrink-0" />
+                                        <ShieldCheck className="w-4 h-4 text-[#0D9488] shrink-0" />
                                         <span className="text-[11px] font-medium">100% Genuine Direct</span>
                                       </div>
                                       <div className="flex items-center gap-2 text-xs text-slate-600">
@@ -92,7 +92,7 @@ export default function HomePage() {
                                                 <div className="bg-white rounded-2xl border border-slate-200/90 shadow-elevated p-6 space-y-4 text-left">
                                                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                                                     <div className="flex items-center gap-2">
-                                                      <div className="w-8 h-8 rounded-lg bg-[#E6F4EF] flex items-center justify-center text-[#087F5B]">
+                                                      <div className="w-8 h-8 rounded-lg bg-[#F0FDFA] flex items-center justify-center text-[#0D9488]">
                                                         <UploadCloud className="w-4 h-4" />
                                                       </div>
                                                       <div>
@@ -105,13 +105,13 @@ export default function HomePage() {
                                                     </span>
                                                   </div>
 
-                                                    <div className="border-2 border-dashed border-[#087F5B]/30 rounded-xl p-6 text-center bg-[#E6F4EF]/20 hover:bg-[#E6F4EF]/40 transition cursor-pointer">
-                                                      <UploadCloud className="w-10 h-10 text-[#087F5B] mx-auto mb-2" />
+                                                    <div className="border-2 border-dashed border-[#0D9488]/30 rounded-xl p-6 text-center bg-[#F0FDFA]/20 hover:bg-[#F0FDFA]/40 transition cursor-pointer">
+                                                      <UploadCloud className="w-10 h-10 text-[#0D9488] mx-auto mb-2" />
                                                       <p className="text-xs font-bold text-[#172B24]">Drag & Drop your prescription here</p>
                                                       <p className="text-[10px] text-slate-500 mt-1">Supports Clear Camera Photos, PDF, JPG, PNG (up to 10MB)</p>
                                                       <Link
                                                         href="/prescription/upload"
-                                                        className="inline-block mt-3 px-4 py-1.5 bg-[#087F5B] text-white text-[11px] font-bold rounded-lg shadow-sm"
+                                                        className="inline-block mt-3 px-4 py-1.5 bg-[#0D9488] text-white text-[11px] font-bold rounded-lg shadow-sm"
                                                       >
                                                         Select File to Upload
                                                       </Link>
@@ -119,15 +119,15 @@ export default function HomePage() {
 
                                                         <div className="space-y-1.5 text-[11px] text-slate-500">
                                                           <div className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
                                                             <span>Our Registered Pharmacist verifies your prescription</span>
                                                           </div>
                                                           <div className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
                                                             <span>Confirmation phone call / WhatsApp for dose instructions</span>
                                                           </div>
                                                           <div className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+                                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
                                                             <span>Dispensed with FEFO batch number & expiry printed cash memo</span>
                                                           </div>
                                                         </div>
@@ -150,7 +150,7 @@ export default function HomePage() {
                                         </div>
                                         <Link
                                           href="/categories"
-                                          className="text-xs font-semibold text-[#087F5B] hover:text-[#066649] flex items-center gap-1 shrink-0"
+                                          className="text-xs font-semibold text-[#0D9488] hover:text-[#0F766E] flex items-center gap-1 shrink-0"
                                         >
                                           <span>View All</span>
                                           <ChevronRight className="w-4 h-4" />
@@ -168,7 +168,7 @@ export default function HomePage() {
                                                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                                                   <div className="flex items-center justify-between mb-6">
                                                     <div className="text-left">
-                                                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#087F5B] bg-[#E6F4EF] px-2.5 py-0.5 rounded-full mb-1">
+                                                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0D9488] bg-[#F0FDFA] px-2.5 py-0.5 rounded-full mb-1">
                                                         <Sparkles className="w-3 h-3" />
                                                         <span>Verified Essentials</span>
                                                       </div>
@@ -178,7 +178,7 @@ export default function HomePage() {
                                                     </div>
                                                     <Link
                                                       href="/products"
-                                                      className="text-xs font-semibold text-[#087F5B] hover:text-[#066649] flex items-center gap-1 shrink-0"
+                                                      className="text-xs font-semibold text-[#0D9488] hover:text-[#0F766E] flex items-center gap-1 shrink-0"
                                                     >
                                                       <span>Explore Catalog</span>
                                                       <ChevronRight className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function HomePage() {
 
                                                     {/* 8. Health and Wellness Promotional Section */}
                                                     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                                                      <div className="bg-gradient-to-r from-[#066649] to-[#087F5B] rounded-2xl text-white p-6 sm:p-10 relative overflow-hidden shadow-card">
+                                                      <div className="bg-gradient-to-r from-[#0F766E] to-[#0D9488] rounded-2xl text-white p-6 sm:p-10 relative overflow-hidden shadow-card">
                                                         <div className="relative z-10 max-w-xl space-y-4 text-left">
                                                           <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">
                                                             Chronic Care Special
@@ -202,13 +202,13 @@ export default function HomePage() {
                                                           <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                                                             Timely Refills for Diabetes & Hypertension
                                                           </h3>
-                                                          <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
+                                                          <p className="text-xs sm:text-sm text-teal-100 leading-relaxed">
                                                             Never run out of essential maintenance doses. Upload your doctor&apos;s prescription once and enjoy priority FEFO dispatch, insulated temperature packing, and free delivery on orders above ₹499.
                                                           </p>
                                                           <div className="pt-2 flex items-center gap-3">
                                                             <Link
                                                               href="/prescription/upload"
-                                                              className="px-5 py-2.5 bg-white text-[#087F5B] hover:bg-emerald-50 rounded-xl text-xs font-bold shadow-sm transition"
+                                                              className="px-5 py-2.5 bg-white text-[#0D9488] hover:bg-teal-50 rounded-xl text-xs font-bold shadow-sm transition"
                                                             >
                                                               Set Up Monthly Refill
                                                             </Link>
@@ -230,7 +230,7 @@ export default function HomePage() {
 
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
                                                               <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-subtle space-y-3">
-                                                                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#087F5B] flex items-center justify-center">
+                                                                <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0D9488] flex items-center justify-center">
                                                                   <ShieldCheck className="w-5 h-5" />
                                                                 </div>
                                                                 <h4 className="font-bold text-xs text-[#172B24]">Licensed Single Pharmacy</h4>
@@ -285,7 +285,7 @@ export default function HomePage() {
 
                                                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
                                                                 <div className="space-y-2">
-                                                                  <span className="w-7 h-7 rounded-full bg-[#087F5B] text-white text-xs font-bold flex items-center justify-center">
+                                                                  <span className="w-7 h-7 rounded-full bg-[#0D9488] text-white text-xs font-bold flex items-center justify-center">
                                                                     1
                                                                   </span>
                                                                   <h4 className="font-bold text-xs text-[#172B24] mt-2">Upload Prescription</h4>
@@ -295,7 +295,7 @@ export default function HomePage() {
                                                                 </div>
 
                                                                 <div className="space-y-2">
-                                                                  <span className="w-7 h-7 rounded-full bg-[#087F5B] text-white text-xs font-bold flex items-center justify-center">
+                                                                  <span className="w-7 h-7 rounded-full bg-[#0D9488] text-white text-xs font-bold flex items-center justify-center">
                                                                     2
                                                                   </span>
                                                                   <h4 className="font-bold text-xs text-[#172B24] mt-2">Pharmacist Verification</h4>
@@ -305,7 +305,7 @@ export default function HomePage() {
                                                                 </div>
 
                                                         <div className="space-y-2">
-                                                          <span className="w-7 h-7 rounded-full bg-[#087F5B] text-white text-xs font-bold flex items-center justify-center">
+                                                          <span className="w-7 h-7 rounded-full bg-[#0D9488] text-white text-xs font-bold flex items-center justify-center">
                                                             3
                                                           </span>
                                                           <h4 className="font-bold text-xs text-[#172B24] mt-2">FEFO Batch Packing</h4>
@@ -315,7 +315,7 @@ export default function HomePage() {
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                          <span className="w-7 h-7 rounded-full bg-[#087F5B] text-white text-xs font-bold flex items-center justify-center">
+                                                          <span className="w-7 h-7 rounded-full bg-[#0D9488] text-white text-xs font-bold flex items-center justify-center">
                                                             4
                                                           </span>
                                                           <h4 className="font-bold text-xs text-[#172B24] mt-2">Doorstep Delivery</h4>
@@ -331,7 +331,7 @@ export default function HomePage() {
                                                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                                                   <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-subtle">
                                                     <div className="space-y-2 text-left">
-                                                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#087F5B] bg-[#E6F4EF] px-2.5 py-0.5 rounded-full">
+                                                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0D9488] bg-[#F0FDFA] px-2.5 py-0.5 rounded-full">
                                                         <Smartphone className="w-3.5 h-3.5" />
                                                         <span>Med24Plus Mobile App</span>
                                                       </div>
@@ -344,7 +344,7 @@ export default function HomePage() {
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
                                                       <div className="border border-slate-300 rounded-xl px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-50 flex items-center gap-2">
-                                                        <Smartphone className="w-4 h-4 text-[#087F5B]" />
+                                                        <Smartphone className="w-4 h-4 text-[#0D9488]" />
                                                         <span>Android & iOS Ready</span>
                                                       </div>
                                                     </div>
@@ -364,7 +364,7 @@ export default function HomePage() {
                                                       <input
                                                         type="email"
                                                         placeholder="Enter your email address"
-                                                        className="px-3.5 py-2 text-xs rounded-lg bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#087F5B] w-full md:w-64"
+                                                        className="px-3.5 py-2 text-xs rounded-lg bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0D9488] w-full md:w-64"
                                                       />
                                                       <Button variant="primary" size="sm" className="shrink-0">
                                                         Subscribe

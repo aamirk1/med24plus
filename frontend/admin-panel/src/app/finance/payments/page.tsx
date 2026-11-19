@@ -56,7 +56,7 @@ export default function AdminPaymentsPage() {
         if (o.paymentMethod.includes("COD")) {
           return <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Cash on Delivery</span>;
         }
-        return <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Settled to Bank</span>;
+        return <span className="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">Settled to Bank</span>;
       },
     },
   ];
@@ -82,7 +82,7 @@ export default function AdminPaymentsPage() {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs text-slate-500 font-medium">Total Collected (Nov 2026)</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">₹18,45,200</p>
-          <span className="text-[10px] text-emerald-600 font-medium">+14.2% from last month</span>
+          <span className="text-[10px] text-teal-600 font-medium">+14.2% from last month</span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs text-slate-500 font-medium">Digital UPI / Cards Share</p>

@@ -86,20 +86,20 @@ export default function DeleteAccountPage() {
       </div>
 
       {submitted ? (
-        <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-4">
-          <div className="flex items-center gap-3 text-emerald-800">
-            <CheckCircle2 className="w-7 h-7 text-emerald-600 shrink-0" />
+        <div className="p-6 bg-teal-50 border border-teal-200 rounded-2xl space-y-4">
+          <div className="flex items-center gap-3 text-teal-800">
+            <CheckCircle2 className="w-7 h-7 text-teal-600 shrink-0" />
             <div>
               <h3 className="text-base font-bold">Account Deletion Request Received</h3>
-              <p className="text-xs text-emerald-700 mt-0.5">
+              <p className="text-xs text-teal-700 mt-0.5">
                 Reference ID: <span className="font-mono font-semibold">DEL-{Date.now().toString().slice(-6)}</span>
               </p>
             </div>
           </div>
-          <p className="text-xs text-emerald-900 leading-relaxed">
+          <p className="text-xs text-teal-900 leading-relaxed">
             Your deletion request for <strong>{identifier}</strong> has been logged. Your active sessions, saved addresses, device tokens, and profile data will be permanently wiped within <strong>30 days</strong>.
           </p>
-          <div className="pt-2 text-xs text-emerald-800 border-t border-emerald-200">
+          <div className="pt-2 text-xs text-teal-800 border-t border-teal-200">
             <p>
               Under Rule 65 of India&apos;s Drugs and Cosmetics Rules, 1945, statutory cash memos and doctor prescription registers for previously dispensed Schedule H medications are maintained for the mandatory 2-year audit period before permanent purging.
             </p>
@@ -107,7 +107,7 @@ export default function DeleteAccountPage() {
           <div className="pt-2">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 underline"
             >
               <span>Return to Med24Plus Home</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -172,7 +172,7 @@ export default function DeleteAccountPage() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder="e.g. +91 98765 43210 or patient@example.com"
-                    className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#087F5B] focus:border-transparent"
+                    className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -184,7 +184,7 @@ export default function DeleteAccountPage() {
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#087F5B] focus:border-transparent text-slate-700 bg-white"
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488] focus:border-transparent text-slate-700 bg-white"
                 >
                   <option value="No longer using the application">No longer using the application</option>
                   <option value="Privacy concerns">Privacy concerns</option>
@@ -200,7 +200,7 @@ export default function DeleteAccountPage() {
                     type="checkbox"
                     checked={confirmed}
                     onChange={(e) => setConfirmed(e.target.checked)}
-                    className="mt-0.5 rounded text-[#087F5B] focus:ring-[#087F5B]"
+                    className="mt-0.5 rounded text-[#0D9488] focus:ring-[#0D9488]"
                   />
                   <span className="text-slate-600 leading-normal select-none">
                     I confirm that I am requesting the permanent deletion of my Med24Plus patient account and understand that non-statutory personal data will be purged within 30 days.
@@ -229,7 +229,7 @@ export default function DeleteAccountPage() {
           <div className="grid sm:grid-cols-2 gap-4 text-xs pt-2">
             <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
               <p className="font-bold text-[#172B24] flex items-center gap-1.5">
-                <Smartphone className="w-4 h-4 text-[#087F5B]" />
+                <Smartphone className="w-4 h-4 text-[#0D9488]" />
                 <span>Method 2: In-App Deletion</span>
               </p>
               <p className="text-slate-600 leading-relaxed">
@@ -239,14 +239,14 @@ export default function DeleteAccountPage() {
 
             <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
               <p className="font-bold text-[#172B24] flex items-center gap-1.5">
-                <Mail className="w-4 h-4 text-[#087F5B]" />
+                <Mail className="w-4 h-4 text-[#0D9488]" />
                 <span>Method 3: Direct Email</span>
               </p>
               <p className="text-slate-600 leading-relaxed">
                 Email our Privacy Officer directly at{" "}
                 <a
                   href="mailto:privacy@med24plus.in?subject=Account%20and%20Data%20Deletion%20Request"
-                  className="text-emerald-700 font-semibold underline"
+                  className="text-teal-700 font-semibold underline"
                 >
                   privacy@med24plus.in
                 </a>{" "}

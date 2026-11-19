@@ -141,7 +141,7 @@ export default function NewProductPage() {
                 placeholder="e.g. Paracetamol 650mg Tablets"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -156,7 +156,7 @@ export default function NewProductPage() {
                   const br = brands.find((b) => b.id === e.target.value);
                   setFormData({ ...formData, brand_id: e.target.value, manufacturer: br?.name || formData.manufacturer });
                 }}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 {brands.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -176,7 +176,7 @@ export default function NewProductPage() {
                 placeholder="e.g. MED-PCM-650"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -188,7 +188,7 @@ export default function NewProductPage() {
                 required
                 value={formData.category_id}
                 onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -205,7 +205,7 @@ export default function NewProductPage() {
               <select
                 value={formData.dosageForm}
                 onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 <option value="Tablet">Tablet</option>
                 <option value="Capsule">Capsule</option>
@@ -227,7 +227,7 @@ export default function NewProductPage() {
                 placeholder="e.g. Paracetamol IP 650mg"
                 value={formData.generic_name}
                 onChange={(e) => setFormData({ ...formData, generic_name: e.target.value, composition: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function NewProductPage() {
                   const reqRx = sch !== "OTC";
                   setFormData({ ...formData, schedule: sch, requiresPrescription: reqRx });
                 }}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 <option value="OTC">OTC (Over the Counter)</option>
                 <option value="SCHEDULE_H">Schedule H (Prescription Required)</option>
@@ -264,7 +264,7 @@ export default function NewProductPage() {
                 id="req-rx"
                 checked={formData.requiresPrescription}
                 onChange={(e) => setFormData({ ...formData, requiresPrescription: e.target.checked })}
-                className="w-4 h-4 accent-[#087F5B] rounded"
+                className="w-4 h-4 accent-[#0D9488] rounded"
               />
               <label htmlFor="req-rx" className="text-xs font-semibold text-slate-700 cursor-pointer">
                 Mandatory Doctor Prescription Upload (Rx)
@@ -289,7 +289,7 @@ export default function NewProductPage() {
                 placeholder="100.00"
                 value={formData.mrp}
                 onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -304,7 +304,7 @@ export default function NewProductPage() {
                 placeholder="85.00"
                 value={formData.sellingPrice}
                 onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -317,7 +317,7 @@ export default function NewProductPage() {
                 required
                 value={formData.hsnCode}
                 onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
-                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
 
@@ -328,7 +328,7 @@ export default function NewProductPage() {
               <select
                 value={formData.gstRate}
                 onChange={(e) => setFormData({ ...formData, gstRate: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               >
                 <option value="0">0% (Essential formulations)</option>
                 <option value="5">5% (Life-saving items)</option>
@@ -351,7 +351,7 @@ export default function NewProductPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition disabled:opacity-50"
           >
             {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             <span>Save Product to Catalog</span>

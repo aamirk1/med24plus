@@ -178,7 +178,7 @@ export default function AdminOrderDetailPage() {
   if (loading) {
     return (
       <div className="py-16 text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-[#087F5B] border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div className="w-8 h-8 border-2 border-[#0D9488] border-t-transparent rounded-full animate-spin mx-auto"></div>
         <p className="text-xs text-slate-500">Loading order credentials & batch ledger...</p>
       </div>
     );
@@ -191,7 +191,7 @@ export default function AdminOrderDetailPage() {
         <p className="text-sm font-bold text-slate-800">{error || "Order Not Found"}</p>
         <Link
           href="/orders"
-          className="inline-flex items-center gap-1 text-xs text-[#087F5B] font-semibold hover:underline"
+          className="inline-flex items-center gap-1 text-xs text-[#0D9488] font-semibold hover:underline"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Orders
         </Link>
@@ -256,7 +256,7 @@ export default function AdminOrderDetailPage() {
                   type="button"
                   onClick={handlePharmacistApprove}
                   disabled={actionLoading}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#087F5B] hover:bg-[#066649] rounded-lg shadow-sm transition"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-lg shadow-sm transition"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Approve Dispensing</span>
@@ -270,7 +270,7 @@ export default function AdminOrderDetailPage() {
                 type="button"
                 onClick={() => handleUpdateStatus("ready_for_dispatch")}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#087F5B] hover:bg-[#066649] rounded-lg shadow-sm transition"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-lg shadow-sm transition"
               >
                 <Package className="w-4 h-4" />
                 <span>Mark Ready for Dispatch</span>
@@ -294,7 +294,7 @@ export default function AdminOrderDetailPage() {
                 type="button"
                 onClick={() => handleUpdateStatus("delivered")}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-sm transition"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-teal-700 hover:bg-teal-800 rounded-lg shadow-sm transition"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Confirm Delivery</span>
@@ -364,7 +364,7 @@ export default function AdminOrderDetailPage() {
                       <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
                         Exp: {item.expiry_date_snapshot || "N/A"}
                       </span>
-                      <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium">
+                      <span className="text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-medium">
                         FEFO Matched
                       </span>
                     </div>
@@ -399,7 +399,7 @@ export default function AdminOrderDetailPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
                         Reserved: {res.reserved_quantity} units ({res.status.toUpperCase()})
                       </span>
                     </div>

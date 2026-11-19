@@ -43,7 +43,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
             {formatPriceINR(mrp)}
           </span>
           {calcDiscount > 0 && (
-            <span className="text-[11px] font-bold text-[#087F5B] bg-[#E6F4EF] px-1.5 py-0.5 rounded">
+            <span className="text-[11px] font-bold text-[#0D9488] bg-[#F0FDFA] px-1.5 py-0.5 rounded">
               {calcDiscount}% OFF
             </span>
           )}

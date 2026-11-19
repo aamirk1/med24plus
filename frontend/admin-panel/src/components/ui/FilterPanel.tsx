@@ -68,7 +68,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             <select
               value={selectedFilters[group.id] || "ALL"}
               onChange={(e) => onFilterChange(group.id, e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#087F5B]"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
             >
               <option value="ALL">All {group.name}</option>
               {group.options.map((opt) => (

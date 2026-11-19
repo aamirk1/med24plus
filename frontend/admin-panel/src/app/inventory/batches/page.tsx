@@ -138,7 +138,7 @@ export default function AdminBatchesPage() {
           className={`px-2 py-0.5 text-[10px] font-semibold rounded transition ${
             b.status === "ACTIVE"
               ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
-              : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+              : "bg-teal-50 text-teal-700 hover:bg-teal-100"
           }`}
         >
           {b.status === "ACTIVE" ? "Quarantine" : "Release"}
@@ -154,11 +154,11 @@ export default function AdminBatchesPage() {
         subtitle="Mandatory First-Expiry-First-Out dispensing control and statutory drug batch traceability ledger."
       />
 
-      <div className="bg-emerald-50/50 border border-emerald-200/80 rounded-xl p-4 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-[#087F5B] shrink-0 mt-0.5" />
-        <div className="text-xs text-emerald-950">
+      <div className="bg-teal-50/50 border border-teal-200/80 rounded-xl p-4 flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 text-[#0D9488] shrink-0 mt-0.5" />
+        <div className="text-xs text-teal-950">
           <p className="font-semibold">Statutory Rule 65 Compliance Active</p>
-          <p className="text-emerald-800 text-[11px] mt-0.5 leading-relaxed">
+          <p className="text-teal-800 text-[11px] mt-0.5 leading-relaxed">
             All medicines are locked to individual manufacturer batch numbers. The system automatically enforces First-Expiry-First-Out (FEFO) dispensing when pharmacists allocate orders.
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function AdminBatchesPage() {
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Loading batch records from ledger...</p>
         </div>
       ) : (

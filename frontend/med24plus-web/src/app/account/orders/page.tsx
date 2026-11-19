@@ -88,7 +88,7 @@ export default function OrderHistoryPage() {
             }}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
               statusFilter === tab.value
-                ? "bg-[#087F5B] text-white shadow-sm"
+                ? "bg-[#0D9488] text-white shadow-sm"
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >

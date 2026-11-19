@@ -84,8 +84,8 @@ export default function RegisterPage() {
         )}
 
         {successMessage && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg text-xs text-teal-800 flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -170,7 +170,7 @@ export default function RegisterPage() {
 
         <div className="pt-2 text-center text-xs text-slate-500 border-t border-slate-100">
           <span>Already registered? </span>
-          <Link href="/auth/login" className="font-bold text-[#087F5B] hover:underline">
+          <Link href="/auth/login" className="font-bold text-[#0D9488] hover:underline">
             Sign In Here
           </Link>
         </div>

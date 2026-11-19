@@ -106,7 +106,7 @@ export default function AdminPrescriptionsPage() {
     {
       header: "Prescription Documents",
       cell: (p) => (
-        <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-mono">
+        <span className="text-[11px] text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded font-mono">
           {p.files && p.files.length > 0 ? `${p.files.length} document${p.files.length > 1 ? "s" : ""}` : "1 file"}
         </span>
       ),
@@ -129,7 +129,7 @@ export default function AdminPrescriptionsPage() {
       cell: (p) => (
         <Link
           href={`/prescriptions/${p.id}`}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#087F5B] bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#0D9488] bg-teal-50 hover:bg-teal-100 rounded-lg transition"
         >
           <Eye className="w-3.5 h-3.5" />
           <span>Audit &amp; Review</span>
@@ -146,8 +146,8 @@ export default function AdminPrescriptionsPage() {
       />
 
       {/* Statutory Guidance Banner */}
-      <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-emerald-950">
-        <ShieldCheck className="w-4 h-4 text-[#087F5B] shrink-0 mt-0.5" />
+      <div className="bg-teal-50/80 border border-teal-200 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-teal-950">
+        <ShieldCheck className="w-4 h-4 text-[#0D9488] shrink-0 mt-0.5" />
         <p className="text-[11px] leading-relaxed">
           <span className="font-bold">Rule 65 Clinical Verification Workbench:</span> Only licensed pharmacists registered with the State Pharmacy Council are authorized to verify prescriber credentials, dosage instructions, and release medication orders for dispensing.
         </p>
@@ -169,7 +169,7 @@ export default function AdminPrescriptionsPage() {
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Approved</span>
-          <p className="text-xl font-bold font-mono text-emerald-600 mt-0.5">{counts.approved}</p>
+          <p className="text-xl font-bold font-mono text-teal-600 mt-0.5">{counts.approved}</p>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rejected</span>
@@ -200,14 +200,14 @@ export default function AdminPrescriptionsPage() {
             }}
             className={`px-4 py-2 border-b-2 flex items-center gap-2 whitespace-nowrap transition ${
               tab === t.id
-                ? "border-[#087F5B] text-[#087F5B]"
+                ? "border-[#0D9488] text-[#0D9488]"
                 : "border-transparent text-slate-500 hover:text-slate-900"
             }`}
           >
             <span>{t.label}</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                tab === t.id ? "bg-emerald-100 text-[#087F5B]" : "bg-slate-100 text-slate-600"
+                tab === t.id ? "bg-teal-100 text-[#0D9488]" : "bg-slate-100 text-slate-600"
               }`}
             >
               {t.count}
@@ -227,7 +227,7 @@ export default function AdminPrescriptionsPage() {
 
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center space-y-2 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Loading prescription verification queue...</p>
         </div>
       ) : (

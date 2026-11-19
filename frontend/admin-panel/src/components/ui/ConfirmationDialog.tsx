@@ -38,8 +38,8 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       btnBg: "bg-amber-600 hover:bg-amber-700 text-white",
     },
     info: {
-      iconBg: "bg-emerald-100 text-[#087F5B]",
-      btnBg: "bg-[#087F5B] hover:bg-[#066649] text-white",
+      iconBg: "bg-teal-100 text-[#0D9488]",
+      btnBg: "bg-[#0D9488] hover:bg-[#0F766E] text-white",
     },
   }[variant];
 

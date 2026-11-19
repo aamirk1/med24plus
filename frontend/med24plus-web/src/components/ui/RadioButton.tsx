@@ -20,8 +20,8 @@ export const RadioButton = React.forwardRef<HTMLInputElement, RadioButtonProps>(
             className="peer sr-only"
             {...props}
           />
-          <div className="w-4 h-4 rounded-full border border-slate-300 bg-white peer-checked:border-[#087F5B] peer-focus:ring-2 peer-focus:ring-[#087F5B]/30 transition-all flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-[#087F5B] opacity-0 peer-checked:opacity-100 transition-opacity" />
+          <div className="w-4 h-4 rounded-full border border-slate-300 bg-white peer-checked:border-[#0D9488] peer-focus:ring-2 peer-focus:ring-[#0D9488]/30 transition-all flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-[#0D9488] opacity-0 peer-checked:opacity-100 transition-opacity" />
           </div>
         </div>
         {(label || description) && (

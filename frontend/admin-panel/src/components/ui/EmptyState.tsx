@@ -31,7 +31,7 @@ export const LoadingState: React.FC<{ message?: string }> = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center p-12 space-y-3">
-      <div className="w-6 h-6 border-2 border-[#087F5B] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-[#0D9488] border-t-transparent rounded-full animate-spin" />
       <span className="text-xs font-medium text-slate-500">{message}</span>
     </div>
   );

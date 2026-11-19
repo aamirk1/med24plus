@@ -65,7 +65,7 @@ export default function AdminCustomersPage() {
       cell: (c) => (
         <Link
           href={`/customers/${c.id}`}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#087F5B] bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#0D9488] bg-teal-50 hover:bg-teal-100 rounded-lg transition"
         >
           <Eye className="w-3.5 h-3.5" />
           <span>Profile</span>

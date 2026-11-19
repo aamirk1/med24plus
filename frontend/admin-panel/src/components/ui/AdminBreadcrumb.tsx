@@ -16,7 +16,7 @@ export const AdminBreadcrumb: React.FC<AdminBreadcrumbProps> = ({ items }) => {
     <nav className="flex items-center text-xs text-slate-500 mb-4">
       <ol className="flex items-center gap-1.5 flex-wrap">
         <li>
-          <Link href="/dashboard" className="hover:text-[#087F5B] flex items-center gap-1">
+          <Link href="/dashboard" className="hover:text-[#0D9488] flex items-center gap-1">
             <LayoutDashboard className="w-3.5 h-3.5" />
             <span className="sr-only">Dashboard</span>
           </Link>
@@ -30,7 +30,7 @@ export const AdminBreadcrumb: React.FC<AdminBreadcrumbProps> = ({ items }) => {
               </li>
               <li>
                 {item.href && !isLast ? (
-                  <Link href={item.href} className="hover:text-[#087F5B] transition">
+                  <Link href={item.href} className="hover:text-[#0D9488] transition">
                     {item.label}
                   </Link>
                 ) : (

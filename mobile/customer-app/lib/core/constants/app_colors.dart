@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Phase 2 Canonical Color Tokens
-  static const Color primary = Color(0xFF087F5B);
-  static const Color primaryDark = Color(0xFF066649);
-  static const Color primaryLight = Color(0xFFE6F4EF);
+  // Phase 2 Canonical Color Tokens - Medical Teal Green
+  static const Color primary = Color(0xFF0D9488);
+  static const Color primaryDark = Color(0xFF0F766E);
+  static const Color primaryLight = Color(0xFFF0FDFA);
   static const Color secondary = Color(0xFF2563EB);
   static const Color background = Color(0xFFF8FAFC);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color mainText = Color(0xFF172B24);
+  static const Color mainText = Color(0xFF132A27);
   static const Color secondaryText = Color(0xFF64748B);
   static const Color border = Color(0xFFE2E8F0);
-  static const Color success = Color(0xFF16A34A);
+  static const Color success = Color(0xFF0D9488);
   static const Color warning = Color(0xFFD97706);
   static const Color danger = Color(0xFFDC2626);
 
@@ -21,9 +21,9 @@ class AppColors {
   static const Color primaryBlue = Color(0xFF0066CC);
   static const Color primaryBlueDark = Color(0xFF004D99);
   static const Color primaryBlueLight = Color(0xFF3385D6);
-  static const Color primaryGreen = Color(0xFF00B074);
-  static const Color primaryGreenDark = Color(0xFF008C5D);
-  static const Color primaryGreenLight = Color(0xFF33C090);
+  static const Color primaryGreen = Color(0xFF0D9488);
+  static const Color primaryGreenDark = Color(0xFF0F766E);
+  static const Color primaryGreenLight = Color(0xFF2DD4BF);
 
   static const Color textPrimary = mainText;
   static const Color textSecondary = secondaryText;

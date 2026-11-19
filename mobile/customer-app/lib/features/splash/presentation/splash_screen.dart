@@ -179,16 +179,16 @@ class _SplashScreenState extends State<SplashScreen>
       child: Scaffold(
         body: Stack(
           children: [
-            // 1. Serene Dark Emerald Healthcare Mesh Gradient
+            // 1. Serene Dark Teal Healthcare Mesh Gradient
             Container(
               decoration: const BoxDecoration(
                 gradient: RadialGradient(
                   center: Alignment(0.0, -0.2),
                   radius: 1.3,
                   colors: [
-                    Color(0xFF0A5C43), // Rich emerald teal
-                    Color(0xFF063E2D), // Deep forest medicine
-                    Color(0xFF032219), // Midnight pharmacy dark
+                    Color(0xFF0F766E), // Rich teal green (Teal 700)
+                    Color(0xFF115E59), // Deep teal pharmacy (Teal 800)
+                    Color(0xFF042F2E), // Midnight teal dark (Teal 950)
                   ],
                 ),
               ),
@@ -210,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 260,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF10B981)
+                          color: const Color(0xFF14B8A6)
                               .withOpacity(0.12 + (pulse * 0.06)),
                         ),
                       ),
@@ -224,7 +224,7 @@ class _SplashScreenState extends State<SplashScreen>
                         height: 300,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF047857)
+                          color: const Color(0xFF0D9488)
                               .withOpacity(0.18 + (pulse * 0.05)),
                         ),
                       ),
@@ -259,7 +259,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF34D399)
+                                    color: const Color(0xFF2DD4BF)
                                         .withOpacity(0.18 * (1.0 - pulse)),
                                     width: 1.8,
                                   ),
@@ -272,7 +272,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 height: 120 + (pulse * 12),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: const Color(0xFF059669)
+                                  color: const Color(0xFF0D9488)
                                       .withOpacity(0.14 + (pulse * 0.08)),
                                 ),
                               ),
@@ -290,7 +290,7 @@ class _SplashScreenState extends State<SplashScreen>
                                       borderRadius: BorderRadius.circular(26),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF059669)
+                                          color: const Color(0xFF0D9488)
                                               .withOpacity(0.40),
                                           blurRadius: 36,
                                           offset: const Offset(0, 16),
@@ -411,7 +411,7 @@ class _SplashScreenState extends State<SplashScreen>
                             color: Colors.white.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: const Color(0xFF34D399).withOpacity(0.25),
+                              color: const Color(0xFF2DD4BF).withOpacity(0.25),
                               width: 1,
                             ),
                           ),
@@ -421,7 +421,7 @@ class _SplashScreenState extends State<SplashScreen>
                               Icon(
                                 Icons.verified_user_rounded,
                                 size: 14,
-                                color: Color(0xFF34D399),
+                                color: Color(0xFF2DD4BF),
                               ),
                               SizedBox(width: 7),
                               Text(
@@ -429,7 +429,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFE6F4EF),
+                                  color: Color(0xFFF0FDFA),
                                   letterSpacing: 0.2,
                                 ),
                               ),
@@ -462,15 +462,15 @@ class _SplashScreenState extends State<SplashScreen>
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
                                             colors: [
-                                              Color(0xFF34D399),
-                                              Color(0xFF6EE7B7),
+                                              Color(0xFF2DD4BF),
+                                              Color(0xFF5EEAD4),
                                             ],
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFF34D399)
+                                              color: const Color(0xFF2DD4BF)
                                                   .withOpacity(0.6),
                                               blurRadius: 6,
                                             ),

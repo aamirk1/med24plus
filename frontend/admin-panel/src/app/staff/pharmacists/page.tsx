@@ -17,7 +17,7 @@ export default function PharmacistManagementPage() {
       header: "Pharmacist Name & Degree",
       cell: (p) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-emerald-100 text-[#087F5B] flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-full bg-teal-100 text-[#0D9488] flex items-center justify-center font-bold text-xs">
             {p.name.charAt(0)}
           </div>
           <div>
@@ -38,7 +38,7 @@ export default function PharmacistManagementPage() {
     {
       header: "Statutory Signing Authority",
       cell: () => (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700">
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>Schedule H/H1 Authorized</span>
         </span>
@@ -71,11 +71,11 @@ export default function PharmacistManagementPage() {
         subtitle="Verification records of qualified Registered Pharmacists legally authorized to compound, verify and dispense medicines."
       />
 
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-[#087F5B] shrink-0 mt-0.5" />
-        <div className="text-xs text-emerald-950">
+      <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 text-[#0D9488] shrink-0 mt-0.5" />
+        <div className="text-xs text-teal-950">
           <p className="font-bold">Drugs and Cosmetics Rules, 1945 — Rule 65 Mandate</p>
-          <p className="text-emerald-800 text-[11px] mt-0.5 leading-relaxed">
+          <p className="text-teal-800 text-[11px] mt-0.5 leading-relaxed">
             The supply of drugs on prescription shall be made only by or under the direct supervision of a Registered Pharmacist. Each prescription audited through this platform requires digital signing by one of the authorized council registered pharmacists listed below.
           </p>
         </div>

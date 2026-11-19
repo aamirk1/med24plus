@@ -86,7 +86,7 @@ export default function PrescriptionHistoryPage() {
             onClick={() => setStatusFilter(t.id)}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
               statusFilter === t.id
-                ? "bg-[#087F5B] text-white font-semibold"
+                ? "bg-[#0D9488] text-white font-semibold"
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >
@@ -106,12 +106,12 @@ export default function PrescriptionHistoryPage() {
       {/* Loading state */}
       {loading ? (
         <div className="py-16 flex flex-col items-center justify-center space-y-3 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Loading prescriptions from secure vault...</p>
         </div>
       ) : prescriptions.length === 0 ? (
         <div className="py-16 text-center space-y-4 bg-white rounded-2xl border border-slate-200 p-8">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 text-[#087F5B] flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-full bg-teal-50 text-[#0D9488] flex items-center justify-center mx-auto">
             <FileText className="w-8 h-8" />
           </div>
           <div className="space-y-1">
@@ -147,7 +147,7 @@ export default function PrescriptionHistoryPage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#E6F4EF] text-[#087F5B] flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-lg bg-[#F0FDFA] text-[#0D9488] flex items-center justify-center font-bold">
                       Rx
                     </div>
                     <div>
@@ -210,7 +210,7 @@ export default function PrescriptionHistoryPage() {
                 {/* Pharmacist Remarks */}
                 {rx.pharmacist_notes && (
                   <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg text-xs flex items-start gap-2 text-slate-700">
-                    <UserCheck className="w-4 h-4 text-[#087F5B] shrink-0 mt-0.5" />
+                    <UserCheck className="w-4 h-4 text-[#0D9488] shrink-0 mt-0.5" />
                     <p>
                       <strong className="text-slate-900 font-semibold">Pharmacist Remark: </strong>
                       {rx.pharmacist_notes}

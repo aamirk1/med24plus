@@ -173,7 +173,7 @@ export default function AdminProductsPage() {
               ? "text-red-600"
               : p.stock <= 30
               ? "text-amber-600"
-              : "text-emerald-700"
+              : "text-teal-700"
           }`}
         >
           {p.stock} units
@@ -196,7 +196,7 @@ export default function AdminProductsPage() {
             title={p.isActive ? "Deactivate" : "Activate"}
           >
             {p.isActive ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
             ) : (
               <XCircle className="w-3.5 h-3.5 text-slate-400" />
             )}
@@ -229,7 +229,7 @@ export default function AdminProductsPage() {
         actions={
           <Link
             href="/catalog/products/new"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#087F5B] hover:bg-[#066649] text-white rounded-lg text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
             <span>Add Medicine / Product</span>
@@ -256,7 +256,7 @@ export default function AdminProductsPage() {
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-[#087F5B]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
           <p className="text-xs">Loading live catalog items from database...</p>
         </div>
       ) : (

@@ -101,7 +101,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-[#087F5B] border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div className="w-8 h-8 border-2 border-[#0D9488] border-t-transparent rounded-full animate-spin mx-auto"></div>
         <p className="text-xs text-slate-500">Loading order credentials...</p>
       </div>
     );
@@ -265,7 +265,7 @@ export default function OrderDetailPage() {
                     <div
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition ${
                         isDone
-                          ? "bg-[#087F5B] text-white"
+                          ? "bg-[#0D9488] text-white"
                           : isCurrent
                           ? "bg-amber-500 text-white"
                           : "bg-slate-200 text-slate-500"
@@ -324,7 +324,7 @@ export default function OrderDetailPage() {
                     Qty: {item.quantity} × {formatPriceINR(item.unit_price)}
                   </p>
                   {item.unit_mrp > item.unit_price && (
-                    <p className="text-[10px] text-emerald-600 font-medium line-through">
+                    <p className="text-[10px] text-teal-600 font-medium line-through">
                       MRP: {formatPriceINR(item.unit_mrp * item.quantity)}
                     </p>
                   )}
@@ -347,7 +347,7 @@ export default function OrderDetailPage() {
                 <span>{formatPriceINR(order.subtotal)}</span>
               </div>
               {order.discount_amount > 0 && (
-                <div className="flex justify-between text-emerald-700 font-medium">
+                <div className="flex justify-between text-teal-700 font-medium">
                   <span>Pharmacy Discount:</span>
                   <span>- {formatPriceINR(order.discount_amount)}</span>
                 </div>
@@ -383,7 +383,7 @@ export default function OrderDetailPage() {
           {/* Delivery Address */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-subtle space-y-3 text-xs">
             <h3 className="font-bold text-sm text-[#172B24] pb-2 border-b border-slate-100 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-[#087F5B]" />
+              <MapPin className="w-4 h-4 text-[#0D9488]" />
               <span>Delivery Address</span>
             </h3>
             <div className="space-y-1 text-slate-700">

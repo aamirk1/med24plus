@@ -10,7 +10,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
   if (norm.includes("approved") || norm.includes("good") || norm.includes("delivered") || norm === "active") {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
         <CheckCircle2 className="w-3 h-3" />
         <span>{status}</span>
       </span>

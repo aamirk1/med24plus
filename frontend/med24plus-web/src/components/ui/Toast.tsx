@@ -31,14 +31,14 @@ export const Toast: React.FC<ToastProps> = ({
   if (!visible) return null;
 
   const icons = {
-    success: <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />,
+    success: <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />,
     warning: <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />,
     error: <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />,
     info: <Info className="w-4 h-4 text-blue-600 shrink-0" />,
   };
 
   const borders = {
-    success: "border-emerald-200 bg-emerald-50 text-emerald-950",
+    success: "border-teal-200 bg-teal-50 text-teal-950",
     warning: "border-amber-200 bg-amber-50 text-amber-950",
     error: "border-red-200 bg-red-50 text-red-950",
     info: "border-blue-200 bg-blue-50 text-blue-950",
