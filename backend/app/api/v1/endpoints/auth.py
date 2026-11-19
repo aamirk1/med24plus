@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -686,4 +688,37 @@ async def change_password(
         message=msg,
         data={"updated": True},
     )
+
+
+class AccountDeletionRequest(BaseModel):
+    identifier: str = Field(..., description="Registered mobile number or email")
+    reason: Optional[str] = Field(None, description="Optional reason for deletion")
+    confirmation: bool = Field(True, description="Confirmation of deletion request")
+
+
+@router.post(
+    "/request-deletion",
+    response_model=APIResponse[Dict[str, Any]],
+)
+async def request_account_deletion(
+    payload: AccountDeletionRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint for Google Play Account & Data Deletion requirement."""
+    clean_id = payload.identifier.strip()
+    stmt = select(User).where((User.phone == clean_id) | (User.email == clean_id))
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+
+    if user:
+        user.is_active = False
+        user.status = "pending_deletion"
+        await db.commit()
+
+    return APIResponse(
+        success=True,
+        message="Account deletion request received successfully. Your personal data will be purged within 30 days pursuant to Rule 65 of the Drugs and Cosmetics Rules, 1945.",
+        data={"status": "processing", "scheduled_days": 30},
+    )
+
 

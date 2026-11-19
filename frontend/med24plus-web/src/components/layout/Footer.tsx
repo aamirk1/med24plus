@@ -90,6 +90,7 @@ export const Footer: React.FC = () => {
                                   <li><Link href="/legal/prescription-policy" className="hover:text-white transition">Prescription (Rule 65) Policy</Link></li>
                                   <li><Link href="/legal/terms" className="hover:text-white transition">Terms & Conditions of Sale</Link></li>
                                   <li><Link href="/legal/privacy" className="hover:text-white transition">Patient Privacy Policy</Link></li>
+                                  <li><Link href="/delete-account" className="text-rose-400 hover:text-rose-300 transition font-medium">Delete Account &amp; Data</Link></li>
                                   <li><Link href="/about" className="hover:text-white transition">About Our Registered Pharmacy</Link></li>
                                   <li><Link href="/contact" className="hover:text-white transition">Grievance Officer & Contacts</Link></li>
                                 </ul>

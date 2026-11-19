@@ -148,6 +148,7 @@ export default function PrivacyPolicyPage() {
           <div className="space-y-2 pt-2 text-xs">
             <p className="font-semibold text-[#172B24]">How to request account deletion:</p>
             <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-600">
+              <li><strong>Online Web Portal:</strong> You can submit a deletion request directly at our dedicated <Link href="/delete-account" className="text-rose-700 font-semibold underline">Account Deletion Page</Link> without needing to sign in.</li>
               <li><strong>In-App:</strong> Open the Med24Plus mobile application, navigate to <strong>Profile &gt; Account Settings &gt; Delete Account &amp; Data</strong>, and confirm your request.</li>
               <li>
                 <strong>Online Request:</strong> Email our dedicated Privacy &amp; Grievance Officer at{" "}
