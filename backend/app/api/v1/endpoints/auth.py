@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field

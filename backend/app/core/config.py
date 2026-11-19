@@ -48,8 +48,13 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: List[str] = [
+        "https://med24plus.serwex.in",
+        "https://med24plus-admin.serwex.in",
+        "https://med24plus-api.serwex.in",
         "http://localhost:3024",
         "http://localhost:3025",
+        "http://localhost:3000",
+        "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
     ]

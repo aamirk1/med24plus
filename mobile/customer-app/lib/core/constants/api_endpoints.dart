@@ -1,10 +1,10 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  // Local development host (Use 10.0.2.2 for Android emulator, localhost for iOS simulator/macOS)
+  // Live Production Server API (https://med24plus-api.serwex.in)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8024/api/v1',
+    defaultValue: 'https://med24plus-api.serwex.in/api/v1',
   );
 
   static const String register = '/auth/register';

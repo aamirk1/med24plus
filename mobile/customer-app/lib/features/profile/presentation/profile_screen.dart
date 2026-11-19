@@ -178,7 +178,7 @@ class ProfileScreen extends StatelessWidget {
                                 '• All doctor prescriptions are encrypted with AES-256 and verified only by licensed pharmacists.\n'
                                 '• We never sell or monetize patient data for advertising.\n'
                                 '• You may request complete account and data deletion at any time.\n\n'
-                                'Read the complete legal policy at:\nhttps://care.med24plus.in/legal/privacy or email privacy@med24plus.in',
+                                'Read the complete legal policy at:\nhttps://med24plus.serwex.in/legal/privacy or email privacy@med24plus.in',
                                 style: TextStyle(fontSize: 12, height: 1.5),
                               ),
                             ),

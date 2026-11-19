@@ -41,7 +41,7 @@ export default function DeleteAccountPage() {
 
     try {
       // Send request to backend API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8024/api/v1";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://med24plus-api.serwex.in/api/v1";
       const res = await fetch(`${apiUrl}/auth/request-deletion`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
