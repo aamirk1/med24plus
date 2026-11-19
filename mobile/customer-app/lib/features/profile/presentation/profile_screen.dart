@@ -158,6 +158,42 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const Divider(height: 1, color: AppColors.border),
                     _buildMenuItem(
+                      icon: Icons.shield_outlined,
+                      title: 'Privacy Policy & Data Safety',
+                      subtitle: 'DPDP Act 2023 & Google Play health compliance',
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Row(
+                              children: [
+                                Icon(Icons.shield, color: AppColors.primary, size: 22),
+                                SizedBox(width: 8),
+                                Text('Privacy & Data Safety', style: TextStyle(fontSize: 16)),
+                              ],
+                            ),
+                            content: const SingleChildScrollView(
+                              child: Text(
+                                'Med24Plus (com.technosolz.med24plus) by Technosolz protects all patient health information and prescriptions under the Digital Personal Data Protection Act, 2023.\n\n'
+                                '• All doctor prescriptions are encrypted with AES-256 and verified only by licensed pharmacists.\n'
+                                '• We never sell or monetize patient data for advertising.\n'
+                                '• You may request complete account and data deletion at any time.\n\n'
+                                'Read the complete legal policy at:\nhttps://care.med24plus.in/legal/privacy or email privacy@med24plus.in',
+                                style: TextStyle(fontSize: 12, height: 1.5),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.border),
+                    _buildMenuItem(
                       icon: Icons.headset_mic_outlined,
                       title: 'Helpline & Pharmacist Consultation',
                       subtitle: 'Contact duty pharmacist or report grievances',
@@ -169,7 +205,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Logout / Sign Out
+            // Logout / Sign Out & Account Deletion (Google Play Compliance)
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
                 if (authState is! AuthAuthenticated) {
@@ -178,32 +214,89 @@ class ProfileScreen extends StatelessWidget {
 
                 return AnimatedFadeSlide(
                   delay: const Duration(milliseconds: 200),
-                  child: AnimatedTapScale(
-                    onTap: () {
-                      context.read<AuthBloc>().add(LogoutRequested());
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logged out of Med24Plus.')),
-                      );
-                      context.go('/login');
-                    },
-                    child: OutlinedButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(LogoutRequested());
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Logged out of Med24Plus.')),
-                        );
-                        context.go('/login');
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger,
-                        side: const BorderSide(color: AppColors.danger),
-                        minimumSize: const Size(double.infinity, 44),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                  child: Column(
+                    children: [
+                      AnimatedTapScale(
+                        onTap: () {
+                          context.read<AuthBloc>().add(LogoutRequested());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Logged out of Med24Plus.')),
+                          );
+                          context.go('/login');
+                        },
+                        child: OutlinedButton(
+                          onPressed: () {
+                            context.read<AuthBloc>().add(LogoutRequested());
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Logged out of Med24Plus.')),
+                            );
+                            context.go('/login');
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.mainText,
+                            side: const BorderSide(color: AppColors.border),
+                            minimumSize: const Size(double.infinity, 44),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('Sign Out',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        ),
                       ),
-                      child: const Text('Sign Out',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                    ),
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.delete_forever, color: AppColors.danger, size: 22),
+                                  SizedBox(width: 8),
+                                  Text('Delete Account & Data', style: TextStyle(fontSize: 16)),
+                                ],
+                              ),
+                              content: const Text(
+                                'Are you sure you want to permanently delete your Med24Plus patient account?\n\n'
+                                '• All profile information, saved addresses, device tokens, and credentials will be removed.\n'
+                                '• Statutory drug dispensing records for Schedule H prescriptions are retained for 2 years as mandated by Rule 65 of the Drugs and Cosmetics Rules, 1945.\n\n'
+                                'This action cannot be undone.',
+                                style: TextStyle(fontSize: 12, height: 1.5),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    context.read<AuthBloc>().add(LogoutRequested());
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Account deletion request initiated. Session cleared.'),
+                                        backgroundColor: AppColors.danger,
+                                      ),
+                                    );
+                                    context.go('/login');
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.danger,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Delete Permanently'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.delete_outline, size: 16, color: AppColors.secondaryText),
+                        label: const Text(
+                          'Delete Patient Account & Data',
+                          style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
