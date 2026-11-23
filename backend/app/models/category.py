@@ -59,6 +59,7 @@ class Category(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     subcategories: Mapped[List["Category"]] = relationship(
         "Category",
         back_populates="parent",
+        lazy="selectin",
     )
     products: Mapped[List["Product"]] = relationship(
         "Product",

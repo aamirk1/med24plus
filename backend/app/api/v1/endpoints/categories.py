@@ -101,7 +101,19 @@ async def create_category(
     return APIResponse(
         success=True,
         message="Category created successfully.",
-        data=CategoryResponse.model_validate(cat),
+        data=CategoryResponse(
+            id=cat.id,
+            name=cat.name,
+            slug=cat.slug,
+            description=cat.description,
+            image_url=cat.image_url,
+            parent_id=cat.parent_id,
+            sort_order=cat.sort_order,
+            is_active=cat.is_active,
+            created_at=cat.created_at,
+            updated_at=cat.updated_at,
+            subcategories=[],
+        ),
     )
 
 

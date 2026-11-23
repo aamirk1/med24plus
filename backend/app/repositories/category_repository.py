@@ -123,7 +123,7 @@ class CategoryRepository:
         """Persist a new category."""
         self.db.add(category)
         await self.db.flush()
-        await self.db.refresh(category)
+        category.subcategories = []
         return category
 
     async def update(self, category: Category) -> Category:

@@ -37,15 +37,30 @@ app.add_middleware(SecurityHeadersMiddleware)
 setup_cors(app)
 
 
+def get_cors_headers(request: Request) -> dict:
+    origin = request.headers.get("origin")
+    if origin and (origin in settings.CORS_ORIGINS or "serwex.in" in origin or "localhost" in origin):
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Vary": "Origin",
+        }
+    return {}
+
+
 # Custom Exception Handler for HTTPException
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Normalize HTTPException into standardized Med24Plus error envelope."""
+    """Normalize HTTPException into standardized Med24Plus error envelope with CORS."""
+    headers = dict(exc.headers or {})
+    headers.update(get_cors_headers(request))
     if isinstance(exc.detail, dict) and "error" in exc.detail:
         return JSONResponse(
             status_code=exc.status_code,
             content=exc.detail,
-            headers=exc.headers,
+            headers=headers,
         )
     return JSONResponse(
         status_code=exc.status_code,
@@ -54,19 +69,20 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "message": str(exc.detail),
             "error": {"code": "HTTP_ERROR"},
         },
-        headers=exc.headers,
+        headers=headers,
     )
 
 
 # Custom Exception Handler for Validation Errors
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Format Pydantic request validation errors."""
+    """Format Pydantic request validation errors with CORS."""
     errors = []
     for err in exc.errors():
         field = ".".join(str(loc) for loc in err["loc"] if loc != "body")
         errors.append({"field": field, "message": err["msg"]})
 
+    headers = get_cors_headers(request)
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -77,6 +93,28 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 "details": errors,
             },
         },
+        headers=headers,
+    )
+
+
+# Custom Exception Handler for Generic Unhandled Server Errors
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """Catch-all 500 handler ensuring CORS headers and clean JSON envelope."""
+    import logging
+    logging.exception(f"Unhandled error processing {request.method} {request.url}: {exc}")
+    headers = get_cors_headers(request)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "success": False,
+            "message": f"Server processing error: {str(exc)}",
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "details": str(exc),
+            },
+        },
+        headers=headers,
     )
 
 
