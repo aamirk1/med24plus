@@ -115,8 +115,6 @@ def create_super_admin(phone: str, email: str, password: str, full_name: str):
         sys.exit(1)
     finally:
         session.close()
-    finally:
-        session.close()
 
 
 if __name__ == "__main__":
