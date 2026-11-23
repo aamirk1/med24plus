@@ -77,10 +77,24 @@ class CatalogService:
         return category
 
     async def create_category(self, data: CategoryCreate) -> Category:
-        slug = data.slug or slugify(data.name)
-        existing_slug = await self.category_repo.get_by_slug(slug)
-        if existing_slug:
-            slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+        user_provided_slug = bool(data.slug and data.slug.strip())
+        raw_slug = data.slug.strip() if user_provided_slug else slugify(data.name)
+        slug = raw_slug.lower()
+
+        existing = await self.category_repo.get_by_slug(slug, include_deleted=True)
+        if existing:
+            if user_provided_slug:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "success": False,
+                        "message": f"Category slug '{data.slug}' is already in use. Please enter a different slug or leave it blank to auto-generate.",
+                        "error": {"code": "SLUG_ALREADY_EXISTS"},
+                    },
+                )
+            else:
+                while await self.category_repo.get_by_slug(slug, include_deleted=True):
+                    slug = f"{raw_slug.lower()}-{uuid.uuid4().hex[:6]}"
 
         if data.parent_id:
             parent = await self.category_repo.get_by_id(data.parent_id)
@@ -111,17 +125,18 @@ class CatalogService:
         if data.name is not None:
             category.name = data.name.strip()
         if data.slug is not None:
-            existing = await self.category_repo.get_by_slug(data.slug)
+            new_slug = data.slug.strip().lower()
+            existing = await self.category_repo.get_by_slug(new_slug, include_deleted=True)
             if existing and existing.id != category_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "success": False,
-                        "message": "Slug is already in use by another category.",
+                        "message": f"Slug '{data.slug}' is already in use by another category.",
                         "error": {"code": "SLUG_ALREADY_EXISTS"},
                     },
                 )
-            category.slug = slugify(data.slug)
+            category.slug = new_slug
         if data.description is not None:
             category.description = data.description
         if data.image_url is not None:
@@ -172,6 +187,7 @@ class CatalogService:
                     "error": {"code": "CATEGORY_HAS_PRODUCTS"},
                 },
             )
+        category.slug = f"{category.slug}-deleted-{uuid.uuid4().hex[:8]}"
         category.is_deleted = True
         category.is_active = False
         await self.category_repo.update(category)
@@ -208,7 +224,10 @@ class CatalogService:
         return brand
 
     async def create_brand(self, data: BrandCreate) -> Brand:
-        slug = data.slug or slugify(data.name)
+        user_provided_slug = bool(data.slug and data.slug.strip())
+        raw_slug = data.slug.strip() if user_provided_slug else slugify(data.name)
+        slug = raw_slug.lower()
+
         existing = await self.brand_repo.get_by_name(data.name)
         if existing:
             raise HTTPException(
@@ -220,9 +239,20 @@ class CatalogService:
                 },
             )
 
-        existing_slug = await self.brand_repo.get_by_slug(slug)
+        existing_slug = await self.brand_repo.get_by_slug(slug, include_deleted=True)
         if existing_slug:
-            slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+            if user_provided_slug:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "success": False,
+                        "message": f"Brand slug '{data.slug}' is already in use. Please enter a different slug or leave it blank to auto-generate.",
+                        "error": {"code": "SLUG_ALREADY_EXISTS"},
+                    },
+                )
+            else:
+                while await self.brand_repo.get_by_slug(slug, include_deleted=True):
+                    slug = f"{raw_slug.lower()}-{uuid.uuid4().hex[:6]}"
 
         brand = Brand(
             name=data.name.strip(),
@@ -252,17 +282,18 @@ class CatalogService:
             brand.name = data.name.strip()
 
         if data.slug is not None:
-            existing_slug = await self.brand_repo.get_by_slug(data.slug)
+            new_slug = data.slug.strip().lower()
+            existing_slug = await self.brand_repo.get_by_slug(new_slug, include_deleted=True)
             if existing_slug and existing_slug.id != brand_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "success": False,
-                        "message": "Slug is already used by another brand.",
+                        "message": f"Slug '{data.slug}' is already used by another brand.",
                         "error": {"code": "SLUG_ALREADY_EXISTS"},
                     },
                 )
-            brand.slug = slugify(data.slug)
+            brand.slug = new_slug
 
         if data.manufacturer_name is not None:
             brand.manufacturer_name = data.manufacturer_name.strip()
@@ -294,6 +325,8 @@ class CatalogService:
                     "error": {"code": "BRAND_HAS_PRODUCTS"},
                 },
             )
+        brand.slug = f"{brand.slug}-deleted-{uuid.uuid4().hex[:8]}"
+        brand.name = f"{brand.name} (archived {uuid.uuid4().hex[:6]})"
         brand.is_deleted = True
         brand.is_active = False
         await self.brand_repo.update(brand)
@@ -336,10 +369,24 @@ class CatalogService:
             )
 
         # 3. Generate and check Slug
-        slug = data.slug or slugify(data.name)
-        existing_slug = await self.product_repo.get_by_slug(slug)
+        user_provided_slug = bool(data.slug and data.slug.strip())
+        raw_slug = data.slug.strip() if user_provided_slug else slugify(data.name)
+        slug = raw_slug.lower()
+
+        existing_slug = await self.product_repo.get_by_slug(slug, include_deleted=True)
         if existing_slug:
-            slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+            if user_provided_slug:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "success": False,
+                        "message": f"Product slug '{data.slug}' is already in use. Please enter a different slug or leave it blank to auto-generate.",
+                        "error": {"code": "SLUG_ALREADY_EXISTS"},
+                    },
+                )
+            else:
+                while await self.product_repo.get_by_slug(slug, include_deleted=True):
+                    slug = f"{raw_slug.lower()}-{uuid.uuid4().hex[:6]}"
 
         # 4. Calculate discount
         discount_percent = self.calculate_discount_percent(data.mrp, data.selling_price)
@@ -414,13 +461,14 @@ class CatalogService:
             product.sku = data.sku.strip()
 
         if data.slug is not None and data.slug != product.slug:
-            existing_slug = await self.product_repo.get_by_slug(data.slug)
+            new_slug = data.slug.strip().lower()
+            existing_slug = await self.product_repo.get_by_slug(new_slug, include_deleted=True)
             if existing_slug and existing_slug.id != product_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={"success": False, "message": "Slug already in use.", "error": {"code": "SLUG_ALREADY_EXISTS"}},
+                    detail={"success": False, "message": f"Slug '{data.slug}' is already in use by another product.", "error": {"code": "SLUG_ALREADY_EXISTS"}},
                 )
-            product.slug = slugify(data.slug)
+            product.slug = new_slug
 
         if data.category_id is not None:
             cat = await self.category_repo.get_by_id(data.category_id)
@@ -493,6 +541,8 @@ class CatalogService:
                     "error": {"code": "PRODUCT_REFERENCED_IN_ORDERS"},
                 },
             )
+        product.slug = f"{product.slug}-deleted-{uuid.uuid4().hex[:8]}"
+        product.sku = f"{product.sku}-deleted-{uuid.uuid4().hex[:8]}"
         product.is_deleted = True
         product.is_active = False
         await self.product_repo.update(product)

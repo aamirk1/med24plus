@@ -23,9 +23,11 @@ class BrandRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def get_by_slug(self, slug: str) -> Optional[Brand]:
+    async def get_by_slug(self, slug: str, include_deleted: bool = False) -> Optional[Brand]:
         """Fetch brand by unique slug."""
-        stmt = select(Brand).where(Brand.slug == slug.lower().strip(), Brand.is_deleted == False)  # noqa: E712
+        stmt = select(Brand).where(Brand.slug == slug.lower().strip())
+        if not include_deleted:
+            stmt = stmt.where(Brand.is_deleted == False)  # noqa: E712
         result = await self.db.execute(stmt)
         return result.scalars().first()
 

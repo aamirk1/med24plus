@@ -26,13 +26,15 @@ class CategoryRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def get_by_slug(self, slug: str) -> Optional[Category]:
+    async def get_by_slug(self, slug: str, include_deleted: bool = False) -> Optional[Category]:
         """Fetch category by unique slug."""
         stmt = (
             select(Category)
             .options(selectinload(Category.subcategories))
-            .where(Category.slug == slug.lower().strip(), Category.is_deleted == False)  # noqa: E712
+            .where(Category.slug == slug.lower().strip())
         )
+        if not include_deleted:
+            stmt = stmt.where(Category.is_deleted == False)  # noqa: E712
         result = await self.db.execute(stmt)
         return result.scalars().first()
 

@@ -97,6 +97,39 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+import re
+from sqlalchemy.exc import IntegrityError
+
+
+# Custom Exception Handler for Database Integrity / Unique Constraint Violations
+@app.exception_handler(IntegrityError)
+async def integrity_exception_handler(request: Request, exc: IntegrityError):
+    """Normalize database unique constraint violations into standardized 400 Bad Request with CORS."""
+    headers = get_cors_headers(request)
+    orig_msg = str(exc.orig) if hasattr(exc, "orig") else str(exc)
+    user_msg = "Database integrity constraint violation: a record with these unique details already exists."
+    
+    match = re.search(r"Key \((.*?)\)=\((.*?)\) already exists", orig_msg)
+    if match:
+        field, val = match.groups()
+        user_msg = f"The {field} '{val}' is already in use. Please choose a different {field} or leave it blank to auto-generate."
+    elif "UniqueViolationError" in orig_msg or "duplicate key" in orig_msg:
+        user_msg = "A record with this unique value (slug, SKU, or name) already exists. Please choose a different value."
+
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "success": False,
+            "message": user_msg,
+            "error": {
+                "code": "DUPLICATE_ENTRY",
+                "details": orig_msg,
+            },
+        },
+        headers=headers,
+    )
+
+
 # Custom Exception Handler for Generic Unhandled Server Errors
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):

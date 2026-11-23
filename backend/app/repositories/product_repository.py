@@ -30,9 +30,11 @@ class ProductRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def get_by_slug(self, slug: str, load_relations: bool = True) -> Optional[Product]:
+    async def get_by_slug(self, slug: str, load_relations: bool = True, include_deleted: bool = False) -> Optional[Product]:
         """Fetch product by unique slug."""
-        stmt = select(Product).where(Product.slug == slug.lower().strip(), Product.is_deleted == False)  # noqa: E712
+        stmt = select(Product).where(Product.slug == slug.lower().strip())
+        if not include_deleted:
+            stmt = stmt.where(Product.is_deleted == False)  # noqa: E712
         if load_relations:
             stmt = stmt.options(
                 selectinload(Product.category),
