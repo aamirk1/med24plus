@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     # JWT & Session
     JWT_SECRET_KEY: str = "change_me_super_secret_jwt_key_at_least_32_chars_long"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours (extended from 15m to prevent session dropouts)
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # OTP Configuration
     OTP_EXPIRE_MINUTES: int = 5

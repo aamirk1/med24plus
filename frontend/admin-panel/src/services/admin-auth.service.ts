@@ -44,6 +44,9 @@ export const adminAuthService = {
     });
     if (res?.data?.access_token && typeof window !== "undefined") {
       localStorage.setItem("med24_access_token", res.data.access_token);
+      if (res.data.refresh_token) {
+        localStorage.setItem("med24_refresh_token", res.data.refresh_token);
+      }
     }
     return res;
   },
@@ -62,6 +65,7 @@ export const adminAuthService = {
     } finally {
       if (typeof window !== "undefined") {
         localStorage.removeItem("med24_access_token");
+        localStorage.removeItem("med24_refresh_token");
       }
     }
   },

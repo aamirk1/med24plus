@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { useAdminAuth } from "@/context/AdminAuthContext";
+import { useAdminCounts } from "@/context/AdminCountsContext";
 
 interface NavSubItem {
   name: string;
@@ -61,15 +62,14 @@ const navGroups: NavGroup[] = [
     roles: ["admin", "super_admin", "pharmacist", "staff"],
     children: [
       { name: "Stock Management", href: "/inventory/stock" },
-      { name: "Batch Management", href: "/inventory/batches", badge: "FEFO" },
-      { name: "Expiry Tracking", href: "/inventory/expiries", badge: "3 Near" },
+      { name: "Batch Management", href: "/inventory/batches" },
+      { name: "Expiry Tracking", href: "/inventory/expiries" },
     ],
   },
   {
     title: "Orders",
     icon: ShoppingBag,
     href: "/orders",
-    badge: "14",
     roles: ["admin", "super_admin", "staff"],
   },
   {
@@ -82,7 +82,6 @@ const navGroups: NavGroup[] = [
     title: "Prescriptions",
     icon: FileCheck2,
     href: "/prescriptions",
-    badge: "5 New",
     roles: ["admin", "super_admin", "pharmacist"],
   },
   {
@@ -139,6 +138,23 @@ export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, hasRole } = useAdminAuth();
+  const { ordersCount, prescriptionsNew, nearExpiryCount } = useAdminCounts();
+
+  const getDynamicBadge = (groupTitle: string, subName?: string): string | undefined => {
+    if (subName === "Expiry Tracking") {
+      return nearExpiryCount > 0 ? `${nearExpiryCount} Near` : undefined;
+    }
+    if (subName === "Batch Management") {
+      return "FEFO";
+    }
+    if (groupTitle === "Orders") {
+      return ordersCount > 0 ? String(ordersCount) : undefined;
+    }
+    if (groupTitle === "Prescriptions") {
+      return prescriptionsNew > 0 ? `${prescriptionsNew} New` : undefined;
+    }
+    return undefined;
+  };
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     Catalog: true,
@@ -202,11 +218,15 @@ export const Sidebar: React.FC = () => {
                       <Icon className="w-4 h-4 shrink-0" />
                       <span>{group.title}</span>
                     </div>
-                    {group.badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
-                        {group.badge}
-                      </span>
-                    )}
+                    {(() => {
+                      const dynamicBadge = getDynamicBadge(group.title);
+                      if (!dynamicBadge) return null;
+                      return (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white animate-pulse">
+                          {dynamicBadge}
+                        </span>
+                      );
+                    })()}
                   </Link>
                 );
               }
@@ -248,11 +268,15 @@ export const Sidebar: React.FC = () => {
                             }`}
                           >
                             <span>{sub.name}</span>
-                            {sub.badge && (
-                              <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                {sub.badge}
-                              </span>
-                            )}
+                            {(() => {
+                              const dynamicSubBadge = getDynamicBadge(group.title, sub.name);
+                              if (!dynamicSubBadge) return null;
+                              return (
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                  {dynamicSubBadge}
+                                </span>
+                              );
+                            })()}
                           </Link>
                         );
                       })}

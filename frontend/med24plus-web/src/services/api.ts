@@ -16,6 +16,38 @@ function getBaseUrl(): string {
 
 interface RequestOptions extends RequestInit {
   data?: any;
+  _isRetry?: boolean;
+}
+
+async function tryRefreshToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const refreshToken = localStorage.getItem("med24_refresh_token");
+  if (!refreshToken) return null;
+
+  try {
+    const baseUrl = getBaseUrl();
+    const res = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    const newAccessToken = body?.data?.access_token;
+    const newRefreshToken = body?.data?.refresh_token;
+    if (newAccessToken) {
+      localStorage.setItem("med24_access_token", newAccessToken);
+      if (newRefreshToken) {
+        localStorage.setItem("med24_refresh_token", newRefreshToken);
+      }
+      return newAccessToken;
+    }
+    return null;
+  } catch (e) {
+    console.error("Token refresh failed:", e);
+    return null;
+  }
 }
 
 export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -63,8 +95,23 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
   }
 
   if (!response.ok) {
-    const errorMsg = data?.message || "An unexpected error occurred. Please try again.";
     const errorCode = data?.error?.code || "REQUEST_FAILED";
+    const errorMsg = data?.message || "An unexpected error occurred. Please try again.";
+
+    const isTokenExpired = response.status === 401 && (errorCode === "TOKEN_EXPIRED" || errorMsg.toLowerCase().includes("expired"));
+    if (isTokenExpired && !options._isRetry) {
+      const newToken = await tryRefreshToken();
+      if (newToken) {
+        const retryHeaders = new Headers(options.headers || {});
+        retryHeaders.set("Authorization", `Bearer ${newToken}`);
+        return apiClient<T>(endpoint, {
+          ...options,
+          headers: retryHeaders,
+          _isRetry: true,
+        });
+      }
+    }
+
     const error: any = new Error(errorMsg);
     error.code = errorCode;
     error.status = response.status;
