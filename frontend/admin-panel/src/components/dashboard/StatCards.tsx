@@ -30,7 +30,7 @@ export const StatCards: React.FC = () => {
       try {
         const [metricsRes, rxCountsRes, invSummaryRes] = await Promise.allSettled([
           adminOrderService.getMetrics(),
-          adminPrescriptionService.getSummaryCounts(),
+          adminPrescriptionService.getCounts(),
           adminInventoryService.getSummary(),
         ]);
 
@@ -41,7 +41,7 @@ export const StatCards: React.FC = () => {
         setStats({
           totalOrders: metrics?.total_orders || 0,
           processingOrders: (metrics?.processing || 0) + (metrics?.ready_for_dispatch || 0),
-          pendingRx: rxCounts?.pending_review || rxCounts?.submitted || 0,
+          pendingRx: rxCounts?.pending_review || 0,
           lowStockCount: invSummary?.low_stock_items_count || 0,
           totalValuation: Number(invSummary?.total_valuation || 0),
         });

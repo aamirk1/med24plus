@@ -30,7 +30,7 @@ export default function PharmacistManagementPage() {
   }, []);
 
   const pharmacists = staff.filter(
-    (s) => s.role === "Pharmacist" || s.role === "Super Admin" || s.licenseNo
+    (s) => s.role === "Pharmacist" || s.role === "Admin" || s.role === "Super Admin" || Boolean(s.licenseNo)
   );
 
   const columns: Column<AdminStaff>[] = [

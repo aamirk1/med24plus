@@ -37,12 +37,12 @@ export default function AdminPaymentsPage() {
     };
   }, [search]);
 
-  const totalCollected = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-  const upiCount = orders.filter((o) => (o.payment_method || "").toLowerCase().includes("upi") || (o.payment_method || "").toLowerCase().includes("card")).length;
+  const totalCollected = orders.reduce((sum, o) => sum + (Number(o.grand_total) || 0), 0);
+  const upiCount = orders.filter((o) => (o.payment_status || "").toUpperCase() === "PAID" || (o.payment_status || "").toUpperCase() === "COMPLETED").length;
   const digitalShare = orders.length > 0 ? Math.round((upiCount / orders.length) * 100) : 100;
   const codPending = orders
-    .filter((o) => (o.payment_method || "").toLowerCase().includes("cod") && o.payment_status !== "COMPLETED")
-    .reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    .filter((o) => (o.payment_status || "").toUpperCase() !== "PAID" && (o.payment_status || "").toUpperCase() !== "COMPLETED")
+    .reduce((sum, o) => sum + (Number(o.grand_total) || 0), 0);
 
   const columns: Column<AdminOrderDetail>[] = [
     {
@@ -67,10 +67,10 @@ export default function AdminPaymentsPage() {
       ),
     },
     {
-      header: "Payment Method",
+      header: "Payment Settlement",
       cell: (o) => (
         <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-          {o.payment_method || "Online"}
+          {o.payment_status || "PENDING"}
         </span>
       ),
     },
@@ -78,7 +78,7 @@ export default function AdminPaymentsPage() {
       header: "Gross Amount",
       cell: (o) => (
         <span className="font-bold text-slate-900 text-xs">
-          ₹{Number(o.total_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹{Number(o.grand_total || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
         </span>
       ),
     },
@@ -86,7 +86,7 @@ export default function AdminPaymentsPage() {
       header: "GST Component (Estimated)",
       cell: (o) => (
         <span className="text-xs text-slate-600 font-mono">
-          ₹{Number(o.tax_amount || (Number(o.total_amount) * 0.12) || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+          ₹{Number(o.tax_amount || (Number(o.grand_total) * 0.12) || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
         </span>
       ),
     },

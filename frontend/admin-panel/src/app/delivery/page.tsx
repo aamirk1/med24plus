@@ -51,7 +51,7 @@ export default function AdminDeliveryPage() {
         <div>
           <p className="font-bold text-slate-900 text-xs">{o.order_number}</p>
           <span className="text-[10px] text-slate-400 font-mono">
-            {o.shipping_address?.pincode ? `Pincode: ${o.shipping_address.pincode}` : "Local Delivery"}
+            {o.delivery_address_snapshot?.pincode ? `Pincode: ${o.delivery_address_snapshot.pincode}` : "Local Delivery"}
           </span>
         </div>
       ),
@@ -61,7 +61,9 @@ export default function AdminDeliveryPage() {
       cell: (o) => (
         <div>
           <p className="font-semibold text-slate-800 text-xs">{o.customer_name || "Patient"}</p>
-          <span className="text-[10px] text-slate-500">{o.shipping_address?.phone || o.customer_notes || "N/A"}</span>
+          <span className="text-[10px] text-slate-500">
+            {o.delivery_address_snapshot?.recipient_phone || o.customer_phone || "N/A"}
+          </span>
         </div>
       ),
     },
@@ -75,10 +77,10 @@ export default function AdminDeliveryPage() {
       ),
     },
     {
-      header: "Amount / Mode",
+      header: "Amount / Status",
       cell: (o) => (
         <span className="text-xs font-semibold text-slate-900">
-          ₹{Number(o.total_amount).toLocaleString("en-IN")} ({o.payment_method || "Prepaid"})
+          ₹{Number(o.grand_total || 0).toLocaleString("en-IN")} ({o.payment_status || "Prepaid"})
         </span>
       ),
     },

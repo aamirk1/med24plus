@@ -7,14 +7,14 @@ import { ArrowLeft, User, Phone, Mail, MapPin, ShoppingBag, ShieldCheck, Loader2
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { adminCustomerService, AdminCustomerDetailData } from "@/services/admin-customer.service";
-import { adminOrderService, AdminOrderSummary } from "@/services/adminOrderService";
+import { adminOrderService, AdminOrderDetail } from "@/services/adminOrderService";
 
 export default function AdminCustomerDetailPage() {
   const params = useParams();
   const customerId = params?.id as string;
 
   const [customer, setCustomer] = useState<AdminCustomerDetailData | null>(null);
-  const [orders, setOrders] = useState<AdminOrderSummary[]>([]);
+  const [orders, setOrders] = useState<AdminOrderDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,11 +161,11 @@ export default function AdminCustomerDetailPage() {
                       <StatusBadge status={o.status} />
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      {o.created_at ? new Date(o.created_at).toLocaleDateString() : "Recent"} • {o.item_count} items • {o.payment_method}
+                      {o.created_at ? new Date(o.created_at).toLocaleDateString() : "Recent"} • {o.item_count} items • {o.payment_status || "Standard Order"}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-slate-900">₹{Number(o.total_amount).toLocaleString("en-IN")}</p>
+                    <p className="font-bold text-slate-900">₹{Number(o.grand_total || 0).toLocaleString("en-IN")}</p>
                     <Link
                       href={`/orders/${o.id}`}
                       className="inline-block text-[11px] font-semibold text-[#0D9488] hover:underline mt-0.5"

@@ -86,7 +86,7 @@ export interface AdminCustomer {
 export interface AdminStaff {
   id: string;
   name: string;
-  role: "Pharmacist" | "Store Manager" | "Inventory Manager" | "Admin";
+  role: "Pharmacist" | "Store Manager" | "Inventory Manager" | "Admin" | "Super Admin" | string;
   licenseNo?: string;
   phone: string;
   email: string;

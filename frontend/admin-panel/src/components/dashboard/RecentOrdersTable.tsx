@@ -70,8 +70,8 @@ export const RecentOrdersTable: React.FC = () => {
               </tr>
             ) : (
               orders.map((order) => {
-                const totalItems = order.items?.reduce((sum, it) => sum + it.quantity, 0) || 0;
-                const hasRx = order.items?.some((it) => it.prescription_required) || order.requires_prescription;
+                const totalItems = order.items?.reduce((sum, it) => sum + it.quantity, 0) || order.item_count || 0;
+                const hasRx = order.items?.some((it) => it.prescription_required) || Boolean(order.prescription_id);
                 return (
                   <tr key={order.id} className="hover:bg-slate-50/70 transition">
                     <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">
@@ -95,7 +95,7 @@ export const RecentOrdersTable: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4">{totalItems} {totalItems === 1 ? "item" : "items"}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-900">
-                      {formatPriceINR(Number(order.total_amount))}
+                      {formatPriceINR(Number(order.grand_total || 0))}
                     </td>
                     <td className="py-3.5 px-4 text-slate-500">
                       {new Date(order.created_at).toLocaleDateString("en-IN", {

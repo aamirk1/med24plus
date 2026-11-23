@@ -30,7 +30,7 @@ export default function AdminRefundsPage() {
             id: `REF-${o.order_number.replace("ORD-", "")}`,
             orderNumber: o.order_number,
             customerName: o.customer_name || "Patient",
-            amountINR: Number(o.total_amount),
+            amountINR: Number(o.grand_total || 0),
             reason: o.cancellation?.cancellation_reason || "Order cancelled before dispatch",
             status: o.cancellation?.cancellation_status || "PENDING",
             date: o.cancelled_at ? new Date(o.cancelled_at).toLocaleDateString() : "Recent",
