@@ -94,10 +94,11 @@ async def create_brand(
     service = CatalogService(db)
     brand = await service.create_brand(data)
     await db.commit()
+    fresh_brand = await service.brand_repo.get_by_id(brand.id)
     return APIResponse(
         success=True,
         message="Brand created successfully.",
-        data=BrandResponse.model_validate(brand),
+        data=BrandResponse.model_validate(fresh_brand or brand),
     )
 
 
@@ -116,10 +117,11 @@ async def update_brand(
     service = CatalogService(db)
     brand = await service.update_brand(brand_id, data)
     await db.commit()
+    fresh_brand = await service.brand_repo.get_by_id(brand.id)
     return APIResponse(
         success=True,
         message="Brand updated successfully.",
-        data=BrandResponse.model_validate(brand),
+        data=BrandResponse.model_validate(fresh_brand or brand),
     )
 
 
@@ -138,10 +140,11 @@ async def update_brand_status(
     service = CatalogService(db)
     brand = await service.set_brand_status(brand_id, data.is_active)
     await db.commit()
+    fresh_brand = await service.brand_repo.get_by_id(brand.id)
     return APIResponse(
         success=True,
         message=f"Brand status set to {'active' if data.is_active else 'inactive'}.",
-        data=BrandResponse.model_validate(brand),
+        data=BrandResponse.model_validate(fresh_brand or brand),
     )
 
 

@@ -98,22 +98,11 @@ async def create_category(
     service = CatalogService(db)
     cat = await service.create_category(data)
     await db.commit()
+    fresh_cat = await service.category_repo.get_by_id(cat.id, load_subcategories=True)
     return APIResponse(
         success=True,
         message="Category created successfully.",
-        data=CategoryResponse(
-            id=cat.id,
-            name=cat.name,
-            slug=cat.slug,
-            description=cat.description,
-            image_url=cat.image_url,
-            parent_id=cat.parent_id,
-            sort_order=cat.sort_order,
-            is_active=cat.is_active,
-            created_at=cat.created_at,
-            updated_at=cat.updated_at,
-            subcategories=[],
-        ),
+        data=CategoryResponse.model_validate(fresh_cat or cat),
     )
 
 
@@ -132,10 +121,11 @@ async def update_category(
     service = CatalogService(db)
     cat = await service.update_category(category_id, data)
     await db.commit()
+    fresh_cat = await service.category_repo.get_by_id(cat.id, load_subcategories=True)
     return APIResponse(
         success=True,
         message="Category updated successfully.",
-        data=CategoryResponse.model_validate(cat),
+        data=CategoryResponse.model_validate(fresh_cat or cat),
     )
 
 
@@ -154,10 +144,11 @@ async def update_category_status(
     service = CatalogService(db)
     cat = await service.set_category_status(category_id, data.is_active)
     await db.commit()
+    fresh_cat = await service.category_repo.get_by_id(cat.id, load_subcategories=True)
     return APIResponse(
         success=True,
         message=f"Category status set to {'active' if data.is_active else 'inactive'}.",
-        data=CategoryResponse.model_validate(cat),
+        data=CategoryResponse.model_validate(fresh_cat or cat),
     )
 
 

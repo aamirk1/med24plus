@@ -180,13 +180,11 @@ class ProductRepository:
         """Persist a new product."""
         self.db.add(product)
         await self.db.flush()
-        await self.db.refresh(product)
         return product
 
     async def update(self, product: Product) -> Product:
         """Flush changes to existing product."""
         await self.db.flush()
-        await self.db.refresh(product)
         return product
 
     # Image helpers

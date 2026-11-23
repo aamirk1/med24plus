@@ -16,7 +16,11 @@ class CategoryRepository:
 
     async def get_by_id(self, category_id: uuid.UUID, load_subcategories: bool = True) -> Optional[Category]:
         """Fetch category by UUID with optional subcategories preloaded."""
-        stmt = select(Category).where(Category.id == category_id, Category.is_deleted == False)  # noqa: E712
+        stmt = (
+            select(Category)
+            .where(Category.id == category_id, Category.is_deleted == False)  # noqa: E712
+            .execution_options(populate_existing=True)
+        )
         if load_subcategories:
             stmt = stmt.options(selectinload(Category.subcategories))
         result = await self.db.execute(stmt)
@@ -123,12 +127,12 @@ class CategoryRepository:
         """Persist a new category."""
         self.db.add(category)
         await self.db.flush()
-        category.subcategories = []
-        return category
+        fresh = await self.get_by_id(category.id, load_subcategories=True)
+        return fresh if fresh is not None else category
 
     async def update(self, category: Category) -> Category:
         """Flush changes to an existing category."""
         await self.db.flush()
-        await self.db.refresh(category)
-        return category
+        fresh = await self.get_by_id(category.id, load_subcategories=True)
+        return fresh if fresh is not None else category
 

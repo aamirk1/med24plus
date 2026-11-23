@@ -15,7 +15,11 @@ class BrandRepository:
 
     async def get_by_id(self, brand_id: uuid.UUID) -> Optional[Brand]:
         """Fetch brand by UUID."""
-        stmt = select(Brand).where(Brand.id == brand_id, Brand.is_deleted == False)  # noqa: E712
+        stmt = (
+            select(Brand)
+            .where(Brand.id == brand_id, Brand.is_deleted == False)  # noqa: E712
+            .execution_options(populate_existing=True)
+        )
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
@@ -83,12 +87,12 @@ class BrandRepository:
         """Persist a new brand."""
         self.db.add(brand)
         await self.db.flush()
-        await self.db.refresh(brand)
-        return brand
+        fresh = await self.get_by_id(brand.id)
+        return fresh if fresh is not None else brand
 
     async def update(self, brand: Brand) -> Brand:
         """Flush changes to an existing brand."""
         await self.db.flush()
-        await self.db.refresh(brand)
-        return brand
+        fresh = await self.get_by_id(brand.id)
+        return fresh if fresh is not None else brand
 
