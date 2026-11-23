@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Award, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Award, Trash2, Loader2, CheckCircle2, XCircle, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TableToolbar } from "@/components/ui/TableToolbar";
 import { DataTable, Column } from "@/components/ui/DataTable";
@@ -22,6 +22,18 @@ export default function AdminBrandsPage() {
   const [search, setSearch] = useState("");
   const [brands, setBrands] = useState<BrandRow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Brand Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    manufacturer_name: "",
+    country_of_origin: "India",
+    description: "",
+    slug: "",
+  });
 
   const loadBrands = async () => {
     setIsLoading(true);
@@ -54,18 +66,41 @@ export default function AdminBrandsPage() {
     loadBrands();
   }, [search]);
 
-  const handleCreateBrand = async () => {
-    const name = prompt("Enter manufacturer / brand title:");
-    if (!name || !name.trim()) return;
+  const handleOpenModal = () => {
+    setFormData({
+      name: "",
+      manufacturer_name: "",
+      country_of_origin: "India",
+      description: "",
+      slug: "",
+    });
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitBrand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setModalError("Brand name is required.");
+      return;
+    }
+    const mfgName = formData.manufacturer_name.trim() || `${formData.name.trim()} Pharma Pvt Ltd`;
+    setIsSubmitting(true);
+    setModalError(null);
     try {
       await adminCatalogService.createBrand({
-        name: name.trim(),
-        manufacturer_name: `${name.trim()} Pharma Ltd.`,
-        country_of_origin: "India",
+        name: formData.name.trim(),
+        manufacturer_name: mfgName,
+        country_of_origin: formData.country_of_origin.trim() || "India",
+        description: formData.description.trim() || undefined,
+        slug: formData.slug.trim() || undefined,
       });
+      setIsModalOpen(false);
       await loadBrands();
     } catch (e: any) {
-      alert(`Failed to create brand: ${e.message}`);
+      setModalError(e.message || "Failed to create brand. Please ensure you are logged in as admin.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,7 +190,7 @@ export default function AdminBrandsPage() {
         actions={
           <button
             type="button"
-            onClick={handleCreateBrand}
+            onClick={handleOpenModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
@@ -182,6 +217,124 @@ export default function AdminBrandsPage() {
           keyExtractor={(b) => b.id}
           emptyMessage="No brands found."
         />
+      )}
+
+      {/* Creation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm">Add New Pharmaceutical Brand</h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {modalError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs">
+                {modalError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitBrand} className="space-y-4 text-left">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Brand Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Cipla Healthcare"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                      manufacturer_name: formData.manufacturer_name || `${e.target.value} Ltd`,
+                      slug: formData.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Legal Manufacturer Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Cipla Ltd. Mumbai"
+                  value={formData.manufacturer_name}
+                  onChange={(e) => setFormData({ ...formData, manufacturer_name: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Country of Origin
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.country_of_origin}
+                    onChange={(e) => setFormData({ ...formData, country_of_origin: e.target.value })}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    URL Slug
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. cipla"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    className="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Corporate details, pharmaceutical manufacturing background..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition disabled:opacity-50"
+                >
+                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSubmitting ? "Creating..." : "Save Brand"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -183,13 +183,10 @@ def seed_phase4_auth_sync(engine=None):
                 session.flush()
                 print(f"  + Created dev account: {acc['phone']} ({acc['role']})")
             else:
-                # Ensure hashed password and active status are synchronized with seeded credentials
-                existing.hashed_password = get_password_hash(acc["password"])
-                existing.is_active = True
-                existing.status = "active"
-                if acc.get("email") and not existing.email:
-                    existing.email = acc["email"]
-                print(f"  ~ Synchronized credentials & active status for: {acc['phone']}")
+                # Ensure hashed password is updated to Argon2id
+                if not existing.hashed_password or not existing.hashed_password.startswith("$argon2"):
+                    existing.hashed_password = get_password_hash(acc["password"])
+                    print(f"  ~ Upgraded password to Argon2id for: {acc['phone']}")
 
         session.commit()
         print("Phase 4 authentication seeding completed successfully.")

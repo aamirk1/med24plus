@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   UploadCloud,
@@ -19,14 +19,40 @@ import {
   Mail,
   Sparkles,
   Zap,
+  Loader2,
 } from "lucide-react";
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/mock/data";
+import { catalogService } from "@/services/catalog.service";
+import { Product, MedicineCategory } from "@/types";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { Button } from "@/components/ui/Button";
 
 export default function HomePage() {
-  const popularProducts = MOCK_PRODUCTS.slice(0, 4);
+  const [categories, setCategories] = useState<MedicineCategory[]>([]);
+  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadHomeData() {
+      try {
+        const [catList, prodRes] = await Promise.all([
+          catalogService.getCategories(),
+          catalogService.getProducts({ page_size: 4 }),
+        ]);
+        if (catList && catList.length > 0) {
+          setCategories(catList.slice(0, 6));
+        }
+        if (prodRes?.items && prodRes.items.length > 0) {
+          setPopularProducts(prodRes.items.slice(0, 4));
+        }
+      } catch (err) {
+        console.warn("Could not load live database catalog:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadHomeData();
+  }, []);
 
                       return (
                       <div className="space-y-12 pb-16">
@@ -157,12 +183,19 @@ export default function HomePage() {
                                         </Link>
                                       </div>
 
-                                                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                                                    {MOCK_CATEGORIES.map((category) => (
-                                                      <CategoryCard key={category.id} category={category} />
-                                                    ))}
-                                                  </div>
-                                                </section>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-10 text-slate-400 gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-[#0D9488]" />
+              <span className="text-xs">Loading therapeutic categories from database...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {categories.map((category) => (
+                <CategoryCard key={category.id || category.slug} category={category} />
+              ))}
+            </div>
+          )}
+        </section>
 
                                                 {/* 7. Popular Products Section */}
                                                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,12 +218,19 @@ export default function HomePage() {
                                                     </Link>
                                                   </div>
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                                  {popularProducts.map((product) => (
-                                                    <ProductCard key={product.id} product={product} />
-                                                  ))}
-                                                </div>
-                                              </section>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-[#0D9488]" />
+              <span className="text-xs">Loading verified medicines from database...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularProducts.map((product) => (
+                <ProductCard key={product.id || product.slug} product={product} />
+              ))}
+            </div>
+          )}
+        </section>
 
                                                     {/* 8. Health and Wellness Promotional Section */}
                                                     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

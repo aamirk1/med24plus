@@ -43,6 +43,7 @@ api_router.include_router(delivery_auth.router, prefix="/delivery/auth", tags=["
 
 # User Profile & Addresses
 api_router.include_router(users.router, prefix="/users", tags=["Users & Profiles"])
+api_router.include_router(users.admin_router, prefix="/admin/users", tags=["Admin Users"])
 
 # Public Product Catalog & Taxonomy
 api_router.include_router(categories.router, prefix="/categories", tags=["Categories"])

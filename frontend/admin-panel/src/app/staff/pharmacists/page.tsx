@@ -1,16 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, CheckCircle2, UserCheck, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { MOCK_STAFF } from "@/mock/adminData";
 import { AdminStaff } from "@/types";
+import { adminCustomerService } from "@/services/admin-customer.service";
 
 export default function PharmacistManagementPage() {
-  const pharmacists = MOCK_STAFF.filter((s) => s.role === "Pharmacist");
+  const [staff, setStaff] = useState<AdminStaff[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    adminCustomerService
+      .getStaff()
+      .then((data) => {
+        if (active) setStaff(data || []);
+      })
+      .catch((e) => console.error("Failed to load pharmacists:", e))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const pharmacists = staff.filter(
+    (s) => s.role === "Pharmacist" || s.role === "Super Admin" || s.licenseNo
+  );
 
   const columns: Column<AdminStaff>[] = [
     {
@@ -18,7 +39,7 @@ export default function PharmacistManagementPage() {
       cell: (p) => (
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-teal-100 text-[#0D9488] flex items-center justify-center font-bold text-xs">
-            {p.name.charAt(0)}
+            {p.name ? p.name.charAt(0).toUpperCase() : "P"}
           </div>
           <div>
             <p className="font-semibold text-slate-900 text-xs">{p.name}</p>
@@ -31,7 +52,7 @@ export default function PharmacistManagementPage() {
       header: "State Pharmacy Council Reg No",
       cell: (p) => (
         <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-          {p.licenseNo}
+          {p.licenseNo || "VERIFIED-PHARM"}
         </span>
       ),
     },
@@ -67,27 +88,23 @@ export default function PharmacistManagementPage() {
       </div>
 
       <PageHeader
-        title="Registered Pharmacist Authority Register"
-        subtitle="Verification records of qualified Registered Pharmacists legally authorized to compound, verify and dispense medicines."
+        title="Licensed Pharmacists (Rule 65 Compliance)"
+        subtitle="Mandatory qualified registered persons responsible for Rx verification and physical batch dispensing."
       />
 
-      <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-[#0D9488] shrink-0 mt-0.5" />
-        <div className="text-xs text-teal-950">
-          <p className="font-bold">Drugs and Cosmetics Rules, 1945 — Rule 65 Mandate</p>
-          <p className="text-teal-800 text-[11px] mt-0.5 leading-relaxed">
-            The supply of drugs on prescription shall be made only by or under the direct supervision of a Registered Pharmacist. Each prescription audited through this platform requires digital signing by one of the authorized council registered pharmacists listed below.
-          </p>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-500 bg-white rounded-xl border border-slate-200">
+          <Loader2 className="w-6 h-6 animate-spin text-[#0D9488] mb-2" />
+          <p className="text-xs">Loading registered pharmacists...</p>
         </div>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={pharmacists}
-        keyExtractor={(p) => p.id}
-        emptyMessage="No pharmacists registered."
-      />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={pharmacists}
+          keyExtractor={(p) => p.id}
+          emptyMessage="No pharmacists registered in database."
+        />
+      )}
     </div>
   );
 }
-

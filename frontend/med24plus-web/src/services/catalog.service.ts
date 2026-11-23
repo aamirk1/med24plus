@@ -1,6 +1,5 @@
 import { apiClient } from "./api";
 import { Product, MedicineCategory, Brand } from "@/types";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from "@/mock/data";
 
 export interface ProductQueryParams {
   search?: string;
@@ -28,27 +27,29 @@ export interface PaginatedResult<T> {
 export const catalogService = {
   async getProducts(params: ProductQueryParams = {}): Promise<PaginatedResult<Product>> {
     try {
-      const query = new URLSearchParams();
-      if (params.search) query.append("search", params.search);
-      if (params.category_id && params.category_id !== "all") query.append("category_id", params.category_id);
-      if (params.brand_id && params.brand_id !== "all") query.append("brand_id", params.brand_id);
-      if (params.min_price !== undefined) query.append("min_price", params.min_price.toString());
-      if (params.max_price !== undefined) query.append("max_price", params.max_price.toString());
-      if (params.prescription_required !== undefined) query.append("prescription_required", String(params.prescription_required));
-      if (params.dosage_form) query.append("dosage_form", params.dosage_form);
-      if (params.sort_by) query.append("sort_by", params.sort_by);
-      if (params.page) query.append("page", params.page.toString());
-      if (params.page_size) query.append("page_size", params.page_size.toString());
+      const q = new URLSearchParams();
+      if (params.search) q.append("search", params.search);
+      if (params.category_id) q.append("category_id", params.category_id);
+      if (params.brand_id) q.append("brand_id", params.brand_id);
+      if (params.min_price) q.append("min_price", String(params.min_price));
+      if (params.max_price) q.append("max_price", String(params.max_price));
+      if (params.prescription_required !== undefined) {
+        q.append("prescription_required", String(params.prescription_required));
+      }
+      if (params.dosage_form) q.append("dosage_form", params.dosage_form);
+      if (params.sort_by) q.append("sort_by", params.sort_by);
+      if (params.page) q.append("page", String(params.page));
+      if (params.page_size) q.append("page_size", String(params.page_size));
 
-      const res = await apiClient<any>(`/products?${query.toString()}`);
+      const res = await apiClient<any>(`/products?${q.toString()}`);
       if (res?.success && res.data?.items) {
         const mappedItems: Product[] = res.data.items.map((item: any) => ({
           id: item.id,
           name: item.name,
           slug: item.slug,
-          brand: item.brand_name || "Med24Plus Pharmacy",
-          categorySlug: item.category_name?.toLowerCase().replace(/\s+/g, "-") || "general",
-          categoryName: item.category_name || "General Medicine",
+          brand: item.brand?.name || item.brand_name || "Med24Plus Pharmacy",
+          categorySlug: item.category?.slug || "general",
+          categoryName: item.category?.name || "General Medicine",
           mrp: parseFloat(item.mrp),
           sellingPrice: parseFloat(item.selling_price),
           discountPercent: parseFloat(item.discount_percent || "0"),
@@ -56,7 +57,7 @@ export const catalogService = {
           dosageForm: item.dosage_form || "Tablet",
           composition: item.generic_name || "",
           inStock: item.is_in_stock ?? true,
-          stockCount: item.sellable_quantity ?? 10,
+          stockCount: item.sellable_quantity ?? 0,
           requiresPrescription: item.requires_prescription ?? false,
           scheduleType: item.schedule_classification || "OTC",
           rating: 4.8,
@@ -76,28 +77,16 @@ export const catalogService = {
         };
       }
     } catch (e) {
-      console.warn("Backend catalog API offline or unreachable, falling back to verified seed data:", e);
+      console.error("Backend catalog API error:", e);
     }
-
-    // Fallback to mock data with client-side filter
-    let filtered = [...MOCK_PRODUCTS];
-    if (params.search) {
-      const q = params.search.toLowerCase();
-      filtered = filtered.filter((p) => p.name.toLowerCase().includes(q) || p.composition.toLowerCase().includes(q));
-    }
-    const page = params.page || 1;
-    const pageSize = params.page_size || 12;
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / pageSize) || 1;
-    const slice = filtered.slice((page - 1) * pageSize, page * pageSize);
 
     return {
-      items: slice,
+      items: [],
       pagination: {
-        page,
-        page_size: pageSize,
-        total_items: total,
-        total_pages: totalPages,
+        page: params.page || 1,
+        page_size: params.page_size || 12,
+        total_items: 0,
+        total_pages: 1,
       },
     };
   },
@@ -121,7 +110,7 @@ export const catalogService = {
           dosageForm: item.dosage_form || "Tablet",
           composition: item.composition || item.generic_name || "",
           inStock: item.is_in_stock ?? true,
-          stockCount: item.sellable_quantity ?? 10,
+          stockCount: item.sellable_quantity ?? 0,
           requiresPrescription: item.requires_prescription ?? false,
           scheduleType: item.schedule_classification || "OTC",
           rating: 4.8,
@@ -144,11 +133,10 @@ export const catalogService = {
         };
       }
     } catch (e) {
-      console.warn(`Product slug ${slug} not found via API, trying mock data:`, e);
+      console.error(`Product slug ${slug} not found via API:`, e);
     }
 
-    const mockItem = MOCK_PRODUCTS.find((p) => p.slug === slug || p.id === slug);
-    return mockItem || null;
+    return null;
   },
 
   async getCategories(): Promise<MedicineCategory[]> {
@@ -161,14 +149,14 @@ export const catalogService = {
           slug: cat.slug,
           description: cat.description || "",
           iconName: "Pill",
-          itemCount: 24,
+          itemCount: 0,
           image: cat.image_url || undefined,
         }));
       }
     } catch (e) {
-      console.warn("Categories API unreachable, falling back to mock categories:", e);
+      console.error("Categories API error:", e);
     }
-    return MOCK_CATEGORIES;
+    return [];
   },
 
   async getBrands(): Promise<Brand[]> {
@@ -185,9 +173,8 @@ export const catalogService = {
         }));
       }
     } catch (e) {
-      console.warn("Brands API unreachable, falling back to mock brands:", e);
+      console.error("Brands API error:", e);
     }
-    return MOCK_BRANDS;
+    return [];
   },
 };
-

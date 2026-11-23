@@ -48,6 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const res = await authService.login(identifier, password);
+      if (res?.data?.access_token && typeof window !== "undefined") {
+        localStorage.setItem("med24_access_token", res.data.access_token);
+      }
       if (res.data?.user) {
         setUser(res.data.user);
       } else {
@@ -67,7 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }) => {
     setIsLoading(true);
     try {
-      await authService.register(data);
+      const res = await authService.register(data);
+      if (res?.data?.access_token && typeof window !== "undefined") {
+        localStorage.setItem("med24_access_token", res.data.access_token);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignored
     } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("med24_access_token");
+      }
       setUser(null);
     }
   };

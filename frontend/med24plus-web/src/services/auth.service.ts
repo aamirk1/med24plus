@@ -54,10 +54,14 @@ export const authService = {
   },
 
   async login(identifier: string, password: string): Promise<AuthResponse> {
-    return apiClient<AuthResponse>("/auth/login", {
+    const res = await apiClient<AuthResponse>("/auth/login", {
       method: "POST",
       data: { identifier, password },
     });
+    if (res?.data?.access_token && typeof window !== "undefined") {
+      localStorage.setItem("med24_access_token", res.data.access_token);
+    }
+    return res;
   },
 
   async getMe(): Promise<{ success: boolean; data: User }> {
@@ -67,9 +71,15 @@ export const authService = {
   },
 
   async logout(): Promise<AuthResponse> {
-    return apiClient<AuthResponse>("/auth/logout", {
-      method: "POST",
-    });
+    try {
+      return await apiClient<AuthResponse>("/auth/logout", {
+        method: "POST",
+      });
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("med24_access_token");
+      }
+    }
   },
 
   async sendOtp(target: string, purpose: "phone_verification" | "email_verification" | "password_reset" | "login"): Promise<AuthResponse> {

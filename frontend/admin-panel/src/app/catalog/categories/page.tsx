@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, FolderTree, Edit3, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, FolderTree, Edit3, Trash2, Loader2, CheckCircle2, XCircle, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TableToolbar } from "@/components/ui/TableToolbar";
 import { DataTable, Column } from "@/components/ui/DataTable";
@@ -22,6 +22,16 @@ export default function AdminCategoriesPage() {
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Category Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    slug: "",
+  });
 
   const loadCategories = async () => {
     setIsLoading(true);
@@ -54,17 +64,32 @@ export default function AdminCategoriesPage() {
     loadCategories();
   }, [search]);
 
-  const handleCreateCategory = async () => {
-    const name = prompt("Enter new therapeutic category name:");
-    if (!name || !name.trim()) return;
+  const handleOpenModal = () => {
+    setFormData({ name: "", description: "", slug: "" });
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setModalError("Category name is required.");
+      return;
+    }
+    setIsSubmitting(true);
+    setModalError(null);
     try {
       await adminCatalogService.createCategory({
-        name: name.trim(),
-        description: `Category for ${name.trim()} medications`,
+        name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+        slug: formData.slug.trim() || undefined,
       });
+      setIsModalOpen(false);
       await loadCategories();
     } catch (e: any) {
-      alert(`Failed to create category: ${e.message}`);
+      setModalError(e.message || "Failed to create category. Please ensure you are logged in as admin.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,7 +181,7 @@ export default function AdminCategoriesPage() {
         actions={
           <button
             type="button"
-            onClick={handleCreateCategory}
+            onClick={handleOpenModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-4 h-4" />
@@ -183,6 +208,96 @@ export default function AdminCategoriesPage() {
           keyExtractor={(c) => c.id}
           emptyMessage="No therapeutic categories found."
         />
+      )}
+
+      {/* Creation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm">Add New Therapeutic Category</h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {modalError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs">
+                {modalError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitCategory} className="space-y-4 text-left">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Category Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Cardiovascular Care"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                      slug: formData.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  URL Slug (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. cardiovascular-care"
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  className="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Clinical therapeutic description and indications..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg text-xs font-semibold transition disabled:opacity-50"
+                >
+                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSubmitting ? "Creating..." : "Save Category"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

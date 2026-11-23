@@ -4,9 +4,9 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
-from app.core.permissions import RoleEnum
+from app.core.permissions import PermissionEnum, RoleEnum
 from app.core.security import get_password_hash, validate_password_strength
-from app.models.role import Role, UserRole
+from app.models.role import Permission, Role, RolePermission, UserRole
 from app.models.user import User, UserProfile
 from app.services.auth_service import normalize_email, normalize_phone
 
@@ -26,16 +26,7 @@ def create_super_admin(phone: str, email: str, password: str, full_name: str):
     session = Session()
 
     try:
-        # Check existing
-        existing = session.execute(
-            select(User).where((User.phone == norm_phone) | (User.email == norm_email))
-        ).scalar_one_or_none()
-
-        if existing:
-            print(f"User with phone {norm_phone} or email {norm_email} already exists.", file=sys.stderr)
-            sys.exit(1)
-
-        # Get super_admin role
+        # 1. Get or create super_admin role
         super_role = session.execute(
             select(Role).where(Role.slug == RoleEnum.SUPER_ADMIN.value)
         ).scalar_one_or_none()
@@ -49,30 +40,81 @@ def create_super_admin(phone: str, email: str, password: str, full_name: str):
             session.add(super_role)
             session.flush()
 
-        hashed = get_password_hash(password)
-        admin_user = User(
-            phone=norm_phone,
-            email=norm_email,
-            hashed_password=hashed,
-            full_name=full_name.strip(),
-            is_active=True,
-            is_phone_verified=True,
-            is_email_verified=True,
-            status="active",
-        )
-        session.add(admin_user)
+        # 2. Ensure all granular permissions exist and are bound to super_admin
+        for perm in PermissionEnum:
+            p_slug = perm.value
+            module = p_slug.split(".")[0] if "." in p_slug else "general"
+            name = p_slug.replace(".", " ").title()
+            existing_perm = session.execute(select(Permission).where(Permission.slug == p_slug)).scalar_one_or_none()
+            if not existing_perm:
+                existing_perm = Permission(name=name, slug=p_slug, module=module, description=f"Permission for {p_slug}")
+                session.add(existing_perm)
+                session.flush()
+
+            # Link permission to super_role
+            mapping = session.execute(
+                select(RolePermission).where(
+                    RolePermission.role_id == super_role.id,
+                    RolePermission.permission_id == existing_perm.id,
+                )
+            ).scalar_one_or_none()
+            if not mapping:
+                session.add(RolePermission(role_id=super_role.id, permission_id=existing_perm.id))
+
         session.flush()
 
-        profile = UserProfile(user_id=admin_user.id)
-        session.add(profile)
-        session.add(UserRole(user_id=admin_user.id, role_id=super_role.id))
+        # 3. Check existing user
+        admin_user = session.execute(
+            select(User).where((User.phone == norm_phone) | (User.email == norm_email))
+        ).scalar_one_or_none()
+
+        hashed = get_password_hash(password)
+
+        if admin_user:
+            admin_user.hashed_password = hashed
+            admin_user.full_name = full_name.strip()
+            admin_user.phone = norm_phone
+            admin_user.email = norm_email
+            admin_user.is_active = True
+            admin_user.is_phone_verified = True
+            admin_user.is_email_verified = True
+            admin_user.status = "active"
+            print(f"Updated existing user '{norm_phone}' with super admin credentials.")
+        else:
+            admin_user = User(
+                phone=norm_phone,
+                email=norm_email,
+                hashed_password=hashed,
+                full_name=full_name.strip(),
+                is_active=True,
+                is_phone_verified=True,
+                is_email_verified=True,
+                status="active",
+            )
+            session.add(admin_user)
+            session.flush()
+
+            profile = UserProfile(user_id=admin_user.id)
+            session.add(profile)
+
+        # 4. Ensure super_admin role assignment
+        has_role = session.execute(
+            select(UserRole).where(
+                UserRole.user_id == admin_user.id,
+                UserRole.role_id == super_role.id,
+            )
+        ).scalar_one_or_none()
+        if not has_role:
+            session.add(UserRole(user_id=admin_user.id, role_id=super_role.id))
 
         session.commit()
-        print(f"Super admin user '{full_name}' ({norm_phone}) provisioned successfully.")
+        print(f"Super admin user '{full_name}' ({norm_phone}) provisioned successfully with all permissions.")
     except Exception as e:
         session.rollback()
         print(f"Failed to create super admin: {e}", file=sys.stderr)
         sys.exit(1)
+    finally:
+        session.close()
     finally:
         session.close()
 
