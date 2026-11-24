@@ -16,6 +16,11 @@ if [ ! -f .env.production ]; then
     exit 1
 fi
 
+# Load production environment variables
+set -a
+source .env.production
+set +a
+
 echo "--> Pulling latest changes from Git..."
 git pull origin main
 
@@ -30,14 +35,22 @@ docker compose -f docker-compose.prod.yml exec -T backend alembic upgrade head
 
 echo "--> Running Backend Health Check..."
 TARGET_PORT=${BACKEND_PORT:-8024}
+HEALTH_OK=false
 for i in {1..10}; do
     if curl -s -f http://127.0.0.1:${TARGET_PORT}/api/v1/health > /dev/null; then
         echo " Backend is healthy on port ${TARGET_PORT}!"
+        HEALTH_OK=true
         break
     fi
     echo "Waiting for backend on port ${TARGET_PORT}... attempt $i/10"
     sleep 3
 done
+
+if [ "$HEALTH_OK" = false ]; then
+    echo "WARNING: Backend did not respond on http://127.0.0.1:${TARGET_PORT}/api/v1/health."
+    echo "--> Printing last 50 lines of backend logs for diagnosis:"
+    docker compose -f docker-compose.prod.yml logs --tail=50 backend
+fi
 
 echo "--> Reloading Nginx configuration..."
 if command -v nginx > /dev/null; then

@@ -97,6 +97,28 @@ class Settings(BaseSettings):
             and not self.RAZORPAY_KEY_SECRET.startswith("rzp_secret_placeholder")
         )
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            v_str = v.strip()
+            if v_str.startswith("[") and v_str.endswith("]"):
+                try:
+                    import json
+                    return json.loads(v_str)
+                except Exception:
+                    pass
+            return [i.strip() for i in v_str.split(",") if i.strip()]
+        elif isinstance(v, list):
+            return v
+        return [
+            "https://med24plus.serwex.in",
+            "https://med24plus-admin.serwex.in",
+            "https://med24plus-api.serwex.in",
+            "http://localhost:3024",
+            "http://localhost:3025",
+        ]
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: Union[str, None], info) -> str:
