@@ -68,7 +68,7 @@ async def get_public_store_settings():
 
 @admin_router.get("/store", response_model=APIResponse[StoreSettingsSchema])
 async def get_admin_store_settings(
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_READ.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Retrieve complete pharmacy store settings for administrative management."""
     global _cached_settings
@@ -83,7 +83,7 @@ async def get_admin_store_settings(
 @admin_router.put("/store", response_model=APIResponse[StoreSettingsSchema])
 async def update_admin_store_settings(
     data: StoreSettingsSchema,
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_UPDATE.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Update pharmacy legal entities, Form 20B/21B drug licenses, phone, and address."""
     global _cached_settings

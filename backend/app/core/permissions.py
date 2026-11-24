@@ -79,6 +79,9 @@ class PermissionEnum(str, Enum):
     STAFF_MANAGE = "staff.manage"
     REPORTS_READ = "reports.read"
     SETTINGS_MANAGE = "settings.manage"
+    SETTINGS_READ = "settings.read"
+    SYSTEM_SETTINGS_READ = "settings.read"
+    SYSTEM_SETTINGS_UPDATE = "settings.manage"
 
     # Pharmacist & Prescription Verification permissions
     PRESCRIPTIONS_READ = "prescriptions.read"

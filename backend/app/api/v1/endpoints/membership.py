@@ -179,7 +179,7 @@ async def list_public_membership_plans():
 
 @admin_router.get("/plans", response_model=APIResponse[List[MembershipPlanSchema]])
 async def list_admin_membership_plans(
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_READ.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Retrieve all membership plans including inactive ones for administrative management."""
     plans = _load_plans()
@@ -193,7 +193,7 @@ async def list_admin_membership_plans(
 @admin_router.post("/plans", response_model=APIResponse[MembershipPlanSchema], status_code=status.HTTP_201_CREATED)
 async def create_membership_plan(
     data: MembershipPlanCreate,
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_UPDATE.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Create a new Med24Plus membership plan with benefits, pricing, and discounts."""
     plans = _load_plans()
@@ -236,7 +236,7 @@ async def create_membership_plan(
 async def update_membership_plan(
     plan_id: str,
     data: MembershipPlanUpdate,
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_UPDATE.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Update existing membership plan pricing, benefits, and active visibility."""
     plans = _load_plans()
@@ -260,7 +260,7 @@ async def update_membership_plan(
 @admin_router.delete("/plans/{plan_id}", response_model=APIResponse[dict])
 async def delete_membership_plan(
     plan_id: str,
-    current_user: User = Depends(require_permission(PermissionEnum.SYSTEM_SETTINGS_UPDATE.value)),
+    current_user: User = Depends(require_permission(PermissionEnum.SETTINGS_MANAGE.value)),
 ):
     """Deactivate or remove a membership plan."""
     plans = _load_plans()
