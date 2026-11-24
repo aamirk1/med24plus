@@ -119,7 +119,8 @@ export default function AdminBrandsPage() {
     setIsUploadingLogo(true);
     setModalError(null);
     try {
-      const res = await adminCatalogService.uploadImage(file, "brands");
+      const subfolder = formData.slug || formData.name || undefined;
+      const res = await adminCatalogService.uploadImage(file, "brands", subfolder);
       if (res?.url) {
         setFormData((prev) => ({ ...prev, logo_url: res.url }));
       }

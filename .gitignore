@@ -111,3 +111,8 @@ service-account.json
 *.keystore
 
 *.tsbuildinfo
+
+# Uploads and temporary assets
+static/uploads/
+backend/static/
+

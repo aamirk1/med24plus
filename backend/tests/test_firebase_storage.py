@@ -67,7 +67,7 @@ async def test_firebase_service_signed_download_url():
 
 @pytest.mark.asyncio
 async def test_storage_service_product_image_firebase_upload(tmp_path):
-    """Verify medicine product image upload routed to Firebase Storage."""
+    """Verify medicine product image upload routed to Firebase Storage with proper path."""
     service = StorageService()
     service.upload_dir = tmp_path
 
@@ -78,9 +78,59 @@ async def test_storage_service_product_image_firebase_upload(tmp_path):
         headers={"content-type": "image/jpeg"},
     )
 
-    with patch.object(service.firebase_service, "upload_file", return_value=(True, "https://firebasestorage.googleapis.com/v0/b/med24plus/o/products%2Fsample.jpg?alt=media", None)):
+    captured_blob = []
+
+    async def mock_upload(destination_blob_name, content, content_type, is_public=True):
+        captured_blob.append(destination_blob_name)
+        return True, f"https://firebasestorage.googleapis.com/v0/b/med24plus.firebasestorage.app/o/{destination_blob_name}?alt=media&token=test-token", None
+
+    with patch.object(service.firebase_service, "upload_file", side_effect=mock_upload):
         url = await service.save_product_image(file, product_id)
         assert "firebasestorage.googleapis.com" in url
+        assert len(captured_blob) == 1
+        # Path must start with proper products/{product_id}/
+        assert captured_blob[0].startswith(f"products/{product_id}/")
+        assert "paracetamol_500" in captured_blob[0]
+
+
+@pytest.mark.asyncio
+async def test_storage_service_generic_image_proper_paths(tmp_path):
+    """Verify category, brand, and banner image uploads use proper structured paths."""
+    service = StorageService()
+
+    file_cat = UploadFile(
+        filename="antibiotics_icon.png",
+        file=io.BytesIO(VALID_PNG_BYTES),
+        headers={"content-type": "image/png"},
+    )
+
+    captured_blobs = []
+
+    async def mock_upload(destination_blob_name, content, content_type, is_public=True):
+        captured_blobs.append(destination_blob_name)
+        return True, f"https://firebasestorage.googleapis.com/v0/b/med24plus.firebasestorage.app/o/{destination_blob_name}?alt=media&token=test-token", None
+
+    with patch.object(service.firebase_service, "upload_file", side_effect=mock_upload):
+        # 1. Category with subfolder
+        url_cat = await service.save_generic_image(file_cat, folder="categories", subfolder="antibiotics")
+        assert "firebasestorage.googleapis.com" in url_cat
+        assert captured_blobs[-1].startswith("categories/antibiotics/")
+
+        # 2. Brand with subfolder
+        file_brand = UploadFile(
+            filename="cipla_logo.png",
+            file=io.BytesIO(VALID_PNG_BYTES),
+            headers={"content-type": "image/png"},
+        )
+        url_brand = await service.save_generic_image(file_brand, folder="brands", subfolder="cipla")
+        assert "firebasestorage.googleapis.com" in url_brand
+        assert captured_blobs[-1].startswith("brands/cipla/")
+
+        # 3. Raw upload
+        raw_url = await service.upload_raw_image(b"test raw data", "banners/sale_banner.jpg", "image/jpeg")
+        assert "firebasestorage.googleapis.com" in raw_url
+        assert captured_blobs[-1] == "banners/sale_banner.jpg"
+
 
 
 @pytest.mark.asyncio

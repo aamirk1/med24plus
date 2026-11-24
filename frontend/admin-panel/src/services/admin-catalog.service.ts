@@ -134,12 +134,23 @@ export const adminCatalogService = {
     return res.data;
   },
 
-  async uploadImage(file: File, folder: string = "catalog"): Promise<{ url: string; filename?: string }> {
+  async uploadImage(file: File, folder: string = "catalog", subfolder?: string): Promise<{ url: string; filename?: string }> {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await apiClient<any>(`/admin/upload/image?folder=${encodeURIComponent(folder)}`, {
+    let endpoint = `/admin/upload/image?folder=${encodeURIComponent(folder)}`;
+    if (subfolder) {
+      endpoint += `&subfolder=${encodeURIComponent(subfolder)}`;
+    }
+    const res = await apiClient<any>(endpoint, {
       method: "POST",
       body: formData,
+    });
+    return res.data;
+  },
+
+  async syncImagesToFirebase(): Promise<any> {
+    const res = await apiClient<any>("/admin/upload/sync-to-firebase", {
+      method: "POST",
     });
     return res.data;
   },

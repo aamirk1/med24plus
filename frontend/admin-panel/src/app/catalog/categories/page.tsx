@@ -106,7 +106,8 @@ export default function AdminCategoriesPage() {
     setIsUploadingImage(true);
     setModalError(null);
     try {
-      const res = await adminCatalogService.uploadImage(file, "categories");
+      const subfolder = formData.slug || formData.name || undefined;
+      const res = await adminCatalogService.uploadImage(file, "categories", subfolder);
       if (res?.url) {
         setFormData((prev) => ({ ...prev, image_url: res.url }));
       }

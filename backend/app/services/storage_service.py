@@ -138,7 +138,9 @@ class StorageService:
                 },
             )
 
-        unique_filename = f"{product_id}_{uuid.uuid4().hex[:12]}{ext}"
+        orig_basename = os.path.splitext(file.filename or "packaging")[0]
+        safe_basename = "".join(c for c in orig_basename if c.isalnum() or c in ("-", "_"))[:30] or "packaging"
+        unique_filename = f"{safe_basename}_{uuid.uuid4().hex[:8]}{ext}"
         blob_path = f"products/{product_id}/{unique_filename}"
         mime_map = {
             ".jpg": "image/jpeg",
@@ -180,7 +182,12 @@ class StorageService:
         # 2. Local Fallback URL (only if provider explicitly configured as local)
         return f"/static/uploads/products/{unique_filename}"
 
-    async def save_generic_image(self, file: UploadFile, folder: str = "catalog") -> str:
+    async def save_generic_image(
+        self,
+        file: UploadFile,
+        folder: str = "catalog",
+        subfolder: Optional[str] = None,
+    ) -> str:
         """
         Validate and persist an image into Firebase Cloud Storage or local static storage.
         Returns the public URL (Firebase or local static URL).
@@ -209,8 +216,16 @@ class StorageService:
             )
 
         clean_folder = "".join(c for c in folder if c.isalnum() or c in ("-", "_")) or "catalog"
-        unique_filename = f"{uuid.uuid4().hex[:16]}{ext}"
-        blob_path = f"{clean_folder}/{unique_filename}"
+        orig_basename = os.path.splitext(file.filename or "image")[0]
+        safe_basename = "".join(c for c in orig_basename if c.isalnum() or c in ("-", "_"))[:30] or "img"
+        unique_filename = f"{safe_basename}_{uuid.uuid4().hex[:8]}{ext}"
+
+        if subfolder and subfolder.strip():
+            clean_subfolder = "".join(c for c in subfolder if c.isalnum() or c in ("-", "_"))[:60]
+            blob_path = f"{clean_folder}/{clean_subfolder}/{unique_filename}"
+        else:
+            blob_path = f"{clean_folder}/{unique_filename}"
+
         mime_map = {
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
@@ -223,6 +238,8 @@ class StorageService:
 
         # Also cache locally for dev/offline serving
         target_dir = Path("static") / "uploads" / clean_folder
+        if subfolder and subfolder.strip():
+            target_dir = target_dir / "".join(c for c in subfolder if c.isalnum() or c in ("-", "_"))[:60]
         target_dir.mkdir(parents=True, exist_ok=True)
         local_target_path = target_dir / unique_filename
         with open(local_target_path, "wb") as f:
@@ -251,7 +268,30 @@ class StorageService:
             )
 
         # 2. Local Fallback URL (only if provider explicitly configured as local)
-        return f"/static/uploads/{clean_folder}/{unique_filename}"
+        return f"/static/uploads/{blob_path}"
+
+    async def upload_raw_image(
+        self,
+        content: bytes,
+        destination_blob_name: str,
+        content_type: str = "image/jpeg",
+    ) -> str:
+        """
+        Directly upload binary image bytes to Firebase Cloud Storage with proper path.
+        Returns the permanent public download URL.
+        """
+        if self.provider == "firebase" or not self.firebase_service.is_simulation_mode:
+            success, url, err = await self.firebase_service.upload_file(
+                destination_blob_name=destination_blob_name,
+                content=content,
+                content_type=content_type,
+                is_public=True,
+            )
+            if success and url:
+                logger.info(f"[STORAGE] Stored raw image in Firebase Storage: {destination_blob_name}")
+                return url
+            raise RuntimeError(f"Failed to upload raw image to Firebase Storage: {err}")
+        return f"/static/uploads/{destination_blob_name}"
 
     async def delete_image(self, image_url: str) -> bool:
         """Remove image file from Firebase Storage or local filesystem."""
