@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { RegulatoryNotice } from "@/components/common/RegulatoryNotice";
 import { siteConfig } from "@/config/site";
 import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: `${siteConfig.name} - ${siteConfig.tagline}`,
@@ -32,12 +33,14 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen flex flex-col justify-between">
         <AuthProvider>
-          <div>
-            <RegulatoryNotice />
-            <Navbar />
-            <main>{children}</main>
-          </div>
-          <Footer />
+          <CartProvider>
+            <div>
+              <RegulatoryNotice />
+              <Navbar />
+              <main>{children}</main>
+            </div>
+            <Footer />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

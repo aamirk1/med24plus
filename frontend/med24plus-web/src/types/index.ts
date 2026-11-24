@@ -21,9 +21,11 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
+  sku?: string;
   brand: string;
   categorySlug: string;
   categoryName: string;
+  category?: string;
   mrp: number;
   sellingPrice: number;
   discountPercent: number;
@@ -37,6 +39,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   images: string[];
+  imageUrl?: string;
   description: string;
   keyBenefits: string[];
   directionsForUse: string;

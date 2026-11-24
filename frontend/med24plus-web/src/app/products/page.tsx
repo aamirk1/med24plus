@@ -1,80 +1,109 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { SearchInput } from "@/components/ui/SearchInput";
-import { ProductCard } from "@/components/ui/ProductCard";
-import { Pagination } from "@/components/ui/Pagination";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Dropdown } from "@/components/ui/Dropdown";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { Filter, SlidersHorizontal, RefreshCcw, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  Home,
+  ChevronRight,
+  ShieldCheck,
+  Truck,
+  Headphones,
+  SlidersHorizontal,
+  RotateCcw,
+  Loader2,
+  ChevronDown,
+  Pill,
+} from "lucide-react";
 import { catalogService } from "@/services/catalog.service";
-import { Product, MedicineCategory, Brand } from "@/types";
+import { Product, Brand, MedicineCategory } from "@/types";
+import { ProductCard } from "@/components/ui/ProductCard";
+import { MembershipBanner } from "@/components/common/MembershipBanner";
+
+const PRICE_RANGES = [
+  { id: "all", label: "All Prices", min: undefined, max: undefined },
+  { id: "under-50", label: "Under ₹50", min: undefined, max: 50 },
+  { id: "50-100", label: "₹50 – ₹100", min: 50, max: 100 },
+  { id: "100-200", label: "₹100 – ₹200", min: 100, max: 200 },
+  { id: "above-200", label: "Above ₹200", min: 200, max: undefined },
+];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<MedicineCategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<MedicineCategory[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Filters State
   const [search, setSearch] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedBrand, setSelectedBrand] = useState<string>("all");
-  const [prescriptionOnly, setPrescriptionOnly] = useState<boolean | undefined>(undefined);
-  const [priceRange, setPriceRange] = useState<number>(2000);
-  const [sortBy, setSortBy] = useState<string>("newest");
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string>("all");
+  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [prescriptionRequired, setPrescriptionRequired] = useState<boolean | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>("popular");
+  const [showAllBrands, setShowAllBrands] = useState<boolean>(false);
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
 
-  // Load initial taxonomy
+  // Initial Taxonomy Load
   useEffect(() => {
-    async function loadTaxonomy() {
-      const [cats, brs] = await Promise.all([
-        catalogService.getCategories(),
-        catalogService.getBrands(),
-      ]);
-      setCategories(cats);
-      setBrands(brs);
-    }
-    loadTaxonomy();
+    Promise.all([catalogService.getBrands(), catalogService.getCategories()])
+      .then(([brList, catList]) => {
+        if (brList) setBrands(brList);
+        if (catList) setCategories(catList);
+      })
+      .catch((err) => console.warn("Could not load taxonomy:", err));
   }, []);
 
-  // Fetch products upon filter changes
+  // Fetch Products on Filter Change
   useEffect(() => {
     let isCancelled = false;
     async function loadProducts() {
       setIsLoading(true);
       try {
-        const catObj = categories.find((c) => c.slug === selectedCategory);
-        const brandObj = brands.find((b) => b.name.toLowerCase() === selectedBrand.toLowerCase());
+        const activeRange = PRICE_RANGES.find((r) => r.id === selectedPriceRange);
 
         const res = await catalogService.getProducts({
           search: search || undefined,
-          category_id: catObj ? catObj.id : undefined,
-          brand_id: brandObj ? brandObj.id : undefined,
-          max_price: priceRange < 2000 ? priceRange : undefined,
-          prescription_required: prescriptionOnly,
+          brand_id: selectedBrandIds.length === 1 ? selectedBrandIds[0] : undefined,
+          min_price: activeRange?.min,
+          max_price: activeRange?.max,
+          prescription_required: prescriptionRequired,
           sort_by:
-            sortBy === "price-low"
+            sortBy === "price_asc"
               ? "price_asc"
-              : sortBy === "price-high"
+              : sortBy === "price_desc"
               ? "price_desc"
               : sortBy === "name"
               ? "name"
               : "newest",
           page: currentPage,
-          page_size: 9,
+          page_size: 12,
         });
 
         if (!isCancelled) {
-          setProducts(res.items);
-          setTotalPages(res.pagination.total_pages);
-          setTotalItems(res.pagination.total_items);
+          let items = res.items || [];
+          // Client-side brand filter if multiple brands selected
+          if (selectedBrandIds.length > 1) {
+            const selectedBrandNames = brands
+              .filter((b) => selectedBrandIds.includes(b.id))
+              .map((b) => b.name.toLowerCase());
+            items = items.filter((p) =>
+              selectedBrandNames.some((bName) => p.brand.toLowerCase().includes(bName))
+            );
+          }
+          if (inStockOnly) {
+            items = items.filter((p) => p.inStock);
+          }
+
+          setProducts(items);
+          setTotalPages(res.pagination.total_pages || 1);
+          setTotalItems(res.pagination.total_items || items.length);
         }
       } catch (err) {
-        console.error("Failed to load products from catalog API:", err);
+        console.error("Failed to load products:", err);
       } finally {
         if (!isCancelled) setIsLoading(false);
       }
@@ -84,278 +113,321 @@ export default function ProductsPage() {
     return () => {
       isCancelled = true;
     };
-  }, [search, selectedCategory, selectedBrand, priceRange, sortBy, currentPage, prescriptionOnly, categories, brands]);
+  }, [
+    search,
+    selectedBrandIds,
+    selectedPriceRange,
+    inStockOnly,
+    prescriptionRequired,
+    sortBy,
+    currentPage,
+    brands,
+  ]);
 
-  const resetFilters = () => {
-    setSearch("");
-    setSelectedCategory("all");
-    setSelectedBrand("all");
-    setPrescriptionOnly(undefined);
-    setPriceRange(2000);
-    setSortBy("newest");
+  const toggleBrand = (brandId: string) => {
+    setSelectedBrandIds((prev) =>
+      prev.includes(brandId) ? prev.filter((id) => id !== brandId) : [...prev, brandId]
+    );
     setCurrentPage(1);
   };
 
+  const handleClearFilters = () => {
+    setSearch("");
+    setSelectedBrandIds([]);
+    setSelectedPriceRange("all");
+    setInStockOnly(false);
+    setPrescriptionRequired(undefined);
+    setSortBy("popular");
+    setCurrentPage(1);
+  };
+
+  const displayedBrands = showAllBrands ? brands : brands.slice(0, 6);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 text-left">
-      {/* Breadcrumb */}
-      <Breadcrumb items={[{ label: "Products", href: "/products" }]} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 text-left text-slate-800">
+      {/* 1. Breadcrumb Bar */}
+      <nav className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+        <Link href="/" className="hover:text-[#0052CC] flex items-center gap-1">
+          <Home className="w-3.5 h-3.5" />
+          <span>Home</span>
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-[#0052CC] font-bold">Medicines</span>
+      </nav>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <h1 className="text-2xl font-bold text-[#172B24]">Medicines & Healthcare Catalog</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Showing {totalItems} verified non-restricted pharmaceutical items with real-time stock availability
-          </p>
-        </div>
-
-        {/* Sort Dropdown */}
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-slate-500">Sort by:</span>
-          <Dropdown
-            label="Sort"
-            selectedItem={
-              sortBy === "newest"
-                ? "Newest Arrivals"
-                : sortBy === "price-low"
-                ? "Price: Low to High"
-                : sortBy === "price-high"
-                ? "Price: High to Low"
-                : "Name (A-Z)"
-            }
-            items={[
-              { label: "Newest Arrivals", value: "newest" },
-              { label: "Price: Low to High", value: "price-low" },
-              { label: "Price: High to Low", value: "price-high" },
-              { label: "Name (A-Z)", value: "name" },
-            ]}
-            onSelect={(item) => {
-              setSortBy(item.value);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Search & Mobile Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
-          <SearchInput
-            placeholder="Search medicine brand, composition (e.g. Paracetamol, Azithromycin)..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            onClear={() => setSearch("")}
-          />
-        </div>
-        <Button
-          variant="outline"
-          size="md"
-          className="sm:hidden flex items-center justify-center gap-2"
-        >
-          <Filter className="w-4 h-4 text-slate-600" />
-          <span>Filters</span>
-        </Button>
-      </div>
-
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Left Sidebar Filters */}
-        <aside className="hidden lg:block space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-6 shadow-subtle">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Filters</span>
-              </div>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="text-xs text-[#0D9488] hover:underline flex items-center gap-1 font-medium"
-              >
-                <RefreshCcw className="w-3 h-3" />
-                <span>Reset</span>
-              </button>
+      {/* 2. Category Hero Strip (Matching Image 2) */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#EBF5FC] via-[#F2F9FE] to-[#DDEEFA] border border-sky-100 p-6 sm:p-8 shadow-xs">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-[#0B3060] tracking-tight">
+                Medicines
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                Stay Healthy, Live Better
+              </p>
             </div>
 
-            {/* Categories */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[#172B24] block">Category</label>
-              <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCategory("all");
-                    setCurrentPage(1);
-                  }}
-                  className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition ${
-                    selectedCategory === "all"
-                      ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  All Categories
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id || cat.slug}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(cat.slug);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left text-xs py-1.5 px-2 rounded-lg transition ${
-                      selectedCategory === cat.slug
-                        ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-1 text-xs font-semibold text-slate-700">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                </div>
+                <span>Genuine Medicines</span>
               </div>
-            </div>
 
-            {/* Prescription Filter */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <label className="text-xs font-semibold text-[#172B24] block">Prescription</label>
-              <div className="space-y-2">
-                <Checkbox
-                  id="rx-all"
-                  label="All Products"
-                  checked={prescriptionOnly === undefined}
-                  onChange={() => {
-                    setPrescriptionOnly(undefined);
-                    setCurrentPage(1);
-                  }}
-                />
-                <Checkbox
-                  id="rx-req"
-                  label="Requires Prescription (Rx)"
-                  checked={prescriptionOnly === true}
-                  onChange={() => {
-                    setPrescriptionOnly(prescriptionOnly === true ? undefined : true);
-                    setCurrentPage(1);
-                  }}
-                />
-                <Checkbox
-                  id="rx-otc"
-                  label="Over The Counter (OTC)"
-                  checked={prescriptionOnly === false}
-                  onChange={() => {
-                    setPrescriptionOnly(prescriptionOnly === false ? undefined : false);
-                    setCurrentPage(1);
-                  }}
-                />
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                  <Truck className="w-4 h-4 text-[#0052CC]" />
+                </div>
+                <span>Fast Delivery Across India</span>
               </div>
-            </div>
 
-            {/* Price Range Slider */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#172B24]">
-                <span>Max Price</span>
-                <span className="text-[#0D9488] font-bold">₹{priceRange}</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="2000"
-                step="50"
-                value={priceRange}
-                onChange={(e) => {
-                  setPriceRange(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="w-full accent-[#0D9488] cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-slate-400">
-                <span>₹50</span>
-                <span>₹2000+</span>
-              </div>
-            </div>
-
-            {/* Brands Filter */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <label className="text-xs font-semibold text-[#172B24] block">Brand</label>
-              <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedBrand("all");
-                    setCurrentPage(1);
-                  }}
-                  className={`w-full text-left text-xs py-1 px-2 rounded-lg transition ${
-                    selectedBrand === "all"
-                      ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  All Brands
-                </button>
-                {brands.map((brand) => (
-                  <button
-                    key={brand.id || brand.slug}
-                    type="button"
-                    onClick={() => {
-                      setSelectedBrand(brand.name);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full text-left text-xs py-1 px-2 rounded-lg transition ${
-                      selectedBrand.toLowerCase() === brand.name.toLowerCase()
-                        ? "bg-[#F0FDFA] text-[#0D9488] font-bold"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {brand.name}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-cyan-100 flex items-center justify-center shrink-0">
+                  <Headphones className="w-4 h-4 text-cyan-700" />
+                </div>
+                <span>24x7 Support</span>
               </div>
             </div>
           </div>
+
+          {/* Right Visual Graphic */}
+          <div className="hidden md:flex items-center justify-center shrink-0">
+            <div className="w-32 h-24 rounded-2xl bg-white/70 border border-sky-200/60 p-3 flex flex-col items-center justify-center relative shadow-xs">
+              <Pill className="w-10 h-10 text-[#0052CC]" />
+              <span className="text-[10px] font-bold text-slate-500 mt-1">Rule 65 Licensed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Main Catalog Section (Filters Sidebar + 4-Col Products Grid) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Filters Sidebar (lg:col-span-3) */}
+        <aside className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-5 space-y-6 shadow-xs">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-[#0052CC]" />
+              <h3 className="font-extrabold text-sm text-slate-900">Filters</h3>
+            </div>
+            {(selectedBrandIds.length > 0 ||
+              selectedPriceRange !== "all" ||
+              inStockOnly ||
+              prescriptionRequired !== undefined) && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="text-[11px] text-[#0052CC] hover:underline font-semibold"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          {/* Brand Filter */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Brand</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {displayedBrands.length > 0 ? (
+                displayedBrands.map((b) => (
+                  <label
+                    key={b.id}
+                    className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer select-none hover:text-slate-900"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedBrandIds.includes(b.id)}
+                      onChange={() => toggleBrand(b.id)}
+                      className="w-4 h-4 rounded text-[#0052CC] accent-[#0052CC] border-slate-300 focus:ring-0"
+                    />
+                    <span className="truncate">{b.name}</span>
+                  </label>
+                ))
+              ) : (
+                <div className="text-[11px] text-slate-400">Loading brands...</div>
+              )}
+            </div>
+            {brands.length > 6 && (
+              <button
+                type="button"
+                onClick={() => setShowAllBrands(!showAllBrands)}
+                className="text-[11px] font-bold text-[#0052CC] hover:underline pt-1 block"
+              >
+                {showAllBrands ? "− Show Less" : `+ Show More (${brands.length - 6})`}
+              </button>
+            )}
+          </div>
+
+          {/* Price Range Filter */}
+          <div className="space-y-3 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Price Range
+            </h4>
+            <div className="space-y-2">
+              {PRICE_RANGES.map((range) => (
+                <label
+                  key={range.id}
+                  className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer select-none hover:text-slate-900"
+                >
+                  <input
+                    type="radio"
+                    name="price-range"
+                    checked={selectedPriceRange === range.id}
+                    onChange={() => {
+                      setSelectedPriceRange(range.id);
+                      setCurrentPage(1);
+                    }}
+                    className="w-4 h-4 accent-[#0052CC] border-slate-300 focus:ring-0"
+                  />
+                  <span>{range.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Availability Filter */}
+          <div className="space-y-3 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Availability
+            </h4>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer select-none hover:text-slate-900">
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#0052CC] accent-[#0052CC] border-slate-300 focus:ring-0"
+                />
+                <span>In Stock Only</span>
+              </label>
+
+              <label className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer select-none hover:text-slate-900">
+                <input
+                  type="checkbox"
+                  checked={prescriptionRequired === true}
+                  onChange={(e) =>
+                    setPrescriptionRequired(e.target.checked ? true : undefined)
+                  }
+                  className="w-4 h-4 rounded text-[#0052CC] accent-[#0052CC] border-slate-300 focus:ring-0"
+                />
+                <span>Prescription Required</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="w-full py-2 px-3 border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Clear Filters</span>
+            </button>
+          </div>
         </aside>
 
-        {/* Right Product Grid */}
-        <main className="lg:col-span-3 space-y-6">
+        {/* Right Main Products Area (lg:col-span-9) */}
+        <main className="lg:col-span-9 space-y-5">
+          {/* Top Bar: Count & Sort Dropdown */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200">
+            <p className="text-xs font-semibold text-slate-600">
+              Showing{" "}
+              <span className="font-bold text-slate-900">
+                {products.length > 0 ? `1–${products.length}` : "0"}
+              </span>{" "}
+              of <span className="font-bold text-slate-900">{totalItems}</span> products
+            </p>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-500">Sort By:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#0052CC]"
+              >
+                <option value="popular">Popular</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="name">Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Products Grid (4 Columns) */}
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
-              <p className="text-xs font-medium">Checking live pharmacy inventory...</p>
+            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-slate-200 text-slate-400 space-y-3">
+              <Loader2 className="w-8 h-8 animate-spin text-[#0052CC]" />
+              <p className="text-xs font-medium">Loading verified medicines from database...</p>
             </div>
           ) : products.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="pt-6 border-t border-slate-200">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                  />
-                </div>
-              )}
-            </>
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              {products.map((p, idx) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  isBestSeller={idx < 2 && currentPage === 1}
+                />
+              ))}
+            </div>
           ) : (
-            <EmptyState
-              title="No medicines match your filter criteria"
-              description="Try adjusting your price range, searching for another salt composition, or clearing active filters."
-              action={
-                <Button variant="primary" size="sm" onClick={resetFilters}>
-                  Clear All Filters
-                </Button>
-              }
-            />
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <Pill className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-800">No products match your filters</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Try clearing selected brand or price filters to see more results from our pharmacy catalog.
+              </p>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0052CC] text-white rounded-xl text-xs font-bold hover:bg-[#0043A8] transition shadow-xs"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset All Filters</span>
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-bold text-slate-700 px-2">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
           )}
         </main>
       </div>
+
+      {/* 4. Bottom Membership Banner (Gift Variant matching Image 2) */}
+      <section className="pt-6">
+        <MembershipBanner variant="gift" />
+      </section>
     </div>
   );
 }

@@ -2,108 +2,147 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Star, ShoppingBag, Plus, Check } from "lucide-react";
+import { ShoppingCart, Check, Pill, ShoppingBag } from "lucide-react";
 import { Product } from "@/types";
-import { PriceDisplay } from "./PriceDisplay";
-import { PrescriptionBadge } from "./PrescriptionBadge";
-import { Button } from "./Button";
-import { cn } from "@/lib/utils";
+import { formatPriceINR } from "@/lib/utils";
+import { useCart } from "@/context/CartContext";
 
 export interface ProductCardProps {
   product: Product;
   className?: string;
-  onAddToCart?: (product: Product) => void;
+  isBestSeller?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
-  className,
-  onAddToCart,
+  className = "",
+  isBestSeller = false,
 }) => {
-  const [added, setAdded] = useState(false);
+  const { addToCart, isAdding } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
 
-  const handleAdd = (e: React.MouseEvent) => {
+  const handleAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setAdded(true);
-    if (onAddToCart) onAddToCart(product);
-    setTimeout(() => setAdded(false), 2000);
+    const ok = await addToCart(product, 1);
+    if (ok) {
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1800);
+    }
   };
+
+  const discountPercent =
+    product.discountPercent ||
+    (product.mrp > product.sellingPrice
+      ? Math.round(((product.mrp - product.sellingPrice) / product.mrp) * 100)
+      : 0);
 
   return (
     <div
-      className={cn(
-        "group relative flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-4 transition-all duration-200 hover:border-slate-300 hover:shadow-card",
-        className
-      )}
+      className={`group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-3.5 transition-all duration-200 hover:border-slate-300 hover:shadow-md ${className}`}
     >
       <div>
         {/* Top Badges */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <PrescriptionBadge
-            required={product.requiresPrescription}
-            scheduleType={product.scheduleType}
-          />
-          {product.discountPercent > 0 && (
-            <span className="text-[10px] font-bold text-[#0D9488] bg-[#F0FDFA] px-1.5 py-0.5 rounded">
-              {product.discountPercent}% OFF
+        <div className="flex items-center justify-between gap-1 h-5 mb-2">
+          {isBestSeller || product.rating >= 4.5 ? (
+            <span className="bg-[#0B3A70] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs">
+              Best Seller
+            </span>
+          ) : product.requiresPrescription ? (
+            <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-1.5 py-0.2 rounded">
+              Rx
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {discountPercent > 0 && (
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">
+              {discountPercent}% OFF
             </span>
           )}
         </div>
 
-        {/* Product Image Placeholder */}
-        <Link href={`/products/${product.slug}`} className="block relative aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center p-3 mb-3 overflow-hidden group-hover:bg-slate-100/70 transition">
-          <div className="w-16 h-16 rounded-xl bg-white shadow-subtle border border-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-            <ShoppingBag className="w-8 h-8 text-[#0D9488]/70" />
-          </div>
+        {/* Product Image Area */}
+        <Link
+          href={`/products/${product.slug || product.id}`}
+          className="block relative aspect-square w-full rounded-xl bg-slate-50/50 flex items-center justify-center p-2 mb-3 overflow-hidden group-hover:bg-slate-100/60 transition"
+        >
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105"
+              onError={(e) => {
+                // Fallback to placeholder icon
+                (e.target as HTMLElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex flex-col items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
+              <Pill className="w-8 h-8 text-[#0052CC]/70" />
+            </div>
+          )}
         </Link>
 
-        {/* Brand & Pack Size */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-          <span className="font-medium text-slate-600 truncate max-w-[120px]">{product.brand}</span>
-          <span className="text-slate-400">{product.packSize}</span>
+        {/* Product Title & Packaging */}
+        <div className="text-left space-y-0.5">
+          <Link
+            href={`/products/${product.slug || product.id}`}
+            className="block group-hover:text-[#0052CC] transition"
+          >
+            <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 line-clamp-2 leading-tight min-h-[2rem]">
+              {product.name}
+            </h4>
+          </Link>
+          <p className="text-[11px] text-slate-400 truncate">
+            {product.packSize || product.dosageForm || "Packaging"}
+          </p>
         </div>
 
-        {/* Product Title */}
-        <Link href={`/products/${product.slug}`} className="block group-hover:text-[#0D9488] transition">
-          <h3 className="text-xs font-bold text-[#172B24] line-clamp-2 leading-snug">
-            {product.name}
-          </h3>
-        </Link>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1.5 mt-2">
-          <div className="flex items-center gap-0.5 bg-teal-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-teal-800">
-            <Star className="w-2.5 h-2.5 fill-teal-600 text-teal-600" />
-            <span>{product.rating}</span>
-          </div>
-          <span className="text-[10px] text-slate-400">({product.reviewCount})</span>
+        {/* Price Row */}
+        <div className="flex items-baseline gap-2 mt-2 text-left">
+          <span className="text-sm sm:text-base font-extrabold text-slate-900">
+            ₹{product.sellingPrice}
+          </span>
+          {product.mrp > product.sellingPrice && (
+            <span className="text-xs text-slate-400 line-through">
+              ₹{product.mrp}
+            </span>
+          )}
+          {discountPercent > 0 && (
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded hidden sm:inline">
+              {discountPercent}% OFF
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Bottom Price & Add Action */}
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-        <PriceDisplay mrp={product.mrp} sellingPrice={product.sellingPrice} size="sm" />
-        <Button
-          size="sm"
-          variant={added ? "light" : "outline"}
+      {/* Full-Width Blue Add to Cart Button */}
+      <div className="mt-3.5 pt-2">
+        <button
+          type="button"
           onClick={handleAdd}
-          className="h-8 px-2.5 text-xs font-semibold shrink-0"
+          disabled={isAdding}
+          className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-2xs active:scale-[0.98] ${
+            justAdded
+              ? "bg-emerald-600 text-white"
+              : "bg-[#0052CC] hover:bg-[#0043A8] text-white"
+          }`}
         >
-          {added ? (
+          {justAdded ? (
             <>
-              <Check className="w-3.5 h-3.5 text-[#0D9488]" />
-              <span className="text-[#0D9488]">Added</span>
+              <Check className="w-3.5 h-3.5" />
+              <span>Added to Cart</span>
             </>
           ) : (
             <>
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add</span>
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>Add to Cart</span>
             </>
           )}
-        </Button>
+        </button>
       </div>
     </div>
   );
 };
-

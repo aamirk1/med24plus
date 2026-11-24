@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
       <Breadcrumb
         items={[
           { label: "Products", href: "/products" },
-          { label: product.categoryName, href: `/categories/${product.categorySlug}` },
+          { label: product.categoryName || "Medicines", href: `/categories/${product.categorySlug || "all"}` },
           { label: product.name },
         ]}
       />
@@ -301,7 +301,7 @@ export default function ProductDetailPage() {
             <p>{product.description}</p>
           </div>
 
-          {product.keyBenefits?.length > 0 && (
+          {(product.keyBenefits?.length || 0) > 0 && (
             <div>
               <h3 className="font-bold text-slate-800 text-sm mb-2">Key Quality & Pharmacological Assurances</h3>
               <ul className="list-disc pl-5 space-y-1">
@@ -317,7 +317,7 @@ export default function ProductDetailPage() {
             <p>{product.directionsForUse}</p>
           </div>
 
-          {product.safetyInformation?.length > 0 && (
+          {(product.safetyInformation?.length || 0) > 0 && (
             <div>
               <h3 className="font-bold text-slate-800 text-sm mb-2">Safety & Storage Instructions</h3>
               <ul className="list-disc pl-5 space-y-1 text-slate-500">
