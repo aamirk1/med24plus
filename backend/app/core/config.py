@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     # FAST2SMS_API_KEY: str = "fast2sms_api_key_placeholder"
 
     # Firebase Admin SDK, Push Notifications (FCM) & Cloud Storage
-    FIREBASE_CREDENTIALS_PATH: Union[str, None] = None
+    FIREBASE_CREDENTIALS_PATH: Union[str, None] = "/app/firebase-credentials.json"
     FIREBASE_PROJECT_ID: str = "med24plus"
 
     @property
@@ -96,6 +96,23 @@ class Settings(BaseSettings):
             and bool(self.RAZORPAY_KEY_SECRET)
             and not self.RAZORPAY_KEY_SECRET.startswith("rzp_secret_placeholder")
         )
+
+    @field_validator("FIREBASE_STORAGE_BUCKET", mode="before")
+    @classmethod
+    def clean_storage_bucket(cls, v: Union[str, None]) -> str:
+        if not v or not str(v).strip():
+            return "med24plus.firebasestorage.app"
+        clean = str(v).strip()
+        if clean.startswith("gs://"):
+            clean = clean[5:]
+        return clean.strip("/").strip()
+
+    @field_validator("FIREBASE_CREDENTIALS_PATH", mode="before")
+    @classmethod
+    def clean_credentials_path(cls, v: Union[str, None]) -> Union[str, None]:
+        if not v or not str(v).strip() or str(v).strip().lower() in ("none", "null"):
+            return "/app/firebase-credentials.json"
+        return str(v).strip()
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

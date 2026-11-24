@@ -204,9 +204,10 @@ class StorageService:
         """Remove image file from Firebase Storage or local filesystem."""
         if "firebasestorage.googleapis.com" in image_url:
             try:
-                # Extract blob path from Firebase URL
+                import urllib.parse
+                # Extract and unquote blob path from Firebase URL
                 encoded_path = image_url.split("/o/")[1].split("?")[0]
-                blob_name = encoded_path.replace("%2F", "/")
+                blob_name = urllib.parse.unquote(encoded_path)
                 await self.firebase_service.delete_file(blob_name)
                 return True
             except Exception as e:

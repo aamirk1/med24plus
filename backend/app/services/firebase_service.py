@@ -1,5 +1,7 @@
 import logging
 import os
+import urllib.parse
+import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.core.config import settings
@@ -62,42 +64,67 @@ class FirebaseService:
         except Exception:
             pass
 
-        raw_cred_path = settings.FIREBASE_CREDENTIALS_PATH or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        raw_cred_path = settings.FIREBASE_CREDENTIALS_PATH or os.getenv("FIREBASE_CREDENTIALS_PATH") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         candidate_paths = []
         if raw_cred_path:
             candidate_paths.append(raw_cred_path)
             if not os.path.isabs(raw_cred_path):
-                backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
                 candidate_paths.append(os.path.join(backend_dir, raw_cred_path))
+                candidate_paths.append(os.path.join(os.getcwd(), raw_cred_path))
                 candidate_paths.append(os.path.join(backend_dir, os.path.basename(raw_cred_path)))
+
+        # Standard discovery fallbacks for Docker container and local dev
+        candidate_paths.extend([
+            "/app/firebase-credentials.json",
+            os.path.join(backend_dir, "firebase-credentials.json"),
+            os.path.join(os.getcwd(), "firebase-credentials.json"),
+            os.path.join(os.getcwd(), "backend", "firebase-credentials.json"),
+            "firebase-credentials.json",
+        ])
 
         resolved_path = None
         for p in candidate_paths:
             if p and os.path.isfile(p):
-                resolved_path = p
+                resolved_path = os.path.abspath(p)
                 break
 
+        bucket_name = self.get_bucket_name()
         if resolved_path:
             try:
                 cred = fb_credentials.Certificate(resolved_path)
                 firebase_admin.initialize_app(cred, {
-                    "projectId": settings.FIREBASE_PROJECT_ID,
-                    "storageBucket": settings.FIREBASE_STORAGE_BUCKET,
+                    "projectId": settings.FIREBASE_PROJECT_ID or "med24plus",
+                    "storageBucket": bucket_name,
                 })
                 self._is_initialized = True
                 self._is_simulation_mode = False
-                logger.info(f"[FIREBASE] Initialized Firebase Admin from service account file: {resolved_path}")
+                logger.info(f"[FIREBASE] Initialized Firebase Admin from service account file: {resolved_path} with bucket: {bucket_name}")
                 return
             except Exception as e:
-                logger.error(f"[FIREBASE] Failed to initialize Firebase Admin with credentials: {e}")
+                logger.error(f"[FIREBASE] Failed to initialize Firebase Admin with credentials ({resolved_path}): {e}")
 
         # In development / sandbox without credential file, run in simulation mode
         logger.info(
-            f"[FIREBASE] No credentials file found at '{raw_cred_path}'. "
+            f"[FIREBASE] No credentials file found among candidates: {candidate_paths}. "
             "Running in simulation mode (ideal for local development and unit tests)."
         )
         self._is_simulation_mode = True
         self._is_initialized = True
+
+    @staticmethod
+    def clean_bucket_name(raw_name: Optional[str]) -> str:
+        """Sanitize bucket name, removing gs:// prefix and surrounding slashes."""
+        if not raw_name or not str(raw_name).strip():
+            return "med24plus.firebasestorage.app"
+        clean = str(raw_name).strip()
+        if clean.startswith("gs://"):
+            clean = clean[5:]
+        return clean.strip("/").strip()
+
+    def get_bucket_name(self) -> str:
+        """Retrieve sanitized Firebase Storage bucket name."""
+        return self.clean_bucket_name(settings.FIREBASE_STORAGE_BUCKET)
 
     @property
     def is_simulation_mode(self) -> bool:
@@ -312,47 +339,65 @@ class FirebaseService:
         """Retrieve Firebase Storage Bucket instance."""
         if self._is_simulation_mode or not FIREBASE_ADMIN_INSTALLED or fb_storage is None:
             return None
+        bucket_name = self.get_bucket_name()
         try:
-            return fb_storage.bucket()
+            return fb_storage.bucket(bucket_name) if bucket_name else fb_storage.bucket()
         except Exception as e:
-            logger.error(f"[FIREBASE STORAGE ERROR] Failed to access storage bucket: {e}")
-            return None
+            logger.error(f"[FIREBASE STORAGE ERROR] Failed to access storage bucket '{bucket_name}': {e}")
+            try:
+                return fb_storage.bucket()
+            except Exception:
+                return None
 
     async def upload_file(
         self,
         destination_blob_name: str,
         content: bytes,
         content_type: str,
-        is_public: bool = False,
+        is_public: bool = True,
     ) -> Tuple[bool, str, Optional[str]]:
         """
         Upload binary content to Firebase Storage.
         Returns: (success: bool, url_or_key: str, error: Optional[str])
         """
+        bucket_name = self.get_bucket_name()
+        encoded_blob_name = urllib.parse.quote(destination_blob_name, safe="")
+
         if self._is_simulation_mode:
             logger.info(f"[FIREBASE STORAGE SIMULATION] Uploaded {len(content)} bytes to {destination_blob_name}")
-            simulated_url = f"https://firebasestorage.googleapis.com/v0/b/{settings.FIREBASE_STORAGE_BUCKET}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
+            simulated_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_blob_name}?alt=media&token=simulation-token"
             return True, simulated_url, None
 
         bucket = self.get_bucket()
         if not bucket:
-            return False, "", "Firebase Storage bucket is not available."
+            return False, "", f"Firebase Storage bucket '{bucket_name}' is not available."
 
         try:
             blob = bucket.blob(destination_blob_name)
+            download_token = str(uuid.uuid4())
+            # Firebase storage download token works seamlessly with Uniform Bucket-Level Access (UBLA)
+            blob.metadata = {"firebaseStorageDownloadTokens": download_token}
             blob.upload_from_string(content, content_type=content_type)
+
+            # Ensure metadata is committed on the blob
+            try:
+                blob.metadata = {"firebaseStorageDownloadTokens": download_token}
+                blob.patch()
+            except Exception as patch_err:
+                logger.debug(f"[FIREBASE STORAGE] Patch metadata notice: {patch_err}")
+
             if is_public:
                 try:
                     blob.make_public()
-                    url = blob.public_url
                 except Exception:
-                    # Fallback to standard URL with media token
-                    url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
-            else:
-                url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{destination_blob_name.replace('/', '%2F')}?alt=media"
-            return True, url, None
+                    # Expected and safe on buckets with Uniform Bucket-Level Access (UBLA)
+                    pass
+
+            download_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{encoded_blob_name}?alt=media&token={download_token}"
+            logger.info(f"[FIREBASE STORAGE] Successfully uploaded {destination_blob_name} ({len(content)} bytes) to bucket {bucket.name}")
+            return True, download_url, None
         except Exception as e:
-            logger.error(f"[FIREBASE STORAGE UPLOAD ERROR] {e}")
+            logger.error(f"[FIREBASE STORAGE UPLOAD ERROR] Failed to upload {destination_blob_name}: {e}")
             return False, "", str(e)
 
     async def get_signed_download_url(
@@ -364,8 +409,10 @@ class FirebaseService:
         Generate time-limited signed URL for private documents (e.g. Prescriptions).
         """
         from datetime import timedelta
+        bucket_name = self.get_bucket_name()
+        encoded_name = urllib.parse.quote(blob_name, safe="")
         if self._is_simulation_mode:
-            url = f"https://firebasestorage.googleapis.com/v0/b/{settings.FIREBASE_STORAGE_BUCKET}/o/{blob_name.replace('/', '%2F')}?alt=media&token=simulated_token"
+            url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_name}?alt=media&token=simulated_token"
             return True, url, None
 
         bucket = self.get_bucket()
