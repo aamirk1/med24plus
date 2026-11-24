@@ -48,6 +48,38 @@ export interface Product {
   countryOfOrigin: string;
 }
 
+export interface ProductSubstituteOption {
+  id: string;
+  name: string;
+  slug: string;
+  sku?: string;
+  brand: string;
+  genericName: string;
+  composition?: string;
+  packSize: string;
+  dosageForm: string;
+  strength?: string;
+  mrp: number;
+  sellingPrice: number;
+  discountPercent: number;
+  imageUrl?: string;
+  inStock: boolean;
+  requiresPrescription: boolean;
+  isOriginal: boolean;
+  badge?: string; // "Original Brand", "Popular Choice", "Best Value"
+  savingsAmount: number;
+  savingsPercent: number;
+}
+
+export interface ProductSubstitutesData {
+  originalProduct: ProductSubstituteOption;
+  activeSalt: string;
+  strength: string;
+  verifiedByPharmacist: boolean;
+  substitutes: ProductSubstituteOption[];
+}
+
+
 export interface CartItem {
   product: Product;
   quantity: number;

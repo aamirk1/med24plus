@@ -4,6 +4,7 @@ import 'package:med24plus/core/constants/app_strings.dart';
 import 'package:med24plus/core/mock/mock_data.dart';
 import 'package:med24plus/core/widgets/app_button.dart';
 import 'package:med24plus/core/widgets/app_badge.dart';
+import 'package:med24plus/core/widgets/brand_substitutes_widget.dart';
 import 'package:med24plus/core/widgets/price_widget.dart';
 import 'package:med24plus/core/widgets/quantity_selector.dart';
 import 'package:med24plus/features/splash/presentation/splash_screen.dart';
@@ -77,6 +78,19 @@ void main() {
       await tester.tap(find.byIcon(Icons.add));
       await tester.pump();
       expect(qty, equals(2));
+    });
+
+    testWidgets('BrandSubstitutesWidget renders brand comparison options', (tester) async {
+      final options = MockData.getSubstitutesForProduct('p-azithral');
+      await tester.pumpWidget(_wrap(BrandSubstitutesWidget(
+        options: options,
+        activeSalt: 'Azithromycin',
+        strength: '500 mg',
+      )));
+      expect(find.text('Compare Brand Substitutes'), findsOneWidget);
+      expect(find.text('Azithral 500 Tablet'), findsOneWidget);
+      expect(find.text('Zithrocin 500 Tablet'), findsOneWidget);
+      expect(find.text('Azimycin 500 Tablet'), findsOneWidget);
     });
   });
 

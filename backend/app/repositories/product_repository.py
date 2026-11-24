@@ -231,3 +231,38 @@ class ProductRepository:
         await self.db.delete(image)
         await self.db.flush()
 
+    async def get_substitutes_by_generic(
+        self,
+        generic_name: str,
+        exclude_product_id: uuid.UUID,
+        limit: int = 6,
+    ) -> List[Product]:
+        """Fetch active products matching generic composition/name, excluding the current product."""
+        term = generic_name.strip().lower()
+        # Extract the core salt name (e.g. "Azithromycin" from "Azithromycin Tablets IP")
+        core_term = term.replace("tablets ip", "").replace("capsules ip", "").replace("syrup", "").strip()
+        search_pattern = f"%{core_term}%" if core_term else f"%{term}%"
+
+        stmt = (
+            select(Product)
+            .where(
+                Product.id != exclude_product_id,
+                Product.is_deleted == False,
+                Product.is_active == True,
+                or_(
+                    func.lower(Product.generic_name) == term,
+                    func.lower(Product.generic_name).like(search_pattern),
+                    func.lower(Product.composition).like(search_pattern),
+                ),
+            )
+            .options(
+                selectinload(Product.category),
+                selectinload(Product.brand),
+                selectinload(Product.images),
+            )
+            .order_by(Product.selling_price.asc())
+            .limit(limit)
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+

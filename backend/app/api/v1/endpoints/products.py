@@ -15,6 +15,7 @@ from app.schemas.catalog import (
     ProductImageResponse,
     ProductListItemResponse,
     ProductStatusUpdate,
+    ProductSubstitutesResponse,
     ProductUpdate,
 )
 from app.schemas.common import APIResponse, PaginatedData, PaginationMeta
@@ -92,6 +93,21 @@ async def get_product_by_slug(
     )
 
 
+@router.get("/slug/{slug}/substitutes", response_model=APIResponse[ProductSubstitutesResponse])
+async def get_product_substitutes_by_slug(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve brand substitutes by product slug sharing the same therapeutic salt/molecule."""
+    service = CatalogService(db)
+    substitutes = await service.get_product_substitutes(slug)
+    return APIResponse(
+        success=True,
+        message="Product brand substitutes retrieved successfully.",
+        data=substitutes,
+    )
+
+
 @router.get("/{product_id}", response_model=APIResponse[ProductDetailResponse])
 async def get_product_by_id(
     product_id: uuid.UUID,
@@ -104,6 +120,21 @@ async def get_product_by_id(
         success=True,
         message="Product details retrieved successfully.",
         data=product,
+    )
+
+
+@router.get("/{product_id}/substitutes", response_model=APIResponse[ProductSubstitutesResponse])
+async def get_product_substitutes_by_id(
+    product_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve brand substitutes by UUID sharing the same therapeutic salt/molecule."""
+    service = CatalogService(db)
+    substitutes = await service.get_product_substitutes(str(product_id))
+    return APIResponse(
+        success=True,
+        message="Product brand substitutes retrieved successfully.",
+        data=substitutes,
     )
 
 

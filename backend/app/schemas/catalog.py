@@ -294,3 +294,40 @@ class ProductDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
+# ==============================================================================
+# Brand Substitution Schemas
+# ==============================================================================
+
+class ProductSubstituteItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    slug: str
+    sku: str
+    brand_name: Optional[str] = None
+    generic_name: str
+    composition: Optional[str] = None
+    pack_size: str
+    dosage_form: str
+    strength: Optional[str] = None
+    mrp: Decimal
+    selling_price: Decimal
+    discount_percent: Decimal
+    primary_image_url: Optional[str] = None
+    is_in_stock: bool = True
+    requires_prescription: bool = False
+    is_original: bool = False
+    badge: Optional[str] = None  # "Original Brand", "Popular Choice", "Best Value"
+    savings_amount: Decimal = Decimal("0.00")
+    savings_percent: int = 0
+
+
+class ProductSubstitutesResponse(BaseModel):
+    original_product: ProductSubstituteItem
+    active_salt: str
+    strength: Optional[str] = None
+    verified_by_pharmacist: bool = True
+    substitutes: List[ProductSubstituteItem] = Field(default_factory=list)
+

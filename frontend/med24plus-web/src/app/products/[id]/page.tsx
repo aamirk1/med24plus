@@ -26,18 +26,21 @@ import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Toast } from "@/components/ui/Toast";
 import { catalogService } from "@/services/catalog.service";
-import { Product } from "@/types";
+import { Product, ProductSubstitutesData, ProductSubstituteOption } from "@/types";
+import { BrandSubstitutes } from "@/components/product/BrandSubstitutes";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params?.id as string;
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [substitutesData, setSubstitutesData] = useState<ProductSubstitutesData | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -47,8 +50,12 @@ export default function ProductDetailPage() {
         const item = await catalogService.getProductBySlug(slug);
         setProduct(item);
         if (item) {
-          const rel = await catalogService.getProducts({ page_size: 4 });
+          const [rel, subs] = await Promise.all([
+            catalogService.getProducts({ page_size: 4 }),
+            catalogService.getProductSubstitutes(slug),
+          ]);
           setRelatedProducts(rel.items.filter((p) => p.id !== item.id).slice(0, 3));
+          setSubstitutesData(subs);
         }
       } catch (e) {
         console.error("Failed to load product details:", e);
@@ -60,7 +67,25 @@ export default function ProductDetailPage() {
   }, [slug]);
 
   const handleAddToCart = () => {
+    setToastMessage(`Added ${quantity} unit(s) of ${product?.name} to cart.`);
     setShowToast(true);
+  };
+
+  const handleSelectSubstitute = (option: ProductSubstituteOption) => {
+    if (product && !option.isOriginal) {
+      setProduct({
+        ...product,
+        name: option.name,
+        brand: option.brand,
+        sellingPrice: option.sellingPrice,
+        mrp: option.mrp,
+        discountPercent: option.savingsPercent || option.discountPercent,
+      });
+      setToastMessage(
+        `Switched to substitute brand ${option.name}. You save ₹${Math.round(option.savingsAmount)}!`
+      );
+      setShowToast(true);
+    }
   };
 
   if (isLoading) {
@@ -89,7 +114,7 @@ export default function ProductDetailPage() {
       {showToast && (
         <Toast
           type="success"
-          message={`Added ${quantity} unit(s) of ${product.name} to cart (Demo Mode).`}
+          message={toastMessage || `Added ${quantity} unit(s) of ${product.name} to cart.`}
           onClose={() => setShowToast(false)}
         />
       )}
@@ -288,6 +313,14 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Compare Brand Substitutes Section (Matches Screenshot 2) */}
+      {substitutesData && (
+        <BrandSubstitutes
+          data={substitutesData}
+          onSelectOption={handleSelectSubstitute}
+        />
+      )}
 
       {/* Description & Clinical Information */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-subtle">

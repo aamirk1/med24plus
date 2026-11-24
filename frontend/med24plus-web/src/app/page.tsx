@@ -24,6 +24,7 @@ import { catalogService } from "@/services/catalog.service";
 import { Product } from "@/types";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { MembershipBanner } from "@/components/common/MembershipBanner";
+import { SmartSavingsWidget } from "@/components/common/SmartSavingsWidget";
 
 // Quick Categories from Mockup
 const QUICK_CATEGORIES = [
@@ -354,6 +355,11 @@ export default function HomePage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Smart Savings - Compare Brand Substitutes Showcase (Matches Mockup) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SmartSavingsWidget />
       </section>
 
       {/* 3. "Great Deals for You" Section */}
