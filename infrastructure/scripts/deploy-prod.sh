@@ -20,7 +20,7 @@ echo "--> Pulling latest changes from Git..."
 git pull origin main
 
 echo "--> Building and starting Docker containers..."
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build --force-recreate
 
 echo "--> Waiting for Postgres & Backend services to be ready..."
 sleep 5
