@@ -64,6 +64,45 @@ class FirebaseService:
         except Exception:
             pass
 
+        bucket_name = self.get_bucket_name()
+
+        # Check for in-memory or environment JSON / Base64 credentials
+        creds_base64 = settings.FIREBASE_CREDENTIALS_BASE64 or os.getenv("FIREBASE_CREDENTIALS_BASE64")
+        if creds_base64 and creds_base64.strip():
+            try:
+                import base64
+                import json
+                decoded_json = base64.b64decode(creds_base64.strip()).decode("utf-8")
+                cred_dict = json.loads(decoded_json)
+                cred = fb_credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred, {
+                    "projectId": settings.FIREBASE_PROJECT_ID or cred_dict.get("project_id", "med24plus"),
+                    "storageBucket": bucket_name,
+                })
+                self._is_initialized = True
+                self._is_simulation_mode = False
+                logger.info(f"[FIREBASE] Initialized Firebase Admin from FIREBASE_CREDENTIALS_BASE64 with bucket: {bucket_name}")
+                return
+            except Exception as b64_err:
+                logger.error(f"[FIREBASE] Failed to initialize Firebase Admin from FIREBASE_CREDENTIALS_BASE64: {b64_err}")
+
+        creds_json_raw = settings.FIREBASE_CREDENTIALS_JSON or os.getenv("FIREBASE_CREDENTIALS_JSON")
+        if creds_json_raw and creds_json_raw.strip():
+            try:
+                import json
+                cred_dict = json.loads(creds_json_raw.strip())
+                cred = fb_credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred, {
+                    "projectId": settings.FIREBASE_PROJECT_ID or cred_dict.get("project_id", "med24plus"),
+                    "storageBucket": bucket_name,
+                })
+                self._is_initialized = True
+                self._is_simulation_mode = False
+                logger.info(f"[FIREBASE] Initialized Firebase Admin from FIREBASE_CREDENTIALS_JSON with bucket: {bucket_name}")
+                return
+            except Exception as json_err:
+                logger.error(f"[FIREBASE] Failed to initialize Firebase Admin from FIREBASE_CREDENTIALS_JSON: {json_err}")
+
         backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         raw_cred_path = settings.FIREBASE_CREDENTIALS_PATH or os.getenv("FIREBASE_CREDENTIALS_PATH") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         candidate_paths = []
@@ -89,7 +128,6 @@ class FirebaseService:
                 resolved_path = os.path.abspath(p)
                 break
 
-        bucket_name = self.get_bucket_name()
         if resolved_path:
             try:
                 cred = fb_credentials.Certificate(resolved_path)
@@ -364,9 +402,13 @@ class FirebaseService:
         encoded_blob_name = urllib.parse.quote(destination_blob_name, safe="")
 
         if self._is_simulation_mode:
-            logger.info(f"[FIREBASE STORAGE SIMULATION] Uploaded {len(content)} bytes to {destination_blob_name}")
-            simulated_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{encoded_blob_name}?alt=media&token=simulation-token"
-            return True, simulated_url, None
+            err_msg = (
+                f"Firebase credentials not loaded on server (running in simulation mode). "
+                f"Cannot upload '{destination_blob_name}' to bucket '{bucket_name}'. "
+                "Ensure backend/firebase-credentials.json is placed on the server."
+            )
+            logger.error(f"[FIREBASE STORAGE ERROR] {err_msg}")
+            return False, "", err_msg
 
         bucket = self.get_bucket()
         if not bucket:

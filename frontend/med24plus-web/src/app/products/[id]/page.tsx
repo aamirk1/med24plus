@@ -133,9 +133,9 @@ export default function ProductDetailPage() {
         {/* Left Gallery (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <div className="aspect-square w-full rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-6 relative overflow-hidden">
-            {product.images && product.images[activeImageIdx] ? (
+            {(product.images && product.images[activeImageIdx]) || product.imageUrl ? (
               <img
-                src={product.images[activeImageIdx]}
+                src={(product.images && product.images[activeImageIdx]) || product.imageUrl}
                 alt={product.name}
                 className="max-h-full max-w-full object-contain"
               />

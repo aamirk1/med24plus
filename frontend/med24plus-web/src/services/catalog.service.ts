@@ -63,6 +63,7 @@ export const catalogService = {
           rating: 4.8,
           reviewCount: 42,
           images: item.primary_image_url ? [item.primary_image_url] : [],
+          imageUrl: item.primary_image_url || undefined,
           description: item.generic_name || "",
           keyBenefits: ["Certified pharmaceutical quality", "Rule 65 batch verified", "FEFO freshness tracking"],
           directionsForUse: "Use as directed by a registered medical practitioner.",
@@ -115,7 +116,15 @@ export const catalogService = {
           scheduleType: item.schedule_classification || "OTC",
           rating: 4.8,
           reviewCount: 42,
-          images: item.images?.length > 0 ? item.images.map((img: any) => img.image_url) : [],
+          images:
+            item.images && item.images.length > 0
+              ? item.images.map((img: any) => img.image_url)
+              : item.primary_image_url
+              ? [item.primary_image_url]
+              : [],
+          imageUrl:
+            item.primary_image_url ||
+            (item.images && item.images.length > 0 ? item.images[0].image_url : undefined),
           description: item.description || item.generic_name || "",
           keyBenefits: [
             "100% Genuine and authentic stock",

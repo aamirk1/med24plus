@@ -20,6 +20,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const { addToCart, isAdding } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const rawImgUrl = product.imageUrl || (product.images && product.images[0]);
+  const hasValidImage = Boolean(rawImgUrl && !imgError);
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,15 +76,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           href={`/products/${product.slug || product.id}`}
           className="block relative aspect-square w-full rounded-xl bg-slate-50/50 flex items-center justify-center p-2 mb-3 overflow-hidden group-hover:bg-slate-100/60 transition"
         >
-          {product.imageUrl ? (
+          {hasValidImage ? (
             <img
-              src={product.imageUrl}
+              src={rawImgUrl}
               alt={product.name}
               className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105"
-              onError={(e) => {
-                // Fallback to placeholder icon
-                (e.target as HTMLElement).style.display = "none";
-              }}
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex flex-col items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">

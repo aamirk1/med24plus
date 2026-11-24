@@ -109,3 +109,5 @@ service-account.json
 **/key.properties
 *.jks
 *.keystore
+
+*.tsbuildinfo

@@ -166,10 +166,18 @@ class StorageService:
             if success and url:
                 logger.info(f"[STORAGE] Stored product image in Firebase Storage: {blob_path}")
                 return url
-            else:
-                logger.warning(f"[STORAGE] Firebase Storage upload error ({err}), falling back to local static URL.")
 
-        # 2. Local Fallback URL
+            logger.error(f"[STORAGE] Firebase Storage upload error ({err})")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "success": False,
+                    "message": f"Firebase Storage upload failed: {err or 'Storage service unavailable'}. Please verify backend/firebase-credentials.json is configured.",
+                    "error": {"code": "FIREBASE_UPLOAD_FAILED"},
+                },
+            )
+
+        # 2. Local Fallback URL (only if provider explicitly configured as local)
         return f"/static/uploads/products/{unique_filename}"
 
     async def save_generic_image(self, file: UploadFile, folder: str = "catalog") -> str:
@@ -231,10 +239,18 @@ class StorageService:
             if success and url:
                 logger.info(f"[STORAGE] Stored {clean_folder} image in Firebase Storage: {blob_path}")
                 return url
-            else:
-                logger.warning(f"[STORAGE] Firebase Storage upload error ({err}), falling back to local static URL.")
 
-        # 2. Local Fallback URL
+            logger.error(f"[STORAGE] Firebase Storage upload error ({err})")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "success": False,
+                    "message": f"Firebase Storage upload failed: {err or 'Storage service unavailable'}. Please verify backend/firebase-credentials.json is configured.",
+                    "error": {"code": "FIREBASE_UPLOAD_FAILED"},
+                },
+            )
+
+        # 2. Local Fallback URL (only if provider explicitly configured as local)
         return f"/static/uploads/{clean_folder}/{unique_filename}"
 
     async def delete_image(self, image_url: str) -> bool:

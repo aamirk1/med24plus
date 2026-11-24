@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -85,6 +85,8 @@ class Settings(BaseSettings):
 
     # Firebase Admin SDK, Push Notifications (FCM) & Cloud Storage
     FIREBASE_CREDENTIALS_PATH: Union[str, None] = "/app/firebase-credentials.json"
+    FIREBASE_CREDENTIALS_JSON: Optional[str] = None
+    FIREBASE_CREDENTIALS_BASE64: Optional[str] = None
     FIREBASE_PROJECT_ID: str = "med24plus"
 
     @property

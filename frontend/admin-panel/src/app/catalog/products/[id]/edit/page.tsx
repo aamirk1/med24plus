@@ -29,6 +29,15 @@ interface ProductImageItem {
   file?: File;
 }
 
+function getSafeImageUrl(url?: string | null): string {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:") || url.startsWith("data:")) {
+    return url;
+  }
+  const apiBase = "https://med24plus-api.serwex.in";
+  return `${apiBase}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
 export default function EditProductPage() {
   const params = useParams();
   const router = useRouter();
@@ -160,6 +169,7 @@ export default function EditProductPage() {
                   sort_order: newImg.sort_order || 0,
                   isUploading: false,
                   uploadError: null,
+                  file: item.file,
                 }
               : item
           )
@@ -425,9 +435,14 @@ export default function EditProductPage() {
               >
                 <div className="w-full h-28 flex items-center justify-center overflow-hidden rounded-lg bg-slate-50 relative">
                   <img
-                    src={img.image_url}
+                    src={getSafeImageUrl(img.image_url)}
                     alt={img.alt_text || "Packaging"}
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      if (img.file) {
+                        (e.target as HTMLImageElement).src = URL.createObjectURL(img.file);
+                      }
+                    }}
                   />
 
                   {img.isUploading && (

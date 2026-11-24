@@ -60,6 +60,7 @@ services:
       - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET:-med24plus.firebasestorage.app}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-med24plus}
       - FIREBASE_CREDENTIALS_PATH=${FIREBASE_CREDENTIALS_PATH:-/app/firebase-credentials.json}
+      - FIREBASE_CREDENTIALS_BASE64=${FIREBASE_CREDENTIALS_BASE64:-}
     volumes:
       - med24plus_private_storage:/app/private_storage
       - med24plus_static_uploads:/app/static/uploads
