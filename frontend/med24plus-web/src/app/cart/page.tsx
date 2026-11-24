@@ -269,9 +269,8 @@ export default function CartPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition ${
-                    updatingItemId === item.id ? "opacity-50 pointer-events-none" : ""
-                  }`}
+                  className={`p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition ${updatingItemId === item.id ? "opacity-50 pointer-events-none" : ""
+                    }`}
                 >
                   <div className="flex items-start gap-3 flex-1">
                     <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0D9488] shrink-0 overflow-hidden">
@@ -440,7 +439,7 @@ export default function CartPage() {
                   className="w-full shadow-sm text-sm"
                 >
                   <span>Proceed to Checkout</span>
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {/* <ArrowRight className="w-4 h-4 ml-2" /> */}
                 </Button>
               </Link>
 
