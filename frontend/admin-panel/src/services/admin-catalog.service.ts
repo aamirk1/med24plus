@@ -113,9 +113,26 @@ export const adminCatalogService = {
     return res.data;
   },
 
+  async setPrimaryProductImage(productId: string, imageId: string) {
+    const res = await apiClient<any>(`/admin/products/${productId}/images/${imageId}/primary`, {
+      method: "PATCH",
+    });
+    return res.data;
+  },
+
   async deleteProductImage(productId: string, imageId: string) {
     const res = await apiClient<any>(`/admin/products/${productId}/images/${imageId}`, {
       method: "DELETE",
+    });
+    return res.data;
+  },
+
+  async uploadImage(file: File, folder: string = "catalog"): Promise<{ url: string; filename?: string }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await apiClient<any>(`/admin/upload/image?folder=${encodeURIComponent(folder)}`, {
+      method: "POST",
+      body: formData,
     });
     return res.data;
   },

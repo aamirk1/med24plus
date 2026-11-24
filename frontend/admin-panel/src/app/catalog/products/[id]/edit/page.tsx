@@ -1,12 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Save, Trash2, Loader2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  Upload,
+  Check,
+  Star,
+  Image as ImageIcon,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FormSection } from "@/components/ui/FormSection";
 import { adminCatalogService } from "@/services/admin-catalog.service";
+
+interface ProductImageItem {
+  id: string;
+  image_url: string;
+  alt_text?: string;
+  is_primary: boolean;
+  sort_order: number;
+}
 
 export default function EditProductPage() {
   const params = useParams();
@@ -15,51 +33,158 @@ export default function EditProductPage() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+  const [images, setImages] = useState<ProductImageItem[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     name: "",
-    brand_name: "",
     sku: "",
-    category_name: "",
+    generic_name: "",
+    composition: "",
+    category_id: "",
+    brand_id: "",
+    manufacturer: "",
+    pack_size: "1 Strip",
+    dosage_form: "Tablet",
+    storage_temperature: "room_temperature",
+    requires_prescription: true,
     schedule_classification: "SCHEDULE_H",
     mrp: "0",
     selling_price: "0",
+    hsn_code: "30049099",
+    gst_rate: "12",
     description: "",
-    dosage_form: "Tablet",
-    pack_size: "1 Strip",
     is_active: true,
   });
 
-  useEffect(() => {
+  const loadProductData = async () => {
     if (!productId) return;
     setLoading(true);
-    adminCatalogService
-      .getProduct(productId)
-      .then((data) => {
-        if (data) {
-          setFormData({
-            name: data.name || "",
-            brand_name: data.brand?.name || data.manufacturer || "",
-            sku: data.sku || "",
-            category_name: data.category?.name || "",
-            schedule_classification: data.schedule_classification || "SCHEDULE_H",
-            mrp: String(data.mrp ?? 0),
-            selling_price: String(data.selling_price ?? 0),
-            description: data.description || "",
-            dosage_form: data.dosage_form || "Tablet",
-            pack_size: data.pack_size || "1 Strip",
-            is_active: data.is_active ?? true,
-          });
+    try {
+      const [productData, catData, brandData] = await Promise.all([
+        adminCatalogService.getProduct(productId),
+        adminCatalogService.getCategories({ page_size: 100 }),
+        adminCatalogService.getBrands({ page_size: 100 }),
+      ]);
+
+      if (catData?.items) {
+        setCategories(catData.items.map((c: any) => ({ id: c.id, name: c.name })));
+      }
+      if (brandData?.items) {
+        setBrands(brandData.items.map((b: any) => ({ id: b.id, name: b.name })));
+      }
+
+      if (productData) {
+        setFormData({
+          name: productData.name || "",
+          sku: productData.sku || "",
+          generic_name: productData.generic_name || "",
+          composition: productData.composition || "",
+          category_id: productData.category_id || "",
+          brand_id: productData.brand_id || "",
+          manufacturer: productData.manufacturer || "",
+          pack_size: productData.pack_size || "1 Strip",
+          dosage_form: productData.dosage_form || "Tablet",
+          storage_temperature: productData.storage_temperature || "room_temperature",
+          requires_prescription: productData.requires_prescription ?? true,
+          schedule_classification: productData.schedule_classification || "SCHEDULE_H",
+          mrp: String(productData.mrp ?? 0),
+          selling_price: String(productData.selling_price ?? 0),
+          hsn_code: productData.hsn_code || "30049099",
+          gst_rate: String(productData.gst_rate ?? 12),
+          description: productData.description || "",
+          is_active: productData.is_active ?? true,
+        });
+
+        if (productData.images) {
+          setImages(
+            productData.images.map((img: any) => ({
+              id: img.id,
+              image_url: img.image_url,
+              alt_text: img.alt_text,
+              is_primary: img.is_primary,
+              sort_order: img.sort_order || 0,
+            }))
+          );
         }
-      })
-      .catch((err) => {
-        console.error("Failed to load product:", err);
-        setError("Could not load product details from server.");
-      })
-      .finally(() => setLoading(false));
+      }
+    } catch (err: any) {
+      console.error("Failed to load product:", err);
+      setError("Could not load product details from server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProductData();
   }, [productId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("alt_text", formData.name || "Product Packaging");
+      data.append("is_primary", String(images.length === 0));
+      data.append("sort_order", String(images.length));
+
+      const newImg = await adminCatalogService.uploadProductImage(productId, data);
+      if (newImg) {
+        setImages((prev) => [
+          ...prev,
+          {
+            id: newImg.id,
+            image_url: newImg.image_url,
+            alt_text: newImg.alt_text,
+            is_primary: newImg.is_primary,
+            sort_order: newImg.sort_order || 0,
+          },
+        ]);
+        setSuccessMsg("Product image uploaded successfully!");
+      }
+    } catch (err: any) {
+      console.error("Image upload failed:", err);
+      setError(err?.message || "Failed to upload product image. Allowed formats: JPEG, PNG, WebP.");
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSetPrimaryImage = async (imageId: string) => {
+    try {
+      await adminCatalogService.setPrimaryProductImage(productId, imageId);
+      setImages((prev) =>
+        prev.map((img) => ({
+          ...img,
+          is_primary: img.id === imageId,
+        }))
+      );
+    } catch (err: any) {
+      alert("Failed to set primary image: " + (err?.message || "Error"));
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!confirm("Are you sure you want to remove this product image?")) return;
+    try {
+      await adminCatalogService.deleteProductImage(productId, imageId);
+      setImages((prev) => prev.filter((img) => img.id !== imageId));
+    } catch (err: any) {
+      alert("Failed to delete image: " + (err?.message || "Error"));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,22 +192,40 @@ export default function EditProductPage() {
     setError(null);
     setSuccessMsg(null);
 
+    const mrpNum = parseFloat(formData.mrp);
+    const sellNum = parseFloat(formData.selling_price);
+
+    if (sellNum > mrpNum) {
+      setError("Selling price cannot exceed Maximum Retail Price (MRP).");
+      setSubmitting(false);
+      return;
+    }
+
     try {
       await adminCatalogService.updateProduct(productId, {
-        name: formData.name,
-        mrp: parseFloat(formData.mrp),
-        selling_price: parseFloat(formData.selling_price),
-        description: formData.description,
+        name: formData.name.trim(),
+        generic_name: formData.generic_name.trim() || formData.name.trim(),
+        composition: formData.composition.trim() || undefined,
+        category_id: formData.category_id || undefined,
+        brand_id: formData.brand_id || undefined,
+        manufacturer: formData.manufacturer.trim() || undefined,
+        mrp: mrpNum,
+        selling_price: sellNum,
+        description: formData.description.trim() || undefined,
         dosage_form: formData.dosage_form,
-        pack_size: formData.pack_size,
+        pack_size: formData.pack_size.trim(),
+        storage_temperature: formData.storage_temperature,
         schedule_classification: formData.schedule_classification,
+        requires_prescription: formData.requires_prescription,
+        hsn_code: formData.hsn_code.trim(),
+        gst_rate: parseFloat(formData.gst_rate),
         is_active: formData.is_active,
       });
 
       setSuccessMsg("Product updated successfully in live database!");
       setTimeout(() => {
         router.push("/catalog/products");
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
       console.error("Error updating product:", err);
       setError(err?.message || "Failed to update product.");
@@ -92,13 +235,13 @@ export default function EditProductPage() {
   };
 
   const handleDeactivate = async () => {
-    if (!confirm("Are you sure you want to deactivate this product?")) return;
+    if (!confirm("Are you sure you want to toggle status for this product?")) return;
     try {
-      await adminCatalogService.setProductStatus(productId, false);
-      alert("Product deactivated successfully.");
-      router.push("/catalog/products");
+      await adminCatalogService.setProductStatus(productId, !formData.is_active);
+      setFormData((prev) => ({ ...prev, is_active: !prev.is_active }));
+      setSuccessMsg(`Product marked as ${!formData.is_active ? "active" : "inactive"}.`);
     } catch (err: any) {
-      alert("Failed to deactivate: " + (err?.message || "Server error"));
+      alert("Failed to update status: " + (err?.message || "Server error"));
     }
   };
 
@@ -130,10 +273,14 @@ export default function EditProductPage() {
           <button
             type="button"
             onClick={handleDeactivate}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
+              formData.is_active
+                ? "text-red-600 bg-red-50 hover:bg-red-100"
+                : "text-teal-700 bg-teal-50 hover:bg-teal-100"
+            }`}
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Deactivate Product</span>
+            <span>{formData.is_active ? "Deactivate Product" : "Activate Product"}</span>
           </button>
         }
       />
@@ -151,12 +298,90 @@ export default function EditProductPage() {
         </div>
       )}
 
+      {/* Product Images Gallery Section */}
+      <FormSection
+        title="Product Images & Packaging Gallery"
+        description="Statutory packaging photos, blister cards, and bottle labels visible to customers and pharmacists."
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {images.map((img) => (
+              <div
+                key={img.id}
+                className={`relative group rounded-xl border p-2 flex flex-col items-center justify-between bg-white transition shadow-xs ${
+                  img.is_primary ? "border-teal-500 ring-2 ring-teal-500/20" : "border-slate-200"
+                }`}
+              >
+                <div className="w-full h-28 flex items-center justify-center overflow-hidden rounded-lg bg-slate-50">
+                  <img
+                    src={img.image_url}
+                    alt={img.alt_text || "Packaging"}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="w-full mt-2 flex items-center justify-between gap-1 pt-1.5 border-t border-slate-100 text-[10px]">
+                  {img.is_primary ? (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-teal-50 text-teal-700 font-bold rounded">
+                      <Star className="w-3 h-3 fill-teal-600 text-teal-600" />
+                      Primary
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimaryImage(img.id)}
+                      className="text-slate-500 hover:text-teal-700 font-medium transition"
+                    >
+                      Make Primary
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img.id)}
+                    className="text-red-500 hover:text-red-700 p-0.5 font-medium transition"
+                    title="Remove Image"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Upload New Image Button */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="h-36 border-2 border-dashed border-slate-300 hover:border-[#0D9488] rounded-xl flex flex-col items-center justify-center p-3 text-center cursor-pointer transition bg-slate-50 hover:bg-teal-50/20"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              {uploadingImage ? (
+                <div className="flex flex-col items-center gap-1.5 text-slate-500 text-xs">
+                  <Loader2 className="w-5 h-5 animate-spin text-[#0D9488]" />
+                  <span>Uploading...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-slate-500">
+                  <Upload className="w-5 h-5 text-slate-400" />
+                  <span className="text-xs font-semibold text-slate-700">Add Packaging Image</span>
+                  <span className="text-[10px] text-slate-400">JPEG, PNG or WebP</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </FormSection>
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        <FormSection title="Product Identity" description="Core identifiers and brand names">
+        <FormSection title="Product Identity" description="Core identifiers, composition, and taxonomic classification">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Product Title
+                Product Title *
               </label>
               <input
                 type="text"
@@ -166,15 +391,46 @@ export default function EditProductPage() {
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Brand</label>
-              <input
-                type="text"
-                readOnly
-                value={formData.brand_name}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-              />
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Brand *</label>
+              <select
+                required
+                value={formData.brand_id}
+                onChange={(e) => {
+                  const br = brands.find((b) => b.id === e.target.value);
+                  setFormData({ ...formData, brand_id: e.target.value, manufacturer: br?.name || formData.manufacturer });
+                }}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              >
+                <option value="">Select Brand</option>
+                {brands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Therapeutic Category *
+              </label>
+              <select
+                required
+                value={formData.category_id}
+                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">SKU</label>
               <input
@@ -184,6 +440,50 @@ export default function EditProductPage() {
                 className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Dosage Form</label>
+              <select
+                value={formData.dosage_form}
+                onChange={(e) => setFormData({ ...formData, dosage_form: e.target.value })}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              >
+                <option value="Tablet">Tablet</option>
+                <option value="Capsule">Capsule</option>
+                <option value="Syrup">Syrup</option>
+                <option value="Injection">Injection</option>
+                <option value="Ointment">Ointment / Gel</option>
+                <option value="Drops">Eye / Ear Drops</option>
+                <option value="Inhaler">Inhaler / Respule</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Pack Size</label>
+              <input
+                type="text"
+                placeholder="e.g. 10 Tablets / Strip"
+                value={formData.pack_size}
+                onChange={(e) => setFormData({ ...formData, pack_size: e.target.value })}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Generic Composition (Salts)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Amoxicillin 500mg + Clavulanic Acid 125mg"
+                value={formData.generic_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, generic_name: e.target.value, composition: e.target.value })
+                }
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              />
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-slate-700 mb-1">Description</label>
               <textarea
@@ -196,8 +496,50 @@ export default function EditProductPage() {
           </div>
         </FormSection>
 
-        <FormSection title="Pricing & Inventory" description="Rate cards and current stock counts">
+        <FormSection
+          title="Clinical & Statutory Scheduling"
+          description="Drugs and Cosmetics Act regulatory parameters"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Schedule Classification
+              </label>
+              <select
+                value={formData.schedule_classification}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    schedule_classification: e.target.value,
+                    requires_prescription: e.target.value !== "OTC",
+                  })
+                }
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              >
+                <option value="OTC">OTC (Over the Counter)</option>
+                <option value="SCHEDULE_H">Schedule H (Prescription Required)</option>
+                <option value="SCHEDULE_H1">Schedule H1 (High-Risk Antibiotic)</option>
+                <option value="SCHEDULE_X">Schedule X (Strict Narcotics)</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-3 pt-6">
+              <input
+                type="checkbox"
+                id="req-rx-edit"
+                checked={formData.requires_prescription}
+                onChange={(e) => setFormData({ ...formData, requires_prescription: e.target.checked })}
+                className="w-4 h-4 accent-[#0D9488] rounded"
+              />
+              <label htmlFor="req-rx-edit" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                Mandatory Prescription (Rx)
+              </label>
+            </div>
+          </div>
+        </FormSection>
+
+        <FormSection title="Pricing & Taxation" description="Rate cards and Indian GST structure">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">MRP (₹)</label>
               <input
@@ -221,6 +563,28 @@ export default function EditProductPage() {
                 onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">HSN Code</label>
+              <input
+                type="text"
+                value={formData.hsn_code}
+                onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
+                className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">GST Rate (%)</label>
+              <select
+                value={formData.gst_rate}
+                onChange={(e) => setFormData({ ...formData, gst_rate: e.target.value })}
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
+              >
+                <option value="0">0%</option>
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18">18%</option>
+              </select>
             </div>
           </div>
         </FormSection>

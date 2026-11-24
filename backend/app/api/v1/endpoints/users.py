@@ -498,4 +498,204 @@ async def list_admin_staff(
     )
 
 
+class CreateStaffRequest(BaseModel):
+    full_name: str = Field(..., min_length=2, max_length=150)
+    email: str = Field(..., max_length=255)
+    phone: str = Field(..., min_length=10, max_length=15)
+    password: str = Field(..., min_length=8)
+    role: str = Field("staff", description="super_admin, admin, pharmacist, inventory_manager, staff")
+    department: Optional[str] = Field("Operations", max_length=100)
+    designation: Optional[str] = Field("Staff Executive", max_length=100)
+    registration_number: Optional[str] = Field(None, max_length=100)
+    state_pharmacy_council: Optional[str] = Field("Karnataka State Pharmacy Council", max_length=150)
+    registration_valid_upto: Optional[str] = None
+
+
+@admin_router.post(
+    "/staff",
+    response_model=APIResponse[dict],
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission(PermissionEnum.USERS_READ.value))],
+)
+async def create_admin_staff(
+    payload: CreateStaffRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(PermissionEnum.USERS_READ.value)),
+):
+    """Provision a new internal pharmacy staff member or pharmacist with role-based access control."""
+    from datetime import date, datetime, timedelta
+    from app.core.security import get_password_hash
+    from app.models.role import Role, UserRole
+    from app.models.staff import StaffProfile, PharmacistProfile
+    from app.services.auth_service import normalize_email, normalize_phone
+
+    norm_phone = normalize_phone(payload.phone)
+    norm_email = normalize_email(payload.email) if payload.email else None
+
+    # Check existing user
+    user_q = select(User).where(
+        or_(
+            User.phone == norm_phone,
+            User.email == norm_email if norm_email else False,
+        )
+    )
+    existing_user = (await db.execute(user_q)).scalars().first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "message": f"A user with phone '{norm_phone}' or email '{norm_email}' already exists.",
+                "error": {"code": "USER_ALREADY_EXISTS"},
+            },
+        )
+
+    # Find or prepare role
+    target_role_slug = payload.role.strip().lower().replace(" ", "_")
+    role_stmt = select(Role).where(Role.slug == target_role_slug)
+    role_obj = (await db.execute(role_stmt)).scalars().first()
+    if not role_obj:
+        role_name_map = {
+            "super_admin": "Super Admin",
+            "admin": "Admin",
+            "pharmacist": "Pharmacist",
+            "inventory_manager": "Inventory Manager",
+            "staff": "Staff",
+        }
+        role_display = role_name_map.get(target_role_slug, target_role_slug.replace("_", " ").title())
+        role_obj = Role(name=role_display, slug=target_role_slug, is_system_role=True)
+        db.add(role_obj)
+        await db.flush()
+
+    # Create User
+    new_user = User(
+        phone=norm_phone,
+        email=norm_email,
+        hashed_password=get_password_hash(payload.password),
+        full_name=payload.full_name.strip(),
+        is_active=True,
+        is_phone_verified=True,
+        is_email_verified=True,
+        status="active",
+    )
+    db.add(new_user)
+    await db.flush()
+
+    # Assign UserRole
+    user_role = UserRole(user_id=new_user.id, role_id=role_obj.id)
+    db.add(user_role)
+
+    # Create StaffProfile
+    emp_code = f"EMP-{uuid.uuid4().hex[:6].upper()}"
+    staff_prof = StaffProfile(
+        user_id=new_user.id,
+        employee_id=emp_code,
+        department=payload.department or "Operations",
+        designation=payload.designation or role_obj.name,
+        employment_status="active",
+        date_of_joining=date.today(),
+    )
+    db.add(staff_prof)
+
+    # If role is pharmacist, create PharmacistProfile
+    if target_role_slug == "pharmacist":
+        reg_no = payload.registration_number or f"PCI-{uuid.uuid4().hex[:6].upper()}/2024"
+        council = payload.state_pharmacy_council or "Karnataka State Pharmacy Council"
+        valid_date = date.today() + timedelta(days=365 * 5)
+        if payload.registration_valid_upto:
+            try:
+                valid_date = datetime.strptime(payload.registration_valid_upto, "%Y-%m-%d").date()
+            except Exception:
+                pass
+        pharm_prof = PharmacistProfile(
+            user_id=new_user.id,
+            registration_number=reg_no,
+            state_pharmacy_council=council,
+            registration_date=date.today(),
+            registration_valid_upto=valid_date,
+            is_verified=True,
+            verified_by_id=current_user.id,
+        )
+        db.add(pharm_prof)
+
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message=f"Staff member '{new_user.full_name}' provisioned successfully with role '{role_obj.name}'.",
+        data={
+            "id": str(new_user.id),
+            "name": new_user.full_name,
+            "role": role_obj.name,
+            "phone": new_user.phone,
+            "email": new_user.email or "",
+            "licenseNo": payload.registration_number if target_role_slug == "pharmacist" else None,
+            "joinedDate": new_user.created_at.strftime("%d %b %Y") if new_user.created_at else "Just now",
+            "status": "ACTIVE",
+        },
+    )
+
+
+@admin_router.patch(
+    "/staff/{user_id}/status",
+    response_model=APIResponse[dict],
+    dependencies=[Depends(require_permission(PermissionEnum.USERS_READ.value))],
+)
+async def toggle_staff_status(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(PermissionEnum.USERS_READ.value)),
+):
+    """Toggle staff member active/inactive access state."""
+    stmt = select(User).where(User.id == user_id, User.is_deleted == False)  # noqa: E712
+    u = (await db.execute(stmt)).scalars().first()
+    if not u:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Staff member not found.", "error": {"code": "NOT_FOUND"}},
+        )
+
+    u.is_active = not u.is_active
+    u.status = "active" if u.is_active else "inactive"
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message=f"Staff member status set to {'ACTIVE' if u.is_active else 'INACTIVE'}.",
+        data={"id": str(u.id), "status": "ACTIVE" if u.is_active else "INACTIVE", "isActive": u.is_active},
+    )
+
+
+@admin_router.delete(
+    "/staff/{user_id}",
+    response_model=APIResponse[dict],
+    dependencies=[Depends(require_permission(PermissionEnum.USERS_READ.value))],
+)
+async def delete_admin_staff(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(PermissionEnum.USERS_READ.value)),
+):
+    """Soft delete staff member and revoke platform access."""
+    stmt = select(User).where(User.id == user_id)
+    u = (await db.execute(stmt)).scalars().first()
+    if not u:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Staff member not found.", "error": {"code": "NOT_FOUND"}},
+        )
+
+    u.is_deleted = True
+    u.is_active = False
+    u.status = "deleted"
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message="Staff member access revoked.",
+        data={"deleted": True},
+    )
+
+
+
 

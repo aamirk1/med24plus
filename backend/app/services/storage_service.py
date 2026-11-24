@@ -143,6 +143,63 @@ class StorageService:
         # 2. Local Fallback URL
         return f"/static/uploads/products/{unique_filename}"
 
+    async def save_generic_image(self, file: UploadFile, folder: str = "catalog") -> str:
+        """
+        Validate and persist an image into Firebase Cloud Storage or local static storage.
+        Returns the public URL (Firebase or local static URL).
+        """
+        ext = self.validate_file(file)
+
+        content = await file.read()
+        if len(content) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "success": False,
+                    "message": f"Image file exceeds maximum allowable size of 5 MB ({len(content)} bytes).",
+                    "error": {"code": "FILE_TOO_LARGE"},
+                },
+            )
+
+        if len(content) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "success": False,
+                    "message": "Uploaded file is empty.",
+                    "error": {"code": "EMPTY_FILE"},
+                },
+            )
+
+        clean_folder = "".join(c for c in folder if c.isalnum() or c in ("-", "_")) or "catalog"
+        unique_filename = f"{uuid.uuid4().hex[:16]}{ext}"
+        blob_path = f"{clean_folder}/{unique_filename}"
+        mime_type = file.content_type or "image/jpeg"
+
+        # Also cache locally for dev/offline serving
+        target_dir = Path("static") / "uploads" / clean_folder
+        target_dir.mkdir(parents=True, exist_ok=True)
+        local_target_path = target_dir / unique_filename
+        with open(local_target_path, "wb") as f:
+            f.write(content)
+
+        # 1. Primary: Upload to Firebase Storage
+        if self.provider == "firebase" or not self.firebase_service.is_simulation_mode:
+            success, url, err = await self.firebase_service.upload_file(
+                destination_blob_name=blob_path,
+                content=content,
+                content_type=mime_type,
+                is_public=True,
+            )
+            if success and url:
+                logger.info(f"[STORAGE] Stored {clean_folder} image in Firebase Storage: {blob_path}")
+                return url
+            else:
+                logger.warning(f"[STORAGE] Firebase Storage upload error ({err}), falling back to local static URL.")
+
+        # 2. Local Fallback URL
+        return f"/static/uploads/{clean_folder}/{unique_filename}"
+
     async def delete_image(self, image_url: str) -> bool:
         """Remove image file from Firebase Storage or local filesystem."""
         if "firebasestorage.googleapis.com" in image_url:

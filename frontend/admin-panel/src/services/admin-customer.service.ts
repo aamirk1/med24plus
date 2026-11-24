@@ -31,6 +31,19 @@ export interface AdminCustomerDetailData extends AdminCustomer {
   }>;
 }
 
+export interface CreateStaffPayload {
+  full_name: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: string;
+  department?: string;
+  designation?: string;
+  registration_number?: string;
+  state_pharmacy_council?: string;
+  registration_valid_upto?: string;
+}
+
 export const adminCustomerService = {
   async getCustomers(params: {
     search?: string;
@@ -54,5 +67,27 @@ export const adminCustomerService = {
   async getStaff(): Promise<AdminStaff[]> {
     const res = await apiClient<any>("/admin/users/staff");
     return res.data || [];
+  },
+
+  async createStaff(payload: CreateStaffPayload): Promise<AdminStaff> {
+    const res = await apiClient<any>("/admin/users/staff", {
+      method: "POST",
+      data: payload,
+    });
+    return res.data;
+  },
+
+  async toggleStaffStatus(userId: string): Promise<any> {
+    const res = await apiClient<any>(`/admin/users/staff/${userId}/status`, {
+      method: "PATCH",
+    });
+    return res.data;
+  },
+
+  async deleteStaff(userId: string): Promise<any> {
+    const res = await apiClient<any>(`/admin/users/staff/${userId}`, {
+      method: "DELETE",
+    });
+    return res.data;
   },
 };

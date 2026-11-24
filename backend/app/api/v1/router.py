@@ -17,6 +17,7 @@ from app.api.v1.endpoints import (
     checkout,
     admin_checkout,
     notifications,
+    upload,
 )
 from app.modules.orders.routes import (
     admin_orders_router,
@@ -54,6 +55,7 @@ api_router.include_router(products.router, prefix="/products", tags=["Products"]
 api_router.include_router(categories.admin_router, prefix="/admin/categories", tags=["Admin Categories"])
 api_router.include_router(brands.admin_router, prefix="/admin/brands", tags=["Admin Brands"])
 api_router.include_router(products.admin_router, prefix="/admin/products", tags=["Admin Products"])
+api_router.include_router(upload.admin_router, prefix="/admin/upload", tags=["Media Upload"])
 
 # Admin Inventory & Batch Management
 api_router.include_router(inventory.router, prefix="/admin/inventory", tags=["Admin Inventory"])

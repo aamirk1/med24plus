@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, AlertCircle, Loader2, Upload, Trash2, Image as ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FormSection } from "@/components/ui/FormSection";
 import { adminCatalogService } from "@/services/admin-catalog.service";
@@ -14,6 +14,9 @@ export default function NewProductPage() {
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -72,7 +75,7 @@ export default function NewProductPage() {
         return;
       }
 
-      await adminCatalogService.createProduct({
+      const created = await adminCatalogService.createProduct({
         name: formData.name.trim(),
         sku: formData.sku.trim(),
         generic_name: formData.generic_name.trim() || formData.name.trim(),
@@ -92,6 +95,19 @@ export default function NewProductPage() {
         gst_rate: parseFloat(formData.gstRate),
         is_active: true,
       });
+
+      if (pendingImageFile && created?.id) {
+        try {
+          const imgData = new FormData();
+          imgData.append("file", pendingImageFile);
+          imgData.append("alt_text", formData.name.trim());
+          imgData.append("is_primary", "true");
+          imgData.append("sort_order", "0");
+          await adminCatalogService.uploadProductImage(created.id, imgData);
+        } catch (imgErr) {
+          console.warn("Failed to upload packaging image during creation:", imgErr);
+        }
+      }
 
       router.push("/catalog/products");
     } catch (err: any) {
@@ -230,6 +246,64 @@ export default function NewProductPage() {
                 className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0D9488]"
               />
             </div>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="Product Packaging Photo"
+          description="Primary photo of the medicine box, strip, or bottle visible in the catalog."
+        >
+          <div className="space-y-3">
+            {imagePreview ? (
+              <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50 max-w-md">
+                <img
+                  src={imagePreview}
+                  alt="Packaging Preview"
+                  className="w-16 h-16 object-contain bg-white rounded-lg border border-slate-200 p-1"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 truncate">{pendingImageFile?.name}</p>
+                  <p className="text-[11px] text-teal-600 font-medium">Ready to upload on save</p>
+                  <p className="text-[10px] text-slate-400">
+                    {pendingImageFile ? (pendingImageFile.size / 1024).toFixed(1) + " KB" : ""}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingImageFile(null);
+                    setImagePreview(null);
+                  }}
+                  className="text-xs text-red-500 hover:text-red-700 p-1 font-semibold"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-300 hover:border-[#0D9488] rounded-xl p-5 text-center cursor-pointer transition bg-slate-50 hover:bg-teal-50/20 max-w-md"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setPendingImageFile(file);
+                      setImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+                <div className="flex flex-col items-center gap-1.5 text-slate-500">
+                  <Upload className="w-5 h-5 text-slate-400" />
+                  <span className="text-xs font-semibold text-slate-700">Click to upload medicine packaging image</span>
+                  <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 5MB)</span>
+                </div>
+              </div>
+            )}
           </div>
         </FormSection>
 
