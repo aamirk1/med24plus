@@ -443,6 +443,14 @@ class CatalogService:
                     )
                 )
 
+        if data.tag_badge and data.tag_badge.strip():
+            product.attributes.append(
+                ProductAttribute(
+                    attribute_key="tag_badge",
+                    attribute_value=data.tag_badge.strip(),
+                )
+            )
+
         return await self.product_repo.create(product)
 
     async def update_product(self, product_id: uuid.UUID, data: ProductUpdate) -> Product:
@@ -514,6 +522,21 @@ class CatalogService:
         product.selling_price = new_selling
         product.discount_percent = self.calculate_discount_percent(new_mrp, new_selling)
 
+        # Update tag_badge attribute if specified
+        if data.tag_badge is not None:
+            tag_val = data.tag_badge.strip()
+            existing_tag = next((a for a in product.attributes if a.attribute_key == "tag_badge"), None)
+            if existing_tag:
+                existing_tag.attribute_value = tag_val
+            elif tag_val:
+                product.attributes.append(
+                    ProductAttribute(
+                        product_id=product.id,
+                        attribute_key="tag_badge",
+                        attribute_value=tag_val,
+                    )
+                )
+
         return await self.product_repo.update(product)
 
     async def set_product_status(self, product_id: uuid.UUID, is_active: bool) -> Product:
@@ -562,6 +585,7 @@ class CatalogService:
         resp = ProductDetailResponse.model_validate(product)
         resp.sellable_quantity = sellable
         resp.is_in_stock = bool(sellable > 0)
+        resp.tag_badge = next((a.attribute_value for a in product.attributes if a.attribute_key == "tag_badge"), None)
         return resp
 
     async def get_product_substitutes(self, product_identifier: str) -> ProductSubstitutesResponse:
@@ -842,6 +866,7 @@ class CatalogService:
         resp = ProductDetailResponse.model_validate(product)
         resp.sellable_quantity = sellable
         resp.is_in_stock = bool(sellable > 0)
+        resp.tag_badge = next((a.attribute_value for a in product.attributes if a.attribute_key == "tag_badge"), None)
         return resp
 
     async def list_products(
@@ -904,6 +929,7 @@ class CatalogService:
                     discount_percent=p.discount_percent,
                     is_active=p.is_active,
                     primary_image_url=primary_img,
+                    tag_badge=next((a.attribute_value for a in p.attributes if a.attribute_key == "tag_badge"), None),
                     is_in_stock=bool(sellable > 0),
                     sellable_quantity=sellable,
                     created_at=p.created_at,

@@ -46,6 +46,8 @@ export interface Product {
   safetyInformation: string[];
   manufacturer: string;
   countryOfOrigin: string;
+  tagBadge?: string;
+  tag_badge?: string;
 }
 
 export interface ProductSubstituteOption {

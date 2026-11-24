@@ -22,6 +22,7 @@ interface AdminProductRow {
   stock: number;
   status: string;
   isActive: boolean;
+  tagBadge?: string;
 }
 
 export default function AdminProductsPage() {
@@ -78,6 +79,7 @@ export default function AdminProductsPage() {
           stock: p.sellable_quantity || 0,
           status: p.is_active ? "ACTIVE" : "INACTIVE",
           isActive: p.is_active,
+          tagBadge: p.tag_badge || undefined,
         }));
         setProducts(rows);
         setTotalItems(data.pagination?.total_items || rows.length);
@@ -145,6 +147,17 @@ export default function AdminProductsPage() {
           {p.category}
         </span>
       ),
+    },
+    {
+      header: "Tag Badge",
+      cell: (p) =>
+        p.tagBadge ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+            {p.tagBadge}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-300">—</span>
+        ),
     },
     {
       header: "Clinical Schedule",

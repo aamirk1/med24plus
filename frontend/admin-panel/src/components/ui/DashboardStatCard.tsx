@@ -29,7 +29,7 @@ export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
         <span className="text-xs font-semibold text-slate-500">{label}</span>
         <div
           className={`p-2 rounded-lg ${
-            alert ? "bg-amber-100 text-amber-700" : "bg-slate-50 text-[#0D9488]"
+            alert ? "bg-amber-100 text-amber-700" : "bg-blue-50 text-[#0052CC]"
           }`}
         >
           {icon}

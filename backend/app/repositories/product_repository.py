@@ -162,6 +162,7 @@ class ProductRepository:
                 selectinload(Product.category),
                 selectinload(Product.brand),
                 selectinload(Product.images),
+                selectinload(Product.attributes),
             )
             .order_by(order_clause)
             .offset(offset)

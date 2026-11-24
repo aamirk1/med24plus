@@ -98,17 +98,28 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     const errorCode = data?.error?.code || "REQUEST_FAILED";
     const errorMsg = data?.message || "An unexpected error occurred. Please try again.";
 
-    const isTokenExpired = response.status === 401 && (errorCode === "TOKEN_EXPIRED" || errorMsg.toLowerCase().includes("expired"));
-    if (isTokenExpired && !options._isRetry) {
-      const newToken = await tryRefreshToken();
-      if (newToken) {
-        const retryHeaders = new Headers(options.headers || {});
-        retryHeaders.set("Authorization", `Bearer ${newToken}`);
-        return apiClient<T>(endpoint, {
-          ...options,
-          headers: retryHeaders,
-          _isRetry: true,
-        });
+    // If 401 Unauthorized or access token expired, transparently refresh session and retry once
+    if (response.status === 401) {
+      if (!options._isRetry) {
+        const newToken = await tryRefreshToken();
+        if (newToken) {
+          const retryHeaders = new Headers(options.headers || {});
+          retryHeaders.set("Authorization", `Bearer ${newToken}`);
+          return apiClient<T>(endpoint, {
+            ...options,
+            headers: retryHeaders,
+            _isRetry: true,
+          });
+        }
+      }
+
+      // If refresh failed or request was already a retry, perform complete auto-logout and redirect
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("med24_access_token");
+        localStorage.removeItem("med24_refresh_token");
+        if (!window.location.pathname.includes("/auth/login")) {
+          window.location.href = "/auth/login?session_expired=1";
+        }
       }
     }
 

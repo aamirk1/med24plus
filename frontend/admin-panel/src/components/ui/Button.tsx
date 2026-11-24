@@ -18,7 +18,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sizeStyles = "px-5 py-2.5 text-base";
     }
 
-    let variantStyles = "bg-[#0D9488] text-white hover:bg-[#0F766E] focus:ring-[#0D9488]";
+    let variantStyles = "bg-[#0052CC] text-white hover:bg-[#0043A8] focus:ring-[#0052CC] shadow-xs";
     if (variant === "secondary") {
       variantStyles = "bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400";
     } else if (variant === "outline") {

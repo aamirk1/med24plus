@@ -110,12 +110,16 @@ async def get_product_substitutes_by_slug(
 
 @router.get("/{product_id}", response_model=APIResponse[ProductDetailResponse])
 async def get_product_by_id(
-    product_id: uuid.UUID,
+    product_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Retrieve detailed product profile by UUID with real-time stock availability."""
+    """Retrieve detailed product profile by UUID or slug with real-time stock availability."""
     service = CatalogService(db)
-    product = await service.get_product_detail(product_id)
+    try:
+        prod_uuid = uuid.UUID(product_id)
+        product = await service.get_product_detail(prod_uuid)
+    except ValueError:
+        product = await service.get_product_by_slug(product_id)
     return APIResponse(
         success=True,
         message="Product details retrieved successfully.",
@@ -125,12 +129,12 @@ async def get_product_by_id(
 
 @router.get("/{product_id}/substitutes", response_model=APIResponse[ProductSubstitutesResponse])
 async def get_product_substitutes_by_id(
-    product_id: uuid.UUID,
+    product_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Retrieve brand substitutes by UUID sharing the same therapeutic salt/molecule."""
+    """Retrieve brand substitutes by UUID or slug sharing the same therapeutic salt/molecule."""
     service = CatalogService(db)
-    substitutes = await service.get_product_substitutes(str(product_id))
+    substitutes = await service.get_product_substitutes(product_id)
     return APIResponse(
         success=True,
         message="Product brand substitutes retrieved successfully.",
@@ -143,6 +147,30 @@ async def get_product_substitutes_by_id(
 # ==============================================================================
 
 admin_router = APIRouter()
+
+
+@admin_router.get(
+    "/{product_id}",
+    response_model=APIResponse[ProductDetailResponse],
+    dependencies=[Depends(require_permission(PermissionEnum.PRODUCTS_READ.value))],
+)
+async def get_admin_product_by_id(
+    product_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(PermissionEnum.PRODUCTS_READ.value)),
+):
+    """Retrieve detailed product profile by UUID or slug for administrative review and editing."""
+    service = CatalogService(db)
+    try:
+        prod_uuid = uuid.UUID(product_id)
+        product = await service.get_product_detail(prod_uuid)
+    except ValueError:
+        product = await service.get_product_by_slug(product_id)
+    return APIResponse(
+        success=True,
+        message="Product details retrieved successfully.",
+        data=product,
+    )
 
 
 @admin_router.post(

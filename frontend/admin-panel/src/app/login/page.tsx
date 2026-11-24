@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { Lock, Mail, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
@@ -14,6 +14,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("Password@123");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("session_expired") === "1") {
+        setSessionExpiredNotice(true);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +59,18 @@ export default function LoginPage() {
             For Licensed Pharmacists, Store Managers & Operations Staff
           </p>
         </div>
+
+        {sessionExpiredNotice && (
+          <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Session Expired</p>
+              <p className="text-[11px] text-amber-800 mt-0.5">
+                Your authorization session has expired. Please log in again to continue.
+              </p>
+            </div>
+          </div>
+        )}
 
         {errorMessage && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">

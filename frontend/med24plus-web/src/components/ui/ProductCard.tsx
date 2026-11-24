@@ -44,7 +44,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div>
         {/* Top Badges */}
         <div className="flex items-center justify-between gap-1 h-5 mb-2">
-          {isBestSeller || product.rating >= 4.5 ? (
+          {product.tagBadge || (product as any).tag_badge ? (
+            <span className="bg-[#0B3A70] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs truncate max-w-[130px]">
+              {product.tagBadge || (product as any).tag_badge}
+            </span>
+          ) : isBestSeller || product.rating >= 4.5 ? (
             <span className="bg-[#0B3A70] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs">
               Best Seller
             </span>

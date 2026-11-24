@@ -110,6 +110,7 @@ const navGroups: NavGroup[] = [
     children: [
       { name: "Coupons & Discounts", href: "/marketing/coupons" },
       { name: "Promotional Banners", href: "/marketing/banners" },
+      { name: "Membership Plans", href: "/marketing/membership" },
     ],
   },
   {
@@ -185,7 +186,7 @@ export const Sidebar: React.FC = () => {
   });
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 h-screen sticky top-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800">
+    <aside className="w-64 bg-[#07192F] border-r border-[#0E2849] flex flex-col justify-between shrink-0 h-screen sticky top-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800">
       <div className="p-4 space-y-4">
         <BrandLogo />
 
@@ -208,10 +209,10 @@ export const Sidebar: React.FC = () => {
                   <Link
                     key={group.title}
                     href={group.href}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                       pathname === group.href
-                        ? "bg-[#0D9488] text-white"
-                        : "text-slate-300 hover:text-white hover:bg-slate-800"
+                        ? "bg-[#0052CC] text-white shadow-sm"
+                        : "text-slate-300 hover:text-white hover:bg-[#0E2849]"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -238,8 +239,8 @@ export const Sidebar: React.FC = () => {
                     onClick={() => toggleGroup(group.title)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
                       isGroupActive
-                        ? "text-white bg-slate-800"
-                        : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                        ? "text-white bg-[#0E2849] font-semibold"
+                        : "text-slate-300 hover:text-white hover:bg-[#0E2849]/50"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -263,8 +264,8 @@ export const Sidebar: React.FC = () => {
                             href={sub.href}
                             className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-[11px] font-medium transition ${
                               isSubActive
-                                ? "bg-[#0D9488] text-white"
-                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                ? "bg-[#0052CC] text-white font-semibold shadow-xs"
+                                : "text-slate-400 hover:text-white hover:bg-[#0E2849]/60"
                             }`}
                           >
                             <span>{sub.name}</span>
@@ -292,12 +293,15 @@ export const Sidebar: React.FC = () => {
       <div className="p-3 space-y-2">
         {/* User Card & Logout */}
         {user && (
-          <div className="p-2.5 bg-slate-800/80 rounded-xl border border-slate-700/60 flex items-center justify-between">
+          <div className="p-2.5 bg-[#0A223E] rounded-xl border border-[#133256] flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <UserCircle2 className="w-6 h-6 text-slate-400 shrink-0" />
+              <div className="relative">
+                <UserCircle2 className="w-6 h-6 text-slate-300 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-[#0A223E]" />
+              </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-white truncate">{user.full_name || "Staff Member"}</p>
-                <p className="text-[10px] text-teal-400 uppercase tracking-wider font-semibold truncate">
+                <p className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold truncate">
                   {user.roles.join(", ")}
                 </p>
               </div>
@@ -306,7 +310,7 @@ export const Sidebar: React.FC = () => {
               type="button"
               onClick={handleLogout}
               title="Sign Out"
-              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-700 transition"
+              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -314,9 +318,9 @@ export const Sidebar: React.FC = () => {
         )}
 
         {/* Compliance / Regulatory Status */}
-        <div className="p-3 border border-slate-800 bg-slate-950/80 rounded-xl space-y-1">
+        <div className="p-3 border border-[#0E2849] bg-[#051325] rounded-xl space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-            <ShieldAlert className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+            <ShieldAlert className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span>Rule 65 Registered</span>
           </div>
           <p className="text-[10px] text-slate-400 leading-snug">

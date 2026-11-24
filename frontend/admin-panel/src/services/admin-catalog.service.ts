@@ -44,6 +44,7 @@ export interface ProductPayload {
   selling_price: number;
   hsn_code: string;
   gst_rate?: number;
+  tag_badge?: string;
   is_active?: boolean;
 }
 
@@ -70,6 +71,12 @@ export const adminCatalogService = {
   },
 
   async getProduct(productId: string) {
+    try {
+      const res = await apiClient<any>(`/admin/products/${productId}`);
+      if (res?.data) return res.data;
+    } catch (e) {
+      console.warn("Could not fetch via /admin/products, falling back to /products:", e);
+    }
     const res = await apiClient<any>(`/products/${productId}`);
     return res.data;
   },

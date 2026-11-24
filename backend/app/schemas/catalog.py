@@ -53,6 +53,19 @@ class CategoryResponse(BaseModel):
     subcategories: List["CategoryResponse"] = Field(default_factory=list)
 
 
+class CategorySimpleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    slug: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    parent_id: Optional[uuid.UUID] = None
+    sort_order: int = 0
+    is_active: bool = True
+
+
 # ==============================================================================
 # Brand Schemas
 # ==============================================================================
@@ -174,6 +187,7 @@ class ProductBase(BaseModel):
     selling_price: Decimal = Field(..., ge=0, description="Discounted Selling Price (INR)")
     hsn_code: str = Field(..., min_length=2, max_length=20, description="Harmonized System of Nomenclature code (e.g. 3004)")
     gst_rate: Decimal = Field(Decimal("12.00"), ge=0, description="GST Rate Percentage")
+    tag_badge: Optional[str] = Field(None, max_length=50, description="Product badge tag e.g. Best Seller, Trending, Sale, Hot Deal")
     is_active: bool = Field(True)
 
     @model_validator(mode="after")
@@ -212,6 +226,7 @@ class ProductUpdate(BaseModel):
     selling_price: Optional[Decimal] = Field(None, ge=0)
     hsn_code: Optional[str] = Field(None, min_length=2, max_length=20)
     gst_rate: Optional[Decimal] = Field(None, ge=0)
+    tag_badge: Optional[str] = Field(None, max_length=50)
     is_active: Optional[bool] = None
 
     @model_validator(mode="after")
@@ -247,6 +262,7 @@ class ProductListItemResponse(BaseModel):
     mrp: Decimal
     selling_price: Decimal
     discount_percent: Decimal
+    tag_badge: Optional[str] = None
     is_active: bool
     primary_image_url: Optional[str] = None
     # Derived from active, unexpired inventory batches:
@@ -264,9 +280,9 @@ class ProductDetailResponse(BaseModel):
     sku: str
     generic_name: str
     composition: Optional[str] = None
-    category_id: uuid.UUID
-    category: Optional[CategoryResponse] = None
-    brand_id: uuid.UUID
+    category_id: Optional[uuid.UUID] = None
+    category: Optional[CategorySimpleResponse] = None
+    brand_id: Optional[uuid.UUID] = None
     brand: Optional[BrandResponse] = None
     manufacturer: str
     marketer: Optional[str] = None
@@ -275,17 +291,18 @@ class ProductDetailResponse(BaseModel):
     dosage_form: str
     strength: Optional[str] = None
     route_of_administration: Optional[str] = None
-    storage_temperature: str
-    is_cold_chain: bool
-    requires_prescription: bool
-    schedule_classification: str
-    is_restricted: bool
+    storage_temperature: str = "room_temperature"
+    is_cold_chain: bool = False
+    requires_prescription: bool = False
+    schedule_classification: str = "OTC"
+    is_restricted: bool = False
     mrp: Decimal
     selling_price: Decimal
-    discount_percent: Decimal
-    hsn_code: str
-    gst_rate: Decimal
-    is_active: bool
+    discount_percent: Decimal = Decimal("0.00")
+    hsn_code: str = "30049099"
+    gst_rate: Decimal = Decimal("12.00")
+    tag_badge: Optional[str] = None
+    is_active: bool = True
     images: List[ProductImageResponse] = Field(default_factory=list)
     attributes: List[ProductAttributeResponse] = Field(default_factory=list)
     # Dynamically derived stock availability:
