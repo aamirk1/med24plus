@@ -381,7 +381,7 @@ export default function AdminBrandsPage() {
                         {isUploadingLogo ? (
                           <div className="flex items-center gap-1 text-[10px] text-teal-600 font-semibold">
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Uploading to Firebase...</span>
+                            <span>Uploading...</span>
                           </div>
                         ) : (
                           <p className="text-[10px] text-teal-600 font-semibold">

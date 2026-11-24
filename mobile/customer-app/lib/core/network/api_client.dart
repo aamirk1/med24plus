@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import '../../app/router/app_router.dart';
 import '../constants/api_endpoints.dart';
 import '../services/secure_storage_service.dart';
 
@@ -73,8 +74,9 @@ class ApiClient {
                 return handler.reject(retryErr);
               }
             } else {
-              // Refresh failed, clear session
+              // Refresh failed, clear session and redirect on home screen instead of login page
               await secureStorage.clearAll();
+              AppRouter.navigateToHomeOnSessionExpired();
             }
           }
 

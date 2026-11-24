@@ -162,15 +162,15 @@ export default function EditProductPage() {
           prev.map((item) =>
             item.id === tempId
               ? {
-                  id: newImg.id,
-                  image_url: newImg.image_url,
-                  alt_text: newImg.alt_text || formData.name || "Packaging",
-                  is_primary: newImg.is_primary,
-                  sort_order: newImg.sort_order || 0,
-                  isUploading: false,
-                  uploadError: null,
-                  file: item.file,
-                }
+                id: newImg.id,
+                image_url: newImg.image_url,
+                alt_text: newImg.alt_text || formData.name || "Packaging",
+                is_primary: newImg.is_primary,
+                sort_order: newImg.sort_order || 0,
+                isUploading: false,
+                uploadError: null,
+                file: item.file,
+              }
               : item
           )
         );
@@ -390,11 +390,10 @@ export default function EditProductPage() {
           <button
             type="button"
             onClick={handleDeactivate}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-              formData.is_active
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition ${formData.is_active
                 ? "text-red-600 bg-red-50 hover:bg-red-100"
                 : "text-teal-700 bg-teal-50 hover:bg-teal-100"
-            }`}
+              }`}
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>{formData.is_active ? "Deactivate Product" : "Activate Product"}</span>
@@ -425,13 +424,12 @@ export default function EditProductPage() {
             {images.map((img) => (
               <div
                 key={img.id}
-                className={`relative group rounded-xl border p-2 flex flex-col items-center justify-between bg-white transition shadow-xs overflow-hidden ${
-                  img.uploadError
+                className={`relative group rounded-xl border p-2 flex flex-col items-center justify-between bg-white transition shadow-xs overflow-hidden ${img.uploadError
                     ? "border-red-400 bg-red-50/20"
                     : img.is_primary
-                    ? "border-teal-500 ring-2 ring-teal-500/20"
-                    : "border-slate-200"
-                }`}
+                      ? "border-teal-500 ring-2 ring-teal-500/20"
+                      : "border-slate-200"
+                  }`}
               >
                 <div className="w-full h-28 flex items-center justify-center overflow-hidden rounded-lg bg-slate-50 relative">
                   <img
@@ -448,7 +446,7 @@ export default function EditProductPage() {
                   {img.isUploading && (
                     <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-center z-10">
                       <Loader2 className="w-5 h-5 animate-spin text-teal-600 mb-1" />
-                      <span className="text-[11px] font-semibold text-teal-800">Uploading to Firebase...</span>
+                      <span className="text-[11px] font-semibold text-teal-800">Uploading...</span>
                     </div>
                   )}
 
@@ -768,11 +766,10 @@ export default function EditProductPage() {
                     key={badge}
                     type="button"
                     onClick={() => setFormData({ ...formData, tag_badge: badge })}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      formData.tag_badge === badge
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.tag_badge === badge
                         ? "bg-[#0D9488] text-white shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+                      }`}
                   >
                     {badge || "None (No Badge)"}
                   </button>

@@ -58,6 +58,25 @@ CustomTransitionPage<void> _buildSmoothTransitionPage({
 class AppRouter {
   AppRouter._();
 
+  static void navigateToHomeOnSessionExpired() {
+    try {
+      router.go('/home');
+      final context = _rootNavigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Your login session has expired for your protection. Please sign in again.',
+              style: TextStyle(fontSize: 12.5),
+            ),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',

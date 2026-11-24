@@ -222,7 +222,7 @@ class ProfileScreen extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Logged out of Med24Plus.')),
                           );
-                          context.go('/login');
+                          context.go('/home');
                         },
                         child: OutlinedButton(
                           onPressed: () {
@@ -230,7 +230,7 @@ class ProfileScreen extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Logged out of Med24Plus.')),
                             );
-                            context.go('/login');
+                            context.go('/home');
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.mainText,

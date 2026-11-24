@@ -30,7 +30,8 @@ export default function LoginPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("session_expired") === "1") {
-        setSessionExpiredNotice(true);
+        // Redirect to home screen instead of login page when session expires
+        window.location.href = "/?session_expired=1";
       }
     }
   }, []);

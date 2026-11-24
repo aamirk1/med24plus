@@ -19,6 +19,8 @@ import {
   Grid,
   ChevronRight,
   Award,
+  AlertCircle,
+  X,
 } from "lucide-react";
 import { catalogService } from "@/services/catalog.service";
 import { Product } from "@/types";
@@ -204,6 +206,22 @@ const MOCKUP_DEAL_PRODUCTS: Product[] = [
 
 export default function HomePage() {
   const [dealProducts, setDealProducts] = useState<Product[]>(MOCKUP_DEAL_PRODUCTS);
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("session_expired") === "1" || sessionStorage.getItem("med24_session_expired") === "1") {
+        setSessionExpiredNotice(true);
+        sessionStorage.removeItem("med24_session_expired");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const handleExpiredEvent = () => setSessionExpiredNotice(true);
+      window.addEventListener("med24_session_expired", handleExpiredEvent);
+      return () => window.removeEventListener("med24_session_expired", handleExpiredEvent);
+    }
+  }, []);
 
   useEffect(() => {
     catalogService
@@ -220,6 +238,39 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-16 text-slate-800">
+      {/* Session Expired Notice Banner */}
+      {sessionExpiredNotice && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 -mb-4 sm:-mb-6">
+          <div className="p-3.5 sm:p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs sm:text-sm text-amber-900 flex items-center justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+              <div>
+                <span className="font-bold mr-1.5">Session Expired:</span>
+                <span className="text-xs sm:text-[13px] text-amber-800">
+                  Your login session has expired for your protection. Please sign in again.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/auth/login"
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition"
+              >
+                Sign In
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSessionExpiredNotice(false)}
+                className="text-amber-700 hover:text-amber-900 p-1"
+                aria-label="Dismiss notice"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. Hero Banner Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#E6F3FB] via-[#EFF8FE] to-[#D9EDFC] border border-sky-100 p-8 sm:p-12 shadow-xs">
