@@ -106,8 +106,9 @@ export default function NewProductPage() {
           imgData.append("is_primary", "true");
           imgData.append("sort_order", "0");
           await adminCatalogService.uploadProductImage(created.id, imgData);
-        } catch (imgErr) {
-          console.warn("Failed to upload packaging image during creation:", imgErr);
+        } catch (imgErr: any) {
+          console.error("Failed to upload packaging image during creation:", imgErr);
+          alert(`Product was created, but packaging image upload to Firebase encountered an issue: ${imgErr?.message || "Please re-upload on the product edit page."}`);
         }
       }
 
@@ -275,6 +276,7 @@ export default function NewProductPage() {
                   onClick={() => {
                     setPendingImageFile(null);
                     setImagePreview(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
                   className="text-xs text-red-500 hover:text-red-700 p-1 font-semibold"
                 >
@@ -289,7 +291,7 @@ export default function NewProductPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/*"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -302,7 +304,7 @@ export default function NewProductPage() {
                 <div className="flex flex-col items-center gap-1.5 text-slate-500">
                   <Upload className="w-5 h-5 text-slate-400" />
                   <span className="text-xs font-semibold text-slate-700">Click to upload medicine packaging image</span>
-                  <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 5MB)</span>
+                  <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 10MB)</span>
                 </div>
               </div>
             )}

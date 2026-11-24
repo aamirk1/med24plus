@@ -13,16 +13,24 @@ logger = logging.getLogger("med24plus.storage")
 # Supported MIME types and extensions
 ALLOWED_MIME_TYPES: Set[str] = {
     "image/jpeg",
+    "image/jpg",
     "image/png",
     "image/webp",
+    "image/pjpeg",
+    "image/jfif",
+    "image/x-png",
+    "image/avif",
+    "application/octet-stream",
 }
 ALLOWED_EXTENSIONS: Set[str] = {
     ".jpg",
     ".jpeg",
     ".png",
     ".webp",
+    ".jfif",
+    ".avif",
 }
-MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB limit for packaging photos
 
 
 # ==============================================================================
@@ -64,25 +72,38 @@ class StorageService:
 
     def validate_file(self, file: UploadFile) -> str:
         """Validate uploaded image file format, extension, and content type."""
-        if not file.content_type or file.content_type.lower() not in ALLOWED_MIME_TYPES:
+        filename = file.filename or ""
+        ext = os.path.splitext(filename)[1].lower()
+
+        # If extension missing, deduce from content_type
+        if not ext and file.content_type:
+            ext_map = {
+                "image/jpeg": ".jpg",
+                "image/jpg": ".jpg",
+                "image/png": ".png",
+                "image/webp": ".webp",
+                "image/avif": ".avif",
+            }
+            ext = ext_map.get(file.content_type.lower().strip(), ".jpg")
+
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "success": False,
+                    "message": f"Invalid file extension: '{ext}'. Allowed: .jpg, .jpeg, .png, .webp.",
+                    "error": {"code": "INVALID_FILE_EXTENSION"},
+                },
+            )
+
+        raw_ct = (file.content_type or "").lower().strip()
+        if raw_ct and raw_ct not in ALLOWED_MIME_TYPES and not raw_ct.startswith("image/"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "success": False,
                     "message": f"Unsupported image MIME type: {file.content_type}. Allowed: JPEG, PNG, WebP.",
                     "error": {"code": "INVALID_IMAGE_TYPE"},
-                },
-            )
-
-        filename = file.filename or ""
-        ext = os.path.splitext(filename)[1].lower()
-        if ext not in ALLOWED_EXTENSIONS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "success": False,
-                    "message": f"Invalid file extension: {ext}. Allowed: .jpg, .jpeg, .png, .webp.",
-                    "error": {"code": "INVALID_FILE_EXTENSION"},
                 },
             )
         return ext
@@ -101,7 +122,7 @@ class StorageService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "success": False,
-                    "message": f"Image file exceeds maximum allowable size of 5 MB ({len(content)} bytes).",
+                    "message": f"Image file exceeds maximum allowable size of 10 MB ({len(content)} bytes).",
                     "error": {"code": "FILE_TOO_LARGE"},
                 },
             )
@@ -119,7 +140,15 @@ class StorageService:
 
         unique_filename = f"{product_id}_{uuid.uuid4().hex[:12]}{ext}"
         blob_path = f"products/{product_id}/{unique_filename}"
-        mime_type = file.content_type or "image/jpeg"
+        mime_map = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+            ".jfif": "image/jpeg",
+            ".avif": "image/avif",
+        }
+        mime_type = file.content_type if (file.content_type and file.content_type.startswith("image/")) else mime_map.get(ext, "image/jpeg")
 
         # Also cache locally for dev/offline serving
         local_target_path = self.upload_dir / unique_filename
@@ -156,7 +185,7 @@ class StorageService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "success": False,
-                    "message": f"Image file exceeds maximum allowable size of 5 MB ({len(content)} bytes).",
+                    "message": f"Image file exceeds maximum allowable size of 10 MB ({len(content)} bytes).",
                     "error": {"code": "FILE_TOO_LARGE"},
                 },
             )
@@ -174,7 +203,15 @@ class StorageService:
         clean_folder = "".join(c for c in folder if c.isalnum() or c in ("-", "_")) or "catalog"
         unique_filename = f"{uuid.uuid4().hex[:16]}{ext}"
         blob_path = f"{clean_folder}/{unique_filename}"
-        mime_type = file.content_type or "image/jpeg"
+        mime_map = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+            ".jfif": "image/jpeg",
+            ".avif": "image/avif",
+        }
+        mime_type = file.content_type if (file.content_type and file.content_type.startswith("image/")) else mime_map.get(ext, "image/jpeg")
 
         # Also cache locally for dev/offline serving
         target_dir = Path("static") / "uploads" / clean_folder

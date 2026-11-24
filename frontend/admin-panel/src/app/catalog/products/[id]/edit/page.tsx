@@ -24,6 +24,9 @@ interface ProductImageItem {
   alt_text?: string;
   is_primary: boolean;
   sort_order: number;
+  isUploading?: boolean;
+  uploadError?: string | null;
+  file?: File;
 }
 
 export default function EditProductPage() {
@@ -136,40 +139,93 @@ export default function EditProductPage() {
     loadProductData();
   }, [productId]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingImage(true);
-    setError(null);
+  const executeUpload = async (tempId: string, file: File) => {
     try {
       const data = new FormData();
       data.append("file", file);
       data.append("alt_text", formData.name || "Product Packaging");
-      data.append("is_primary", String(images.length === 0));
+      data.append("is_primary", String(images.length <= 1));
       data.append("sort_order", String(images.length));
 
       const newImg = await adminCatalogService.uploadProductImage(productId, data);
       if (newImg) {
-        setImages((prev) => [
-          ...prev,
-          {
-            id: newImg.id,
-            image_url: newImg.image_url,
-            alt_text: newImg.alt_text,
-            is_primary: newImg.is_primary,
-            sort_order: newImg.sort_order || 0,
-          },
-        ]);
-        setSuccessMsg("Product image uploaded successfully!");
+        setImages((prev) =>
+          prev.map((item) =>
+            item.id === tempId
+              ? {
+                  id: newImg.id,
+                  image_url: newImg.image_url,
+                  alt_text: newImg.alt_text || formData.name || "Packaging",
+                  is_primary: newImg.is_primary,
+                  sort_order: newImg.sort_order || 0,
+                  isUploading: false,
+                  uploadError: null,
+                }
+              : item
+          )
+        );
+        setSuccessMsg("Product image uploaded to Firebase successfully!");
       }
     } catch (err: any) {
       console.error("Image upload failed:", err);
-      setError(err?.message || "Failed to upload product image. Allowed formats: JPEG, PNG, WebP.");
+      const errMsg = err?.message || "Failed to upload product image to Firebase.";
+      setError(errMsg);
+      setImages((prev) =>
+        prev.map((item) =>
+          item.id === tempId
+            ? { ...item, isUploading: false, uploadError: errMsg }
+            : item
+        )
+      );
     } finally {
       setUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const localPreviewUrl = URL.createObjectURL(file);
+    const isFirstImage = images.length === 0;
+
+    // Immediately display the selected image in the preview gallery with uploading status
+    const tempItem: ProductImageItem = {
+      id: tempId,
+      image_url: localPreviewUrl,
+      alt_text: file.name,
+      is_primary: isFirstImage,
+      sort_order: images.length,
+      isUploading: true,
+      uploadError: null,
+      file: file,
+    };
+
+    setImages((prev) => [...prev, tempItem]);
+    setUploadingImage(true);
+    setError(null);
+
+    await executeUpload(tempId, file);
+  };
+
+  const handleRetryUpload = (item: ProductImageItem) => {
+    if (!item.file) return;
+    setImages((prev) =>
+      prev.map((img) =>
+        img.id === item.id ? { ...img, isUploading: true, uploadError: null } : img
+      )
+    );
+    setUploadingImage(true);
+    executeUpload(item.id, item.file);
+  };
+
+  const handleDismissTempImage = (tempId: string) => {
+    setImages((prev) => prev.filter((img) => img.id !== tempId));
   };
 
   const handleSetPrimaryImage = async (imageId: string) => {
@@ -359,20 +415,58 @@ export default function EditProductPage() {
             {images.map((img) => (
               <div
                 key={img.id}
-                className={`relative group rounded-xl border p-2 flex flex-col items-center justify-between bg-white transition shadow-xs ${
-                  img.is_primary ? "border-teal-500 ring-2 ring-teal-500/20" : "border-slate-200"
+                className={`relative group rounded-xl border p-2 flex flex-col items-center justify-between bg-white transition shadow-xs overflow-hidden ${
+                  img.uploadError
+                    ? "border-red-400 bg-red-50/20"
+                    : img.is_primary
+                    ? "border-teal-500 ring-2 ring-teal-500/20"
+                    : "border-slate-200"
                 }`}
               >
-                <div className="w-full h-28 flex items-center justify-center overflow-hidden rounded-lg bg-slate-50">
+                <div className="w-full h-28 flex items-center justify-center overflow-hidden rounded-lg bg-slate-50 relative">
                   <img
                     src={img.image_url}
                     alt={img.alt_text || "Packaging"}
                     className="w-full h-full object-contain"
                   />
+
+                  {img.isUploading && (
+                    <div className="absolute inset-0 bg-white/85 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-center z-10">
+                      <Loader2 className="w-5 h-5 animate-spin text-teal-600 mb-1" />
+                      <span className="text-[11px] font-semibold text-teal-800">Uploading to Firebase...</span>
+                    </div>
+                  )}
+
+                  {img.uploadError && (
+                    <div className="absolute inset-0 bg-red-50/95 flex flex-col items-center justify-center p-2 text-center z-10">
+                      <AlertCircle className="w-4 h-4 text-red-600 mb-1" />
+                      <span className="text-[10px] text-red-700 font-semibold mb-1 line-clamp-2">
+                        {img.uploadError}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleRetryUpload(img)}
+                          className="px-2 py-0.5 text-[10px] bg-red-600 text-white rounded font-medium hover:bg-red-700"
+                        >
+                          Retry
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDismissTempImage(img.id)}
+                          className="px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-700 rounded font-medium hover:bg-slate-300"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full mt-2 flex items-center justify-between gap-1 pt-1.5 border-t border-slate-100 text-[10px]">
-                  {img.is_primary ? (
+                  {img.id.startsWith("temp-") ? (
+                    <span className="text-slate-400 italic">Preview</span>
+                  ) : img.is_primary ? (
                     <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-teal-50 text-teal-700 font-bold rounded">
                       <Star className="w-3 h-3 fill-teal-600 text-teal-600" />
                       Primary
@@ -386,14 +480,25 @@ export default function EditProductPage() {
                       Make Primary
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteImage(img.id)}
-                    className="text-red-500 hover:text-red-700 p-0.5 font-medium transition"
-                    title="Remove Image"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {img.id.startsWith("temp-") ? (
+                    <button
+                      type="button"
+                      onClick={() => handleDismissTempImage(img.id)}
+                      className="text-slate-400 hover:text-red-600 p-0.5 font-medium transition"
+                      title="Dismiss Preview"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(img.id)}
+                      className="text-red-500 hover:text-red-700 p-0.5 font-medium transition"
+                      title="Remove Image"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -406,22 +511,15 @@ export default function EditProductPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/*"
                 className="hidden"
                 onChange={handleImageUpload}
               />
-              {uploadingImage ? (
-                <div className="flex flex-col items-center gap-1.5 text-slate-500 text-xs">
-                  <Loader2 className="w-5 h-5 animate-spin text-[#0D9488]" />
-                  <span>Uploading...</span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-1 text-slate-500">
-                  <Upload className="w-5 h-5 text-slate-400" />
-                  <span className="text-xs font-semibold text-slate-700">Add Packaging Image</span>
-                  <span className="text-[10px] text-slate-400">JPEG, PNG or WebP</span>
-                </div>
-              )}
+              <div className="flex flex-col items-center gap-1 text-slate-500">
+                <Upload className="w-5 h-5 text-slate-400" />
+                <span className="text-xs font-semibold text-slate-700">Add Packaging Image</span>
+                <span className="text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
+              </div>
             </div>
           </div>
         </div>

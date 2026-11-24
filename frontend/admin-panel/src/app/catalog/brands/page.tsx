@@ -30,6 +30,7 @@ export default function AdminBrandsPage() {
   const [editingBrand, setEditingBrand] = useState<BrandRow | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +86,7 @@ export default function AdminBrandsPage() {
       slug: "",
       logo_url: "",
     });
+    setLocalPreview(null);
     setModalError(null);
     setIsModalOpen(true);
   };
@@ -99,6 +101,7 @@ export default function AdminBrandsPage() {
       slug: brand.slug,
       logo_url: brand.logoUrl || "",
     });
+    setLocalPreview(null);
     setModalError(null);
     setIsModalOpen(true);
   };
@@ -107,6 +110,12 @@ export default function AdminBrandsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    const localUrl = URL.createObjectURL(file);
+    setLocalPreview(localUrl);
     setIsUploadingLogo(true);
     setModalError(null);
     try {
@@ -115,7 +124,7 @@ export default function AdminBrandsPage() {
         setFormData((prev) => ({ ...prev, logo_url: res.url }));
       }
     } catch (err: any) {
-      setModalError(err.message || "Failed to upload logo image. Allowed: PNG, JPG, WebP up to 5MB.");
+      setModalError(err.message || "Failed to upload logo image. Allowed: PNG, JPG, WebP up to 10MB.");
     } finally {
       setIsUploadingLogo(false);
     }
@@ -357,20 +366,35 @@ export default function AdminBrandsPage() {
                   Brand Logo
                 </label>
                 <div className="space-y-2">
-                  {formData.logo_url ? (
-                    <div className="flex items-center gap-3 p-2 border border-slate-200 rounded-lg bg-slate-50">
+                  {formData.logo_url || localPreview ? (
+                    <div className="flex items-center gap-3 p-2 border border-slate-200 rounded-lg bg-slate-50 relative overflow-hidden">
                       <img
-                        src={formData.logo_url}
+                        src={formData.logo_url || localPreview || ""}
                         alt="Logo Preview"
                         className="w-12 h-12 object-contain bg-white rounded-md border border-slate-300 p-1"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-mono text-slate-600 truncate">{formData.logo_url}</p>
-                        <p className="text-[10px] text-teal-600 font-semibold">Logo uploaded</p>
+                        <p className="text-[11px] font-mono text-slate-600 truncate">
+                          {formData.logo_url || "Local Preview"}
+                        </p>
+                        {isUploadingLogo ? (
+                          <div className="flex items-center gap-1 text-[10px] text-teal-600 font-semibold">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Uploading to Firebase...</span>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-teal-600 font-semibold">
+                            {formData.logo_url ? "Uploaded to Firebase" : "Preview ready"}
+                          </p>
+                        )}
                       </div>
                       <button
                         type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, logo_url: "" }))}
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, logo_url: "" }));
+                          setLocalPreview(null);
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
                         className="text-xs text-red-500 hover:text-red-700 p-1 font-medium"
                       >
                         Remove
@@ -384,7 +408,7 @@ export default function AdminBrandsPage() {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/png,image/jpeg,image/webp"
+                        accept="image/*"
                         className="hidden"
                         onChange={handleLogoFileChange}
                       />
@@ -397,7 +421,7 @@ export default function AdminBrandsPage() {
                         <div className="flex flex-col items-center justify-center gap-1 text-slate-500">
                           <Upload className="w-4 h-4 text-slate-400" />
                           <span className="text-[11px] font-medium text-slate-700">Click to upload brand logo</span>
-                          <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 5MB)</span>
+                          <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 10MB)</span>
                         </div>
                       )}
                     </div>

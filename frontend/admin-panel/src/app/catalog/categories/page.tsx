@@ -29,6 +29,7 @@ export default function AdminCategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,6 +75,7 @@ export default function AdminCategoriesPage() {
   const handleOpenCreateModal = () => {
     setEditingCategory(null);
     setFormData({ name: "", description: "", slug: "", image_url: "" });
+    setLocalPreview(null);
     setModalError(null);
     setIsModalOpen(true);
   };
@@ -86,6 +88,7 @@ export default function AdminCategoriesPage() {
       slug: cat.slug,
       image_url: cat.imageUrl || "",
     });
+    setLocalPreview(null);
     setModalError(null);
     setIsModalOpen(true);
   };
@@ -94,6 +97,12 @@ export default function AdminCategoriesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    const localUrl = URL.createObjectURL(file);
+    setLocalPreview(localUrl);
     setIsUploadingImage(true);
     setModalError(null);
     try {
@@ -102,7 +111,7 @@ export default function AdminCategoriesPage() {
         setFormData((prev) => ({ ...prev, image_url: res.url }));
       }
     } catch (err: any) {
-      setModalError(err.message || "Failed to upload image. Please ensure valid PNG/JPG/WebP up to 5MB.");
+      setModalError(err.message || "Failed to upload image. Please ensure valid PNG/JPG/WebP up to 10MB.");
     } finally {
       setIsUploadingImage(false);
     }
@@ -342,20 +351,35 @@ export default function AdminCategoriesPage() {
                   Category Image / Icon
                 </label>
                 <div className="space-y-2">
-                  {formData.image_url ? (
-                    <div className="flex items-center gap-3 p-2 border border-slate-200 rounded-lg bg-slate-50">
+                  {formData.image_url || localPreview ? (
+                    <div className="flex items-center gap-3 p-2 border border-slate-200 rounded-lg bg-slate-50 relative overflow-hidden">
                       <img
-                        src={formData.image_url}
+                        src={formData.image_url || localPreview || ""}
                         alt="Preview"
                         className="w-12 h-12 object-cover rounded-md border border-slate-300"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-mono text-slate-600 truncate">{formData.image_url}</p>
-                        <p className="text-[10px] text-teal-600 font-semibold">Image uploaded</p>
+                        <p className="text-[11px] font-mono text-slate-600 truncate">
+                          {formData.image_url || "Local Preview"}
+                        </p>
+                        {isUploadingImage ? (
+                          <div className="flex items-center gap-1 text-[10px] text-teal-600 font-semibold">
+                            <Loader2 className="w-3 h-3 animate-spin text-[#0D9488]" />
+                            <span>Uploading to Firebase...</span>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-teal-600 font-semibold">
+                            {formData.image_url ? "Uploaded to Firebase" : "Preview ready"}
+                          </p>
+                        )}
                       </div>
                       <button
                         type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, image_url: "" }))}
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, image_url: "" }));
+                          setLocalPreview(null);
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
                         className="text-xs text-red-500 hover:text-red-700 p-1 font-medium"
                       >
                         Remove
@@ -369,7 +393,7 @@ export default function AdminCategoriesPage() {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/png,image/jpeg,image/webp"
+                        accept="image/*"
                         className="hidden"
                         onChange={handleImageFileChange}
                       />
@@ -382,7 +406,7 @@ export default function AdminCategoriesPage() {
                         <div className="flex flex-col items-center justify-center gap-1 text-slate-500">
                           <Upload className="w-4 h-4 text-slate-400" />
                           <span className="text-[11px] font-medium text-slate-700">Click to upload category image</span>
-                          <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 5MB)</span>
+                          <span className="text-[10px] text-slate-400">PNG, JPG or WebP (max 10MB)</span>
                         </div>
                       )}
                     </div>
