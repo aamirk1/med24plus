@@ -385,7 +385,10 @@ class OrderCreationService:
             # -----------------------------------------------------------------
             # 9. Clear Active Cart Upon Order Creation
             # -----------------------------------------------------------------
-            await self.cart_repo.clear_cart(customer_id)
+            if cart:
+                await self.cart_repo.clear_cart(cart.id)
+                cart.status = "converted"
+                await self.db.flush()
 
             # -----------------------------------------------------------------
             # 10. Generate Immutable Statutory Tax Invoice / Form 20 Cash Memo

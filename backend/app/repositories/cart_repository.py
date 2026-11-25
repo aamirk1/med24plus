@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy import delete, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -116,8 +116,15 @@ class CartRepository:
         await self.db.flush()
 
     async def clear_cart(self, cart_id: uuid.UUID) -> None:
-        """Delete all items in a cart."""
-        stmt = delete(CartItem).where(CartItem.cart_id == cart_id)
+        """Delete all items in a cart, matching either cart_id directly or by customer_id."""
+        stmt = delete(CartItem).where(
+            or_(
+                CartItem.cart_id == cart_id,
+                CartItem.cart_id.in_(
+                    select(Cart.id).where(Cart.customer_id == cart_id)
+                ),
+            )
+        )
         await self.db.execute(stmt)
         await self.db.flush()
 

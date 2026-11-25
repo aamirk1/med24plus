@@ -40,7 +40,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { refreshCart } = useCart();
+  const { refreshCart, clearCart } = useCart();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
@@ -226,8 +226,8 @@ export default function CheckoutPage() {
           paymentService.openRazorpayCheckout({
             orderData: rzpOrder,
             onSuccess: async () => {
-              // Successfully paid: now refresh cart and navigate to order
-              await refreshCart();
+              // Successfully paid: now clear cart and navigate to order
+              await clearCart();
               router.push(`/account/orders/${targetId}?payment=success`);
             },
             onFailure: (err: any) => {
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
       }
 
       // Cash on Delivery
-      await refreshCart();
+      await clearCart();
       router.push(targetId ? `/account/orders/${targetId}` : "/account/orders");
     } catch (err: any) {
       setOrderError(err.message || "Failed to place order. Please review your cart or address.");

@@ -8,6 +8,7 @@ interface CartContextType {
   cartCount: number;
   addToCart: (product: Product, quantity?: number) => Promise<boolean>;
   refreshCart: () => Promise<void>;
+  clearCart: () => Promise<void>;
   updateCartCount: (count: number) => void;
   isAdding: boolean;
   lastAddedProduct: Product | null;
@@ -17,6 +18,7 @@ const CartContext = createContext<CartContextType>({
   cartCount: 0,
   addToCart: async () => false,
   refreshCart: async () => {},
+  clearCart: async () => {},
   updateCartCount: () => {},
   isAdding: false,
   lastAddedProduct: null,
@@ -69,6 +71,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateCartCount = useCallback((count: number) => {
     setCartCount(Math.max(0, count));
   }, []);
+
+  const clearCart = useCallback(async () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("med24_guest_cart");
+      setCartCount(0);
+      window.dispatchEvent(new Event("med24_cart_updated"));
+    }
+    const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
+    if (token) {
+      try {
+        await apiClient<any>("/cart/items", { method: "DELETE" });
+      } catch {}
+    }
+    await refreshCart();
+  }, [refreshCart]);
 
   useEffect(() => {
     refreshCart();
@@ -158,6 +175,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cartCount,
         addToCart,
         refreshCart,
+        clearCart,
         updateCartCount,
         isAdding,
         lastAddedProduct,
