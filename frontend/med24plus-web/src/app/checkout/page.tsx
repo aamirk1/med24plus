@@ -20,6 +20,7 @@ import {
   CheckoutValidationResponse,
 } from "@/services/checkout.service";
 import { orderService } from "@/services/orderService";
+import { useCart } from "@/context/CartContext";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -38,6 +39,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { refreshCart } = useCart();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [acknowledgePriceChanges, setAcknowledgePriceChanges] = useState(false);
@@ -213,6 +215,7 @@ export default function CheckoutPage() {
         },
         idempotencyKey
       );
+      await refreshCart();
       router.push(`/account/orders/${newOrder.id}`);
     } catch (err: any) {
       setOrderError(err.message || "Failed to place order. Please review your cart or address.");
@@ -331,9 +334,9 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setIsAddressModalOpen(true)}
-                className="text-xs text-[#0D9488] font-semibold hover:underline flex items-center gap-1"
+                className="text-xs text-[#0D9488] font-semibold hover:underline inline-flex items-center gap-1.5"
               >
-                <Plus className="w-3.5 h-3.5" /> Add New Address
+                <Plus className="w-3.5 h-3.5 shrink-0" /> <span>Add New Address</span>
               </button>
             </div>
 
@@ -348,7 +351,8 @@ export default function CheckoutPage() {
                   size="sm"
                   onClick={() => setIsAddressModalOpen(true)}
                 >
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Delivery Address
+                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                  <span>Add Delivery Address</span>
                 </Button>
               </div>
             ) : (
@@ -561,7 +565,8 @@ export default function CheckoutPage() {
               <div className="pt-2 flex gap-3">
                 <Link href="/cart">
                   <Button variant="outline" size="sm">
-                    <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Return to Cart to Adjust
+                    <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+                    <span>Return to Cart to Adjust</span>
                   </Button>
                 </Link>
               </div>
@@ -689,9 +694,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={runValidation}
-                  className="w-full text-center text-xs text-slate-400 hover:text-[#0D9488] flex items-center justify-center gap-1 mt-1 transition"
+                  className="w-full text-center text-xs text-slate-400 hover:text-[#0D9488] inline-flex items-center justify-center gap-1.5 mt-1 transition"
                 >
-                  <RefreshCw className="w-3 h-3" /> Refresh Authoritative Quote
+                  <RefreshCw className="w-3 h-3 shrink-0" />
+                  <span>Refresh Authoritative Quote</span>
                 </button>
               </>
             ) : (

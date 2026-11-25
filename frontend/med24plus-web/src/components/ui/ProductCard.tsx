@@ -129,7 +129,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           type="button"
           onClick={handleAdd}
           disabled={isAdding}
-          className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-2xs active:scale-[0.98] ${
+          className={`w-full py-2 px-3 rounded-xl font-bold text-xs inline-flex items-center justify-center gap-1.5 leading-none whitespace-nowrap transition shadow-2xs active:scale-[0.98] ${
             justAdded
               ? "bg-emerald-600 text-white"
               : "bg-[#0052CC] hover:bg-[#0043A8] text-white"
@@ -137,12 +137,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         >
           {justAdded ? (
             <>
-              <Check className="w-3.5 h-3.5" />
+              <Check className="w-3.5 h-3.5 shrink-0" />
               <span>Added to Cart</span>
             </>
           ) : (
             <>
-              <ShoppingCart className="w-3.5 h-3.5" />
+              <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
               <span>Add to Cart</span>
             </>
           )}

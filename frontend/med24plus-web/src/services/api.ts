@@ -113,15 +113,18 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
         }
       }
 
-      // If refresh failed or request was already a retry, perform complete auto-logout and redirect to home screen
+      // If refresh failed or request was already a retry, perform auto-logout only if user was actually logged in
       if (typeof window !== "undefined") {
+        const hadToken = Boolean(localStorage.getItem("med24_access_token"));
         localStorage.removeItem("med24_access_token");
         localStorage.removeItem("med24_refresh_token");
-        sessionStorage.setItem("med24_session_expired", "1");
-        if (window.location.pathname !== "/") {
-          window.location.href = "/?session_expired=1";
-        } else {
-          window.dispatchEvent(new CustomEvent("med24_session_expired"));
+        if (hadToken) {
+          sessionStorage.setItem("med24_session_expired", "1");
+          if (window.location.pathname !== "/") {
+            window.location.href = "/?session_expired=1";
+          } else {
+            window.dispatchEvent(new CustomEvent("med24_session_expired"));
+          }
         }
       }
     }

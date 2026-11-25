@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatPriceINR } from "@/lib/utils";
 import { apiClient } from "@/services/api";
+import { useCart } from "@/context/CartContext";
 import {
   ShoppingBag,
   Trash2,
@@ -83,7 +84,112 @@ interface CartData {
   blocking_errors: string[];
 }
 
+function buildGuestCartData(): CartData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("med24_guest_cart");
+    const guestItems = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(guestItems) || guestItems.length === 0) {
+      return {
+        id: "guest-cart",
+        customer_id: "guest",
+        status: "active",
+        items: [],
+        item_count: 0,
+        total_quantity: 0,
+        subtotal: 0,
+        total_mrp: 0,
+        total_discount: 0,
+        taxable_amount: 0,
+        total_tax: 0,
+        delivery_fee: 0,
+        free_delivery_threshold: 499,
+        amount_needed_for_free_delivery: 499,
+        grand_total: 0,
+        has_prescription_items: false,
+        has_cold_chain_items: false,
+        has_price_changes: false,
+        is_valid_for_checkout: false,
+        warnings: [],
+        blocking_errors: [],
+      };
+    }
+
+    const items: CartItemData[] = guestItems.map((item: any, idx: number) => {
+      const unitPrice = Number(item.price) || 0;
+      const unitMrp = Number(item.mrp) || unitPrice;
+      const qty = Number(item.quantity) || 1;
+      const subtotal = unitPrice * qty;
+      const mrpSubtotal = unitMrp * qty;
+      const discount = Math.max(0, mrpSubtotal - subtotal);
+      return {
+        id: item.id || `guest-item-${idx}`,
+        cart_id: "guest-cart",
+        product_id: item.id,
+        product_name: item.name || "Medicine",
+        product_slug: item.slug || item.id,
+        product_sku: item.sku || "GUEST-MED",
+        generic_name: item.generic_name || "",
+        pack_size: item.pack_size || "1 Unit",
+        dosage_form: item.dosage_form || "Unit",
+        image_url: item.image_url,
+        is_cold_chain: false,
+        unit_price: unitPrice,
+        unit_mrp: unitMrp,
+        is_price_changed: false,
+        quantity: qty,
+        subtotal,
+        mrp_subtotal: mrpSubtotal,
+        discount_amount: discount,
+        gst_rate: 12,
+        tax_amount: (subtotal * 0.12) / 1.12,
+        is_available: true,
+        sellable_stock: 99,
+        requires_prescription: false,
+        schedule_classification: "OTC",
+        prescription_status: "not_required",
+        validation_status: "available",
+      };
+    });
+
+    const subtotal = items.reduce((acc, it) => acc + Number(it.subtotal), 0);
+    const totalMrp = items.reduce((acc, it) => acc + Number(it.mrp_subtotal), 0);
+    const totalDiscount = items.reduce((acc, it) => acc + Number(it.discount_amount), 0);
+    const totalQty = items.reduce((acc, it) => acc + Number(it.quantity), 0);
+    const deliveryFee = subtotal >= 499 || subtotal === 0 ? 0 : 50;
+    const amountNeeded = Math.max(0, 499 - subtotal);
+    const grandTotal = subtotal + deliveryFee;
+
+    return {
+      id: "guest-cart",
+      customer_id: "guest",
+      status: "active",
+      items,
+      item_count: items.length,
+      total_quantity: totalQty,
+      subtotal,
+      total_mrp: totalMrp,
+      total_discount: totalDiscount,
+      taxable_amount: subtotal - (subtotal * 0.12) / 1.12,
+      total_tax: (subtotal * 0.12) / 1.12,
+      delivery_fee: deliveryFee,
+      free_delivery_threshold: 499,
+      amount_needed_for_free_delivery: amountNeeded,
+      grand_total: grandTotal,
+      has_prescription_items: false,
+      has_cold_chain_items: false,
+      has_price_changes: false,
+      is_valid_for_checkout: items.length > 0,
+      warnings: [],
+      blocking_errors: [],
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default function CartPage() {
+  const { refreshCart } = useCart();
   const [cart, setCart] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
@@ -92,12 +198,25 @@ export default function CartPage() {
   const loadCart = async () => {
     try {
       setError(null);
+      const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
+      if (!token) {
+        const guestData = buildGuestCartData();
+        setCart(guestData);
+        await refreshCart();
+        return;
+      }
       const res = await apiClient<{ success: boolean; data: CartData }>("/cart");
       if (res.success && res.data) {
         setCart(res.data);
+        await refreshCart();
       }
     } catch (err: any) {
-      setError(err?.message || "Failed to load shopping cart. Please ensure you are signed in.");
+      const guestData = buildGuestCartData();
+      if (guestData && guestData.items.length > 0) {
+        setCart(guestData);
+      } else {
+        setError(err?.message || "Failed to load shopping cart.");
+      }
     } finally {
       setLoading(false);
     }
@@ -117,12 +236,28 @@ export default function CartPage() {
     try {
       setUpdatingItemId(itemId);
       setError(null);
+      const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
+      if (!token) {
+        const guestCart = JSON.parse(localStorage.getItem("med24_guest_cart") || "[]");
+        const idx = guestCart.findIndex((i: any) => i.id === itemId);
+        if (idx >= 0) {
+          guestCart[idx].quantity = newQty;
+          localStorage.setItem("med24_guest_cart", JSON.stringify(guestCart));
+        }
+        setCart(buildGuestCartData());
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
+        return;
+      }
+
       const res = await apiClient<{ success: boolean; data: CartData }>(`/cart/items/${itemId}`, {
         method: "PATCH",
         data: { quantity: newQty },
       });
       if (res.success && res.data) {
         setCart(res.data);
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
       }
     } catch (err: any) {
       setError(err?.message || "Could not update item quantity.");
@@ -135,11 +270,24 @@ export default function CartPage() {
     try {
       setUpdatingItemId(itemId);
       setError(null);
+      const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
+      if (!token) {
+        const guestCart = JSON.parse(localStorage.getItem("med24_guest_cart") || "[]");
+        const filtered = guestCart.filter((i: any) => i.id !== itemId);
+        localStorage.setItem("med24_guest_cart", JSON.stringify(filtered));
+        setCart(buildGuestCartData());
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
+        return;
+      }
+
       const res = await apiClient<{ success: boolean; data: CartData }>(`/cart/items/${itemId}`, {
         method: "DELETE",
       });
       if (res.success && res.data) {
         setCart(res.data);
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
       }
     } catch (err: any) {
       setError(err?.message || "Failed to remove item.");
@@ -153,11 +301,22 @@ export default function CartPage() {
     try {
       setLoading(true);
       setError(null);
+      const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
+      if (!token) {
+        localStorage.removeItem("med24_guest_cart");
+        setCart(buildGuestCartData());
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
+        return;
+      }
+
       const res = await apiClient<{ success: boolean; data: CartData }>("/cart/items", {
         method: "DELETE",
       });
       if (res.success && res.data) {
         setCart(res.data);
+        await refreshCart();
+        window.dispatchEvent(new Event("med24_cart_updated"));
       }
     } catch (err: any) {
       setError(err?.message || "Failed to clear cart.");
@@ -411,15 +570,18 @@ export default function CartPage() {
                 </div>
               )}
 
-              <Link href="/checkout" className="block pt-2">
+              <Link
+                href={cart?.customer_id === "guest" ? "/auth/login?redirect=/checkout" : "/checkout"}
+                className="block pt-2"
+              >
                 <Button
                   variant="primary"
                   size="lg"
                   disabled={!cart?.is_valid_for_checkout}
                   className="w-full shadow-sm text-sm"
                 >
-                  <span>Proceed to Checkout</span>
-                  {/* <ArrowRight className="w-4 h-4 ml-2" /> */}
+                  <span>{cart?.customer_id === "guest" ? "Login to Checkout" : "Proceed to Checkout"}</span>
+                  <ArrowRight className="w-4 h-4 shrink-0" />
                 </Button>
               </Link>
 

@@ -127,7 +127,7 @@ export default function CustomerPrescriptionDetailPage() {
         <p className="text-xs text-slate-500 max-w-sm mx-auto">{error || "Prescription record not found."}</p>
         <Link href="/account/prescriptions">
           <Button variant="outline" size="sm">
-            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
             <span>Back to Vault</span>
           </Button>
         </Link>
@@ -177,7 +177,7 @@ export default function CustomerPrescriptionDetailPage() {
             onClick={() => setShowCancelModal(true)}
             className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8"
           >
-            <Ban className="w-3.5 h-3.5 mr-1.5" />
+            <Ban className="w-3.5 h-3.5 shrink-0" />
             <span>Cancel Request</span>
           </Button>
         )}
@@ -237,12 +237,12 @@ export default function CustomerPrescriptionDetailPage() {
             >
               {uploadingClarification ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" />
                   <span>Submitting Documents...</span>
                 </>
               ) : (
                 <>
-                  <UploadCloud className="w-3.5 h-3.5 mr-1.5" />
+                  <UploadCloud className="w-3.5 h-3.5 shrink-0" />
                   <span>Submit Clarification</span>
                 </>
               )}

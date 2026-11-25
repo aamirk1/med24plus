@@ -31,6 +31,7 @@ def test_pricing_service_single_item_dpco_cap_and_gst_extraction():
     assert calc.unit_price == Decimal("40.00")
     assert calc.unit_mrp == Decimal("50.00")
     assert calc.subtotal == Decimal("80.00")
+    assert calc.line_total == Decimal("80.00")
     assert calc.mrp_subtotal == Decimal("100.00")
     assert calc.discount_amount == Decimal("20.00")
 

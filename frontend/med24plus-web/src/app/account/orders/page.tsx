@@ -57,12 +57,12 @@ export default function OrderHistoryPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchOrders()} disabled={loading}>
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? "animate-spin" : ""}`} />
             <span>Refresh</span>
           </Button>
           <Link href="/products">
             <Button variant="primary" size="sm">
-              <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
+              <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
               <span>Order Medicines</span>
             </Button>
           </Link>
@@ -127,7 +127,7 @@ export default function OrderHistoryPage() {
           </div>
           <Link href="/products">
             <Button variant="primary" size="sm">
-              <ShoppingBag className="w-4 h-4 mr-1.5" />
+              <ShoppingBag className="w-4 h-4 shrink-0" />
               <span>Browse Products</span>
             </Button>
           </Link>
@@ -169,7 +169,7 @@ export default function OrderHistoryPage() {
                     </span>
                     <Link href={`/account/orders/${order.id}`}>
                       <Button variant="outline" size="sm" className="h-8 text-xs">
-                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        <Eye className="w-3.5 h-3.5 shrink-0" />
                         <span>View Details</span>
                       </Button>
                     </Link>

@@ -325,7 +325,7 @@ class OrderCreationService:
                     discount_amount=calc.discount_amount,
                     taxable_amount=calc.taxable_amount,
                     tax_amount=calc.tax_amount,
-                    total_amount=calc.line_total,
+                    total_amount=calc.subtotal,
                     prescription_required=product.requires_prescription,
                 )
                 self.db.add(order_item)

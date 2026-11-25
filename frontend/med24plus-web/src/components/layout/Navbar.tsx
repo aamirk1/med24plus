@@ -232,12 +232,12 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setCategoriesOpen(!categoriesOpen)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0052CC] hover:bg-[#0043A8] text-white rounded-lg text-xs font-bold transition shadow-xs"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0052CC] hover:bg-[#0043A8] text-white rounded-lg text-xs font-bold transition shadow-xs leading-none"
             >
-              <Menu className="w-3.5 h-3.5" />
+              <Menu className="w-3.5 h-3.5 shrink-0" />
               <span>All Categories</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
                   categoriesOpen ? "rotate-180" : ""
                 }`}
               />

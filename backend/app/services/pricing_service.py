@@ -22,6 +22,10 @@ class ItemPriceCalculation(BaseModel):
     sgst_amount: Decimal
     igst_amount: Decimal
 
+    @property
+    def line_total(self) -> Decimal:
+        return self.subtotal
+
 
 class CartPricingSummary(BaseModel):
     subtotal: Decimal

@@ -71,7 +71,7 @@ export default function PrescriptionHistoryPage() {
         </div>
         <Link href="/prescription/upload">
           <Button variant="primary" size="sm">
-            <UploadCloud className="w-3.5 h-3.5 mr-1.5" />
+            <UploadCloud className="w-3.5 h-3.5 shrink-0" />
             <span>Upload New Rx</span>
           </Button>
         </Link>
@@ -124,7 +124,7 @@ export default function PrescriptionHistoryPage() {
           </div>
           <Link href="/prescription/upload">
             <Button variant="primary" size="md" className="mt-2">
-              <UploadCloud className="w-4 h-4 mr-2" />
+              <UploadCloud className="w-4 h-4 shrink-0" />
               <span>Upload Prescription</span>
             </Button>
           </Link>
@@ -164,7 +164,7 @@ export default function PrescriptionHistoryPage() {
                   <div className="flex items-center gap-2">
                     <Link href={`/account/prescriptions/${rx.id}`}>
                       <Button variant="outline" size="sm" className="h-8 text-xs">
-                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        <Eye className="w-3.5 h-3.5 shrink-0" />
                         <span>View Details</span>
                       </Button>
                     </Link>

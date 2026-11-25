@@ -56,6 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         await refreshUser();
       }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("med24_auth_changed"));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await authService.register(data);
       if (res?.data?.access_token && typeof window !== "undefined") {
         localStorage.setItem("med24_access_token", res.data.access_token);
+        window.dispatchEvent(new Event("med24_auth_changed"));
       }
     } finally {
       setIsLoading(false);
@@ -87,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       if (typeof window !== "undefined") {
         localStorage.removeItem("med24_access_token");
+        window.dispatchEvent(new Event("med24_auth_changed"));
       }
       setUser(null);
     }

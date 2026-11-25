@@ -28,10 +28,12 @@ import { Toast } from "@/components/ui/Toast";
 import { catalogService } from "@/services/catalog.service";
 import { Product, ProductSubstitutesData, ProductSubstituteOption } from "@/types";
 import { BrandSubstitutes } from "@/components/product/BrandSubstitutes";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params?.id as string;
+  const { addToCart, isAdding } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [substitutesData, setSubstitutesData] = useState<ProductSubstitutesData | null>(null);
@@ -66,9 +68,13 @@ export default function ProductDetailPage() {
     loadData();
   }, [slug]);
 
-  const handleAddToCart = () => {
-    setToastMessage(`Added ${quantity} unit(s) of ${product?.name} to cart.`);
-    setShowToast(true);
+  const handleAddToCart = async () => {
+    if (!product) return;
+    const ok = await addToCart(product, quantity);
+    if (ok) {
+      setToastMessage(`Added ${quantity} unit(s) of ${product.name} to cart.`);
+      setShowToast(true);
+    }
   };
 
   const handleSelectSubstitute = (option: ProductSubstituteOption) => {
@@ -304,9 +310,10 @@ export default function ProductDetailPage() {
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={!product.inStock || isAdding}
+                isLoading={isAdding}
               >
-                <ShoppingBag className="w-4 h-4 mr-2" />
+                <ShoppingBag className="w-4 h-4 shrink-0" />
                 <span>{product.inStock ? "Add to Cart" : "Out of Stock"}</span>
               </Button>
             </div>

@@ -190,7 +190,7 @@ export default function AddressManagementPage() {
           </p>
         </div>
         <Button variant="primary" size="sm" onClick={openAddModal}>
-          <Plus className="w-3.5 h-3.5 mr-1" />
+          <Plus className="w-3.5 h-3.5 shrink-0" />
           <span>Add New Address</span>
         </Button>
       </div>
@@ -222,7 +222,7 @@ export default function AddressManagementPage() {
           description="Add a delivery address to verify medicine serviceability and proceed with checkout."
           action={
             <Button variant="primary" size="sm" onClick={openAddModal}>
-              <Plus className="w-3.5 h-3.5 mr-1" />
+              <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Add Your First Address</span>
             </Button>
           }

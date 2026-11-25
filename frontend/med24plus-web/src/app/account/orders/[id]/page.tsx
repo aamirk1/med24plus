@@ -114,7 +114,7 @@ export default function OrderDetailPage() {
         <h2 className="text-base font-bold text-slate-800">{error || "Order Not Found"}</h2>
         <Link href="/account/orders">
           <Button variant="outline" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            <ArrowLeft className="w-4 h-4 shrink-0" />
             <span>Back to Orders</span>
           </Button>
         </Link>
@@ -184,7 +184,7 @@ export default function OrderDetailPage() {
               onClick={handleDownloadInvoice}
               disabled={downloadingInvoice}
             >
-              <Printer className="w-3.5 h-3.5 mr-1" />
+              <Printer className="w-3.5 h-3.5 shrink-0" />
               <span>{downloadingInvoice ? "Downloading..." : "Download Form 20 Invoice"}</span>
             </Button>
           )}
@@ -194,13 +194,13 @@ export default function OrderDetailPage() {
               size="sm"
               onClick={() => setShowCancelModal(true)}
             >
-              <XCircle className="w-3.5 h-3.5 mr-1" />
+              <XCircle className="w-3.5 h-3.5 shrink-0" />
               <span>Cancel Order</span>
             </Button>
           )}
           <Link href="/account/orders">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
               <span>Back</span>
             </Button>
           </Link>
