@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
 import '../../../core/services/order_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
+import '../../../core/widgets/app_button.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -15,28 +17,80 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  late MobileOrder _order;
+  MobileOrder? _order;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _order = MockData.orders.firstWhere(
-      (o) => o.id == widget.orderId,
-      orElse: () => MockData.orders.first,
-    );
     _loadLiveOrder();
   }
 
   Future<void> _loadLiveOrder() async {
+    setState(() => _isLoading = true);
     final live = await OrderService.instance.getOrderById(widget.orderId);
-    if (mounted && live != null) {
-      setState(() => _order = live);
+    if (mounted) {
+      setState(() {
+        _order = live;
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final order = _order;
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Order Details'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (_order == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Order Not Found'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.receipt_long_outlined, size: 48, color: AppColors.secondaryText),
+                const SizedBox(height: 16),
+                const Text(
+                  'Order Not Found',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'The requested order could not be loaded.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                ),
+                const SizedBox(height: 20),
+                AppButton(
+                  text: 'View All Orders',
+                  onPressed: () => context.go('/orders'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final order = _order!;
+    final itemsSubtotal = order.items.isNotEmpty
+        ? order.items.fold<double>(0.0, (s, i) => s + (i.unitPrice * i.quantity))
+        : order.totalAmount;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -71,32 +125,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         AppBadge.orderStatus(order.status),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text('Placed on ${order.date}', style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Placed on ${order.date}',
+                      style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // FEFO Dispensing Batch Notice
+            // Delivery Protocol Card
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 100),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  color: AppColors.primaryLight.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.shield_outlined, color: AppColors.primary, size: 20),
+                    Icon(Icons.ac_unit, color: AppColors.primary, size: 20),
                     SizedBox(width: 10),
                     Expanded(
-                      child: Text(
-                        'Form 20 Statutory Retail Cash Memo generated. Verified by Registered Pharmacist (PCI-REG-94821).',
-                        style: TextStyle(fontSize: 11, color: AppColors.primaryDark, height: 1.3),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cold-Chain Assured Delivery (2°C - 8°C)',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Insulated packaging with calibrated temperature data-loggers.',
+                            style: TextStyle(fontSize: 10, color: AppColors.secondaryText),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -117,27 +184,47 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.all(14),
-                      child: Text(
-                        'Dispensed Medicines',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Dispensed Medicines',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                          ),
+                          Text(
+                            '${order.items.isNotEmpty ? order.items.length : order.itemCount} items',
+                            style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
+                          ),
+                        ],
                       ),
                     ),
                     const Divider(height: 1, color: AppColors.border),
-                    _buildItemRow(
-                      'Accu-Chek Active Blood Glucose Strips',
-                      'Batch: ACC-26-904 | Exp: Apr 2028',
-                      'Qty: 1',
-                      '₹945',
-                    ),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildItemRow(
-                      'Calcirol D3 60,000 IU Oral Solution',
-                      'Batch: CAL-26-118 | Exp: Oct 2027',
-                      'Qty: 2',
-                      '₹210',
-                    ),
+                    if (order.items.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          '${order.itemCount} statutory medicine item(s) in this order.',
+                          style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                        ),
+                      )
+                    else
+                      ...order.items.asMap().entries.map((entry) {
+                        final idx = entry.key;
+                        final item = entry.value;
+                        return Column(
+                          children: [
+                            if (idx > 0) const Divider(height: 1, color: AppColors.border),
+                            _buildItemRow(
+                              item.productName,
+                              'Batch: ${item.batchNumber} • Exp: ${item.expiryDate}',
+                              'Qty: ${item.quantity}',
+                              '₹${(item.unitPrice * item.quantity).toStringAsFixed(0)}',
+                            ),
+                          ],
+                        );
+                      }),
                   ],
                 ),
               ),
@@ -159,7 +246,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     const Text('Payment Details', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText)),
                     const SizedBox(height: 10),
-                    _buildBillRow('Item Subtotal', '₹1,155'),
+                    _buildBillRow('Item Subtotal', '₹${itemsSubtotal.toStringAsFixed(0)}'),
+                    if (order.couponCode != null || order.discountAmount > 0) ...[
+                      const SizedBox(height: 6),
+                      _buildBillRow(
+                        'Coupon Discount (${order.couponCode ?? "PROMO"})',
+                        '-₹${order.discountAmount > 0 ? order.discountAmount.toStringAsFixed(0) : (itemsSubtotal - order.totalAmount).clamp(0.0, double.infinity).toStringAsFixed(0)}',
+                        isDiscount: true,
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     _buildBillRow('Delivery', 'FREE (Compliant Cold-Chain)'),
                     const SizedBox(height: 6),
@@ -198,22 +293,35 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.mainText)),
                 const SizedBox(height: 2),
                 Text(batch, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w500)),
-                Text(qty, style: const TextStyle(fontSize: 10, color: AppColors.secondaryText)),
               ],
             ),
           ),
-          Text(price, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText)),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(price, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.mainText)),
+              Text(qty, style: const TextStyle(fontSize: 10, color: AppColors.secondaryText)),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBillRow(String label, String value) {
+  Widget _buildBillRow(String label, String value, {bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
-        Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.mainText)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isDiscount ? FontWeight.bold : FontWeight.w500,
+            color: isDiscount ? AppColors.secondary : AppColors.mainText,
+          ),
+        ),
       ],
     );
   }

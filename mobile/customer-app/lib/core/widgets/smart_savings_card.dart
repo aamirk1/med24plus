@@ -13,7 +13,8 @@ class SmartSavingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3), width: 1.2),
+        border: Border.all(
+            color: AppColors.secondary.withValues(alpha: 0.3), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withValues(alpha: 0.05),
@@ -48,7 +49,8 @@ class SmartSavingsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.savingsBadgeBg,
                         borderRadius: BorderRadius.circular(6),
@@ -56,7 +58,8 @@ class SmartSavingsCard extends StatelessWidget {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.savingsBadgeText),
+                          Icon(Icons.check_circle_rounded,
+                              size: 12, color: AppColors.savingsBadgeText),
                           SizedBox(width: 4),
                           Text(
                             'Smart Savings',
@@ -97,7 +100,7 @@ class SmartSavingsCard extends StatelessWidget {
                 child: Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.primaryLight,
                     shape: BoxShape.circle,
                   ),
@@ -131,7 +134,7 @@ class SmartSavingsCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.medication_rounded,
                       size: 32,
@@ -184,7 +187,8 @@ class SmartSavingsCard extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.savingsBadgeBg,
                               borderRadius: BorderRadius.circular(4),

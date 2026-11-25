@@ -14,8 +14,8 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  List<MobileCategory> _categories = MockData.categories;
-  bool _isLoading = false;
+  List<MobileCategory> _categories = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -54,7 +54,36 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             child: RefreshIndicator(
               color: AppColors.primary,
               onRefresh: _loadCategories,
-              child: GridView.builder(
+              child: _categories.isEmpty && !_isLoading
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.category_outlined, size: 48, color: AppColors.secondaryText),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'No Categories Found',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Therapeutic catalog taxonomy will update shortly.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: _loadCategories,
+                              icon: const Icon(Icons.refresh, size: 16),
+                              label: const Text('Refresh', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
                 padding: const EdgeInsets.all(16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,

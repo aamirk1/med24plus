@@ -9,7 +9,7 @@ class NotificationService extends ChangeNotifier {
   final ApiClient _apiClient = ApiClient.instance;
 
   NotificationService._internal() {
-    _notifications = List.from(MockData.notifications);
+    _notifications = [];
   }
 
   late List<MobileNotification> _notifications;
@@ -22,7 +22,7 @@ class NotificationService extends ChangeNotifier {
 
   bool get isEmpty => _notifications.isEmpty;
 
-  /// Fetch notifications from backend with fallback
+  /// Fetch notifications from backend
   Future<void> fetchNotifications() async {
     try {
       final response = await _apiClient.dio.get(ApiEndpoints.notifications);
@@ -87,6 +87,11 @@ class NotificationService extends ChangeNotifier {
     } catch (_) {}
   }
 
+  void clearAll() {
+    _notifications.clear();
+    notifyListeners();
+  }
+
   void addNotification({
     required String title,
     required String message,
@@ -102,16 +107,6 @@ class NotificationService extends ChangeNotifier {
         isRead: false,
       ),
     );
-    notifyListeners();
-  }
-
-  void removeNotification(String id) {
-    _notifications.removeWhere((n) => n.id == id);
-    notifyListeners();
-  }
-
-  void clearAll() {
-    _notifications.clear();
     notifyListeners();
   }
 }

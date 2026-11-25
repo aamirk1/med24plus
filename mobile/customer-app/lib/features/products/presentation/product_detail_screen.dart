@@ -6,6 +6,7 @@ import '../../../core/services/cart_service.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/brand_substitutes_widget.dart';
 import '../../../core/widgets/counter_badges.dart';
@@ -23,29 +24,91 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
-  late MobileProduct _activeProduct;
+  MobileProduct? _activeProduct;
+  List<BrandSubstituteOption> _substitutes = [];
+  bool _isLoading = true;
   BrandSubstituteOption? _selectedSubstitute;
+
+  MobileProduct get _product => _activeProduct!;
 
   @override
   void initState() {
     super.initState();
-    _activeProduct = MockData.products.firstWhere(
-      (p) => p.id == widget.productId,
-      orElse: () => MockData.products.first,
-    );
     _loadLiveDetails();
   }
 
   Future<void> _loadLiveDetails() async {
+    setState(() => _isLoading = true);
     final liveProduct = await CatalogService.instance.getProductById(widget.productId);
+    final subs = await CatalogService.instance.getSubstitutes(widget.productId);
     if (mounted) {
-      setState(() => _activeProduct = liveProduct);
+      setState(() {
+        _activeProduct = liveProduct;
+        _substitutes = subs;
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final substituteOptions = MockData.getSubstitutesForProduct(_activeProduct.id);
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
+          ),
+          title: const Text('Loading Medicine...'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (_activeProduct == null) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
+          ),
+          title: const Text('Medicine Not Found'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.secondaryText),
+                const SizedBox(height: 16),
+                const Text(
+                  'Product Not Available',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'The requested medication could not be found in catalog.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                ),
+                const SizedBox(height: 20),
+                AppButton(
+                  text: 'Browse Catalog',
+                  onPressed: () => context.go('/home'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final substituteOptions = _substitutes;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -138,7 +201,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: AppBadge.schedule(_activeProduct.schedule),
+                    child: AppBadge.schedule(_product.schedule),
                   ),
                 ],
               ),
@@ -152,7 +215,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _selectedSubstitute != null ? _selectedSubstitute!.name : _activeProduct.name,
+                    _selectedSubstitute != null ? _selectedSubstitute!.name : _product.name,
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w800,
@@ -162,7 +225,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_activeProduct.saltComposition} | ${_activeProduct.dosageForm}',
+                    '${_product.saltComposition} | ${_product.dosageForm}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.secondaryText,
@@ -185,7 +248,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const Icon(Icons.star_rounded, size: 13, color: Color(0xFFD97706)),
                             const SizedBox(width: 3),
                             Text(
-                              '${_activeProduct.rating}',
+                              '${_product.rating}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -197,7 +260,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '(${_activeProduct.reviewsCount} Reviews)',
+                        '(${_product.reviewsCount} Reviews)',
                         style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
                       ),
                     ],
@@ -211,9 +274,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 90),
               child: PriceWidget(
-                sellingPrice: _selectedSubstitute != null ? _selectedSubstitute!.sellingPrice : _activeProduct.sellingPrice,
-                mrp: _selectedSubstitute != null ? _selectedSubstitute!.mrp : _activeProduct.mrp,
-                discountPercent: _selectedSubstitute != null ? _selectedSubstitute!.savingsPercent : _activeProduct.discountPercent,
+                sellingPrice: _selectedSubstitute != null ? _selectedSubstitute!.sellingPrice : _product.sellingPrice,
+                mrp: _selectedSubstitute != null ? _selectedSubstitute!.mrp : _product.mrp,
+                discountPercent: _selectedSubstitute != null ? _selectedSubstitute!.savingsPercent : _product.discountPercent,
                 fontSize: 22,
               ),
             ),
@@ -274,7 +337,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               delay: const Duration(milliseconds: 120),
               child: BrandSubstitutesWidget(
                 options: substituteOptions,
-                activeSalt: _activeProduct.saltComposition.split(' ')[0],
+                activeSalt: _product.saltComposition.split(' ')[0],
                 strength: '500 mg',
                 onOptionSelected: (selected) {
                   setState(() {
@@ -293,7 +356,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const SizedBox(height: 20),
 
             // Clinical Schedule Notice
-            if (_activeProduct.requiresPrescription) ...[
+            if (_product.requiresPrescription) ...[
               AnimatedFadeSlide(
                 delay: const Duration(milliseconds: 150),
                 child: Container(
@@ -349,7 +412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _activeProduct.saltComposition,
+                    _product.saltComposition,
                     style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
                   ),
                 ],
@@ -369,7 +432,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _activeProduct.description,
+                    _product.description,
                     style: const TextStyle(fontSize: 12, color: AppColors.secondaryText, height: 1.5),
                   ),
                 ],
@@ -397,8 +460,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 1,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  final displayName = _selectedSubstitute?.name ?? _activeProduct.name;
-                  CartService.instance.addItem(_activeProduct, _quantity);
+                  final displayName = _selectedSubstitute?.name ?? _product.name;
+                  CartService.instance.addItem(_product, _quantity);
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

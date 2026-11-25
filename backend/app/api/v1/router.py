@@ -20,6 +20,7 @@ from app.api.v1.endpoints import (
     upload,
     settings,
     membership,
+    coupons,
 )
 from app.modules.orders.routes import (
     admin_orders_router,
@@ -95,4 +96,10 @@ api_router.include_router(settings.admin_router, prefix="/admin/settings", tags=
 # Med24Plus Membership Plans (Public & Admin)
 api_router.include_router(membership.router, prefix="/membership", tags=["Membership"])
 api_router.include_router(membership.admin_router, prefix="/admin/membership", tags=["Admin Membership"])
+
+# Promotional Marketing Coupons & Discounts (Public & Admin)
+api_router.include_router(coupons.router, prefix="/coupons", tags=["Customer Coupons & Offers"])
+api_router.include_router(coupons.admin_router, prefix="/admin/coupons", tags=["Admin Marketing Coupons"])
+api_router.include_router(coupons.admin_router, prefix="/marketing/coupons", tags=["Marketing Coupons"])
+
 

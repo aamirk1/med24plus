@@ -22,7 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
   Timer? _debounce;
-  List<MobileProduct> _results = MockData.products;
+  List<MobileProduct> _results = [];
   bool _isSearching = false;
 
   @override

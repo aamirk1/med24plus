@@ -13,8 +13,8 @@ class AddressesScreen extends StatefulWidget {
 }
 
 class _AddressesScreenState extends State<AddressesScreen> {
-  List<MobileAddress> _addresses = MockData.addresses;
-  bool _isLoading = false;
+  List<MobileAddress> _addresses = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -52,7 +52,30 @@ class _AddressesScreenState extends State<AddressesScreen> {
             child: RefreshIndicator(
               color: AppColors.primary,
               onRefresh: _loadAddresses,
-              child: ListView.separated(
+              child: _addresses.isEmpty && !_isLoading
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.location_off_outlined, size: 48, color: AppColors.secondaryText),
+                            SizedBox(height: 16),
+                            Text(
+                              'No Saved Addresses',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Add your home or office delivery address.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: _addresses.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),

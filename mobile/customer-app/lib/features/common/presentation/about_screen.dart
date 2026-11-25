@@ -25,14 +25,14 @@ class AboutScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Column(
+              child: const Column(
                 children: [
-                  const AppLogo(
+                  AppLogo(
                     size: 72,
                     borderRadius: 18,
                     withShadow: true,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   const Text(
                     AppStrings.appName,
                     style: TextStyle(

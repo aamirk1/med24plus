@@ -3,7 +3,6 @@ import '../mock/mock_data.dart';
 import '../network/api_client.dart';
 
 /// Catalog API Service for fetching real-time medicines, categories, and brand substitutes
-/// with intelligent, zero-friction fallback to MockData when backend is booting or offline.
 class CatalogService {
   CatalogService._();
   static final CatalogService instance = CatalogService._();
@@ -49,30 +48,13 @@ class CatalogService {
               .toList();
         }
       }
-    } catch (_) {
-      // Graceful fallback to offline catalog cache
-    }
+    } catch (_) {}
 
-    // Fallback to MockData
-    List<MobileProduct> products = MockData.products;
-    if (search != null && search.trim().isNotEmpty) {
-      final q = search.trim().toLowerCase();
-      products = products.where((p) {
-        return p.name.toLowerCase().contains(q) ||
-            p.brand.toLowerCase().contains(q) ||
-            p.saltComposition.toLowerCase().contains(q);
-      }).toList();
-    }
-    if (categoryId != null && categoryId.isNotEmpty) {
-      products = products.where((p) {
-        return p.category.toLowerCase() == categoryId.toLowerCase();
-      }).toList();
-    }
-    return products;
+    return [];
   }
 
   /// Fetch single product details by ID or slug
-  Future<MobileProduct> getProductById(String id) async {
+  Future<MobileProduct?> getProductById(String id) async {
     try {
       final response = await _apiClient.dio.get(ApiEndpoints.productDetail(id));
       if (response.statusCode == 200 && response.data != null) {
@@ -83,10 +65,7 @@ class CatalogService {
       }
     } catch (_) {}
 
-    return MockData.products.firstWhere(
-      (p) => p.id == id,
-      orElse: () => MockData.products.first,
-    );
+    return null;
   }
 
   /// Fetch public medicine taxonomy categories
@@ -110,7 +89,7 @@ class CatalogService {
       }
     } catch (_) {}
 
-    return MockData.categories;
+    return [];
   }
 
   /// Fetch brand substitute options for therapeutic switching
@@ -141,6 +120,6 @@ class CatalogService {
       }
     } catch (_) {}
 
-    return MockData.getSubstitutesForProduct(productId);
+    return [];
   }
 }

@@ -31,7 +31,7 @@ class AddressService {
       }
     } catch (_) {}
 
-    return MockData.addresses;
+    return [];
   }
 
   /// Add new delivery address

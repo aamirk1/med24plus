@@ -19,8 +19,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<MobileProduct> _products = MockData.products;
-  bool _isLoading = false;
+  List<MobileProduct> _products = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -63,14 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
+                        const Row(
                           children: [
-                            const AppLogo(
+                            AppLogo(
                               size: 38,
                               borderRadius: 8,
                             ),
-                            const SizedBox(width: 10),
-                            const Column(
+                            SizedBox(width: 10),
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -500,45 +500,91 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Products Grid
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.58,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+            if (_isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final product = _products[index];
-                    return AnimatedFadeSlide(
-                      delay: Duration(milliseconds: index * 30),
-                      child: ProductCard(
-                        product: product,
-                        onTap: () => context.push('/product/${product.id}'),
-                        onAddToCart: () {
-                          CartService.instance.addItem(product);
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${product.name} added to cart'),
-                              duration: const Duration(seconds: 2),
-                              action: SnackBarAction(
-                                label: 'VIEW CART',
-                                textColor: AppColors.secondary,
-                                onPressed: () => context.push('/cart'),
+              )
+            else if (_products.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.inventory_2_outlined, size: 40, color: AppColors.secondaryText),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'No Products Available',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.mainText),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Catalog medicines are loading or being restocked. Tap below to refresh.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _loadProducts,
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Refresh Catalog', style: TextStyle(fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.58,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final product = _products[index];
+                      return AnimatedFadeSlide(
+                        delay: Duration(milliseconds: index * 30),
+                        child: ProductCard(
+                          product: product,
+                          onTap: () => context.push('/product/${product.id}'),
+                          onAddToCart: () {
+                            CartService.instance.addItem(product);
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${product.name} added to cart'),
+                                duration: const Duration(seconds: 2),
+                                action: SnackBarAction(
+                                  label: 'VIEW CART',
+                                  textColor: AppColors.secondary,
+                                  onPressed: () => context.push('/cart'),
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  childCount: _products.length,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    childCount: _products.length,
+                  ),
                 ),
               ),
-            ),
 
             const SliverToBoxAdapter(
               child: SizedBox(height: 28),

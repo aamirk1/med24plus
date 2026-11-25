@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/services/cart_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/coupon_input_card.dart';
 import '../../../core/widgets/quantity_selector.dart';
 
 class CartScreen extends StatefulWidget {
@@ -62,6 +63,8 @@ class _CartScreenState extends State<CartScreen> {
         final subtotal = cart.subtotal;
         final mrpTotal = cart.mrpTotal;
         final savings = cart.savings;
+        final couponDiscount = cart.couponDiscount;
+        final totalPayable = cart.totalPayable;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -150,6 +153,13 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // Coupon Code Input Card
+                const AnimatedFadeSlide(
+                  delay: Duration(milliseconds: 100),
+                  child: CouponInputCard(),
+                ),
+                const SizedBox(height: 16),
+
                 // Bill Breakdown Card
                 AnimatedFadeSlide(
                   delay: const Duration(milliseconds: 150),
@@ -177,6 +187,14 @@ class _CartScreenState extends State<CartScreen> {
                         _buildSummaryRow(
                             'Pharmacy Discount', '-₹${savings.toStringAsFixed(0)}',
                             isDiscount: true),
+                        if (couponDiscount > 0) ...[
+                          const SizedBox(height: 6),
+                          _buildSummaryRow(
+                            'Coupon Discount (${cart.appliedCouponCode})',
+                            '-₹${couponDiscount.toStringAsFixed(0)}',
+                            isDiscount: true,
+                          ),
+                        ],
                         const SizedBox(height: 6),
                         _buildSummaryRow('Estimated GST (Included)',
                             '₹${(subtotal * 0.12).toStringAsFixed(0)}'),
@@ -199,8 +217,8 @@ class _CartScreenState extends State<CartScreen> {
                               transitionBuilder: (child, animation) =>
                                   FadeTransition(opacity: animation, child: child),
                               child: Text(
-                                '₹${subtotal.toStringAsFixed(0)}',
-                                key: ValueKey<double>(subtotal),
+                                '₹${totalPayable.toStringAsFixed(0)}',
+                                key: ValueKey<double>(totalPayable),
                                 style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -219,7 +237,7 @@ class _CartScreenState extends State<CartScreen> {
                 AnimatedFadeSlide(
                   delay: const Duration(milliseconds: 200),
                   child: AppButton(
-                    text: 'Proceed to Checkout (₹${subtotal.toStringAsFixed(0)})',
+                    text: 'Proceed to Checkout (₹${totalPayable.toStringAsFixed(0)})',
                     isFullWidth: true,
                     onPressed: () => context.push('/checkout'),
                   ),
@@ -256,25 +274,25 @@ class _CartScreenState extends State<CartScreen> {
             const Text(
               'Your Shopping Cart is Empty',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.mainText,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Explore our pharmacy catalog to add medicines and healthcare essentials.',
+              'Explore medications, wellness essentials, and healthcare diagnostics.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 color: AppColors.secondaryText,
                 height: 1.4,
               ),
             ),
             const SizedBox(height: 24),
             AppButton(
-              text: 'Explore Products',
-              onPressed: () => context.push('/products'),
+              text: 'Browse Medicines',
+              onPressed: () => context.go('/home'),
             ),
           ],
         ),
@@ -283,9 +301,9 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCartRow(BuildContext context, CartItem entry, int index) {
-    final product = entry.product;
+    final cart = CartService.instance;
     return Padding(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -295,9 +313,10 @@ class _CartScreenState extends State<CartScreen> {
             decoration: BoxDecoration(
               color: AppColors.background,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
             child: const Icon(Icons.medication_outlined,
-                color: AppColors.primary, size: 24),
+                color: AppColors.primary, size: 28),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -305,58 +324,47 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product.name,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.mainText),
-                  maxLines: 2,
+                  entry.product.name,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.mainText),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  '₹${product.sellingPrice.toStringAsFixed(0)} each',
+                  '${entry.product.brand} • ${entry.product.packSize}',
                   style: const TextStyle(
                       fontSize: 11, color: AppColors.secondaryText),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      '₹${entry.product.sellingPrice.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '₹${entry.product.mrp.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.secondaryText,
+                          decoration: TextDecoration.lineThrough),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              QuantitySelector(
-                quantity: entry.quantity,
-                onQuantityChanged: (q) {
-                  CartService.instance.updateQuantity(entry.product.id, q);
-                },
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () => _removeItem(context, index),
-                borderRadius: BorderRadius.circular(4),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.delete_outline_rounded,
-                          size: 14, color: AppColors.error),
-                      SizedBox(width: 3),
-                      Text(
-                        'Remove',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          QuantitySelector(
+            quantity: entry.quantity,
+            onQuantityChanged: (newQty) {
+              cart.updateQuantity(entry.product.id, newQty);
+            },
           ),
         ],
       ),
@@ -365,25 +373,23 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildSummaryRow(String label, String value,
       {bool isDiscount = false, bool isFree = false}) {
+    Color valueColor = AppColors.mainText;
+    if (isDiscount) valueColor = AppColors.secondary;
+    if (isFree) valueColor = AppColors.success;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style:
-                const TextStyle(fontSize: 12, color: AppColors.secondaryText)),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          transitionBuilder: (child, animation) =>
-              FadeTransition(opacity: animation, child: child),
-          child: Text(
-            value,
-            key: ValueKey<String>(value),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color:
-                  isDiscount || isFree ? AppColors.success : AppColors.mainText,
-            ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isDiscount || isFree ? FontWeight.bold : FontWeight.normal,
+            color: valueColor,
           ),
         ),
       ],

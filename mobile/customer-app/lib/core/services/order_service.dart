@@ -40,14 +40,7 @@ class OrderService {
       }
     } catch (_) {}
 
-    // Fallback to MockData
-    if (status == null || status.toLowerCase() == 'all') {
-      return MockData.orders;
-    }
-    if (status.toLowerCase() == 'active') {
-      return MockData.orders.where((o) => o.status != 'Delivered' && o.status != 'Cancelled').toList();
-    }
-    return MockData.orders.where((o) => o.status.toLowerCase() == status.toLowerCase()).toList();
+    return [];
   }
 
   /// Fetch order details by ID
@@ -62,10 +55,7 @@ class OrderService {
       }
     } catch (_) {}
 
-    return MockData.orders.firstWhere(
-      (o) => o.id == orderId || o.orderNumber == orderId,
-      orElse: () => MockData.orders.first,
-    );
+    return null;
   }
 
   /// Create new statutory dispensing order
@@ -73,14 +63,19 @@ class OrderService {
     required String addressId,
     required String paymentMethod,
     required List<CartItem> items,
+    String? couponCode,
+    double? discountAmount,
   }) async {
     try {
       final body = {
         'shipping_address_id': addressId,
         'payment_method': paymentMethod,
+        'coupon_code': couponCode,
+        'discount_amount': discountAmount ?? 0.0,
         'items': items.map((i) => {
           'product_id': i.product.id,
           'quantity': i.quantity,
+          'unit_price': i.product.sellingPrice,
         }).toList(),
       };
 
@@ -91,7 +86,6 @@ class OrderService {
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      // In offline/mock mode, simulate success
       return true;
     }
   }

@@ -16,8 +16,8 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   int _selectedTabIndex = 0;
   static const List<String> _tabs = ['All Orders', 'Processing', 'Delivered'];
-  List<MobileOrder> _allOrders = MockData.orders;
-  bool _isLoading = false;
+  List<MobileOrder> _allOrders = [];
+  bool _isLoading = true;
 
   @override
   void initState() {

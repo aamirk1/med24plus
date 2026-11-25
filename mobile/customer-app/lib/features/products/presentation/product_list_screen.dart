@@ -19,8 +19,8 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   String _selectedSchedule = 'ALL';
-  List<MobileProduct> _allProducts = MockData.products;
-  bool _isLoading = false;
+  List<MobileProduct> _allProducts = [];
+  bool _isLoading = true;
 
   static const List<Map<String, String>> _filterOptions = [
     {'value': 'ALL', 'label': 'All Drugs'},
