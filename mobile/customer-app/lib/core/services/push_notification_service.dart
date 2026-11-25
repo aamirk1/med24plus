@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../firebase_options.dart';
 import '../constants/api_endpoints.dart';
 import '../network/api_client.dart';
+import 'notification_service.dart';
 
 /// Top-level background message handler invoked by native Android/iOS
 /// when a push notification is received while the application is in the background or terminated.
@@ -103,6 +104,11 @@ class PushNotificationService {
         developer.log(
           'Foreground message received: ${message.notification?.title} - ${message.notification?.body}',
           name: 'PushNotificationService',
+        );
+        NotificationService.instance.addNotification(
+          title: message.notification?.title ?? 'Med24Plus Notification',
+          message: message.notification?.body ?? '',
+          time: 'Just now',
         );
         _onMessageController.add(message);
       });

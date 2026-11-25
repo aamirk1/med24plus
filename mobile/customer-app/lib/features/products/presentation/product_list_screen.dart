@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/cart_service.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -44,10 +46,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             icon: const Icon(Icons.search, size: 22),
             onPressed: () => context.push('/search'),
           ),
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined, size: 22),
-            onPressed: () => context.push('/cart'),
-          ),
+          const CartBadgeIcon(iconSize: 22),
         ],
       ),
       body: Column(
@@ -115,8 +114,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             product: product,
                             onTap: () => context.push('/product/${product.id}'),
                             onAddToCart: () {
+                              CartService.instance.addItem(product);
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('${product.name} added to cart')),
+                                SnackBar(
+                                  content: Text('${product.name} added to cart'),
+                                  duration: const Duration(seconds: 2),
+                                  action: SnackBarAction(
+                                    label: 'VIEW CART',
+                                    textColor: AppColors.secondary,
+                                    onPressed: () => context.push('/cart'),
+                                  ),
+                                ),
                               );
                             },
                           ),

@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/cart_service.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/smart_savings_card.dart';
 
@@ -70,58 +72,10 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        Row(
+                        const Row(
                           children: [
-                            // Notification with red badge (2)
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.notifications_none_rounded, size: 24, color: AppColors.mainText),
-                                  onPressed: () => context.push('/notifications'),
-                                ),
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.danger,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Text(
-                                      '2',
-                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // Cart with green badge (1)
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.shopping_cart_outlined, size: 24, color: AppColors.mainText),
-                                  onPressed: () => context.push('/cart'),
-                                ),
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.secondary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Text(
-                                      '1',
-                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            NotificationBadgeIcon(),
+                            CartBadgeIcon(),
                           ],
                         ),
                       ],
@@ -531,8 +485,18 @@ class HomeScreen extends StatelessWidget {
                         product: product,
                         onTap: () => context.push('/product/${product.id}'),
                         onAddToCart: () {
+                          CartService.instance.addItem(product);
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${product.name} added to cart')),
+                            SnackBar(
+                              content: Text('${product.name} added to cart'),
+                              duration: const Duration(seconds: 2),
+                              action: SnackBarAction(
+                                label: 'VIEW CART',
+                                textColor: AppColors.secondary,
+                                onPressed: () => context.push('/cart'),
+                              ),
+                            ),
                           );
                         },
                       ),

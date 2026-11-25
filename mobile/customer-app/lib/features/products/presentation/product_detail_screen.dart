@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/cart_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../core/widgets/brand_substitutes_widget.dart';
+import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/price_widget.dart';
 import '../../../core/widgets/quantity_selector.dart';
 
@@ -69,30 +71,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             icon: const Icon(Icons.search_rounded, size: 22),
             onPressed: () => context.push('/search'),
           ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined, size: 22),
-                onPressed: () => context.push('/cart'),
-              ),
-              Positioned(
-                right: 6,
-                top: 6,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.secondary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Text(
-                    '2',
-                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const CartBadgeIcon(iconSize: 22),
           const SizedBox(width: 4),
         ],
       ),
@@ -419,8 +398,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: OutlinedButton.icon(
                 onPressed: () {
                   final displayName = _selectedSubstitute?.name ?? _activeProduct.name;
+                  CartService.instance.addItem(_activeProduct, _quantity);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('$displayName (x$_quantity) added to cart')),
+                    SnackBar(
+                      content: Text('$displayName (x$_quantity) added to cart'),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'VIEW CART',
+                        textColor: AppColors.secondary,
+                        onPressed: () => context.push('/cart'),
+                      ),
+                    ),
                   );
                 },
                 style: OutlinedButton.styleFrom(

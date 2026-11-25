@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/cart_service.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/app_empty_widget.dart';
 
@@ -38,8 +40,14 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         titleSpacing: 0,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: CartBadgeIcon(iconSize: 22),
+          ),
+        ],
         title: Padding(
-          padding: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.only(right: 8),
           child: TextField(
             controller: _searchController,
             autofocus: true,
@@ -92,8 +100,18 @@ class _SearchScreenState extends State<SearchScreen> {
                     product: product,
                     onTap: () => context.push('/product/${product.id}'),
                     onAddToCart: () {
+                      CartService.instance.addItem(product);
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${product.name} added to cart')),
+                        SnackBar(
+                          content: Text('${product.name} added to cart'),
+                          duration: const Duration(seconds: 2),
+                          action: SnackBarAction(
+                            label: 'VIEW CART',
+                            textColor: AppColors.secondary,
+                            onPressed: () => context.push('/cart'),
+                          ),
+                        ),
                       );
                     },
                   ),
