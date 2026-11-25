@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -26,15 +27,10 @@ class AboutScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryLight,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.local_hospital_rounded,
-                        size: 32, color: AppColors.primary),
+                  const AppLogo(
+                    size: 72,
+                    borderRadius: 18,
+                    withShadow: true,
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -104,16 +100,31 @@ class AboutScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
               style: const TextStyle(
-                  fontSize: 11, color: AppColors.secondaryText)),
-          Text(value,
+                fontSize: 11,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
               style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.mainText)),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.mainText,
+              ),
+            ),
+          ),
         ],
       ),
     );

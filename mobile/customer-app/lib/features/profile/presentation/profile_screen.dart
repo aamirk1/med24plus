@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../auth/presentation/bloc/auth_event.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
@@ -300,6 +302,35 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 );
               },
+            ),
+            const SizedBox(height: 24),
+            const Center(
+              child: Column(
+                children: [
+                  AppLogo(
+                    size: 42,
+                    borderRadius: 10,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '${AppStrings.appName} • v1.0.2',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.mainText,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Licensed Retail Pharmacy • PCI Registered',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
             ),
           ],
         ),

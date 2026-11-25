@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/app_text_field.dart';
 
 class ContactScreen extends StatefulWidget {
@@ -42,9 +43,15 @@ class _ContactScreenState extends State<ContactScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Direct Pharmacy Contacts',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                  const Row(
+                    children: [
+                      AppLogo(size: 28, borderRadius: 6),
+                      SizedBox(width: 8),
+                      Text(
+                        'Direct Pharmacy Contacts',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   _buildContactRow(Icons.phone_outlined, 'Emergency Pharmacist Helpline', '+91 80 2345 6789'),

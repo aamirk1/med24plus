@@ -34,6 +34,27 @@ class MobileProduct {
     this.reviewsCount = 142,
     this.description = '',
   });
+
+  factory MobileProduct.fromJson(Map<String, dynamic> json) {
+    return MobileProduct(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      brand: json['brand_name']?.toString() ?? json['brand']?.toString() ?? 'Med24Plus Pharmacy',
+      category: json['category_name']?.toString() ?? json['category']?.toString() ?? 'Medicines',
+      dosageForm: json['dosage_form']?.toString() ?? json['dosageForm']?.toString() ?? 'Tablet',
+      saltComposition: json['generic_name']?.toString() ?? json['saltComposition']?.toString() ?? '',
+      mrp: (json['mrp'] as num?)?.toDouble() ?? 0.0,
+      sellingPrice: (json['selling_price'] as num?)?.toDouble() ?? (json['sellingPrice'] as num?)?.toDouble() ?? 0.0,
+      discountPercent: (json['discount_percent'] as num?)?.toInt() ?? (json['discountPercent'] as num?)?.toInt() ?? 0,
+      packSize: json['pack_size']?.toString() ?? json['packSize']?.toString() ?? '1 Strip',
+      requiresPrescription: json['requires_prescription'] == true || json['requiresPrescription'] == true,
+      schedule: json['schedule_classification']?.toString() ?? json['schedule']?.toString() ?? 'OTC',
+      inStock: json['is_in_stock'] != false && json['inStock'] != false,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.8,
+      reviewsCount: (json['reviews_count'] as num?)?.toInt() ?? (json['reviewsCount'] as num?)?.toInt() ?? 128,
+      description: json['description']?.toString() ?? 'Compounded and dispensed under registered pharmacist supervision.',
+    );
+  }
 }
 
 class BrandSubstituteOption {
@@ -85,6 +106,16 @@ class MobileCategory {
     required this.icon,
     required this.count,
   });
+
+  factory MobileCategory.fromJson(Map<String, dynamic> json) {
+    return MobileCategory(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      slug: json['slug']?.toString() ?? '',
+      icon: json['icon']?.toString() ?? 'medication',
+      count: (json['product_count'] as num?)?.toInt() ?? (json['count'] as num?)?.toInt() ?? 24,
+    );
+  }
 }
 
 class MobileOrder {
@@ -109,6 +140,20 @@ class MobileOrder {
     required this.paymentMethod,
     required this.deliveryPincode,
   });
+
+  factory MobileOrder.fromJson(Map<String, dynamic> json) {
+    return MobileOrder(
+      id: json['id']?.toString() ?? '',
+      orderNumber: json['order_number']?.toString() ?? json['orderNumber']?.toString() ?? 'ORD-M24',
+      date: json['created_at']?.toString().split('T').first ?? json['date']?.toString() ?? 'Today',
+      status: json['status']?.toString() ?? 'Processing',
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      itemCount: (json['items'] as List?)?.length ?? (json['itemCount'] as num?)?.toInt() ?? 1,
+      hasPrescription: json['has_prescription'] == true || json['hasPrescription'] == true,
+      paymentMethod: json['payment_method']?.toString() ?? json['paymentMethod']?.toString() ?? 'UPI / Card',
+      deliveryPincode: json['shipping_pincode']?.toString() ?? json['deliveryPincode']?.toString() ?? '560034',
+    );
+  }
 }
 
 class MobileAddress {
@@ -131,6 +176,19 @@ class MobileAddress {
     required this.pincode,
     this.isDefault = false,
   });
+
+  factory MobileAddress.fromJson(Map<String, dynamic> json) {
+    return MobileAddress(
+      id: json['id']?.toString() ?? '',
+      label: json['address_type']?.toString() ?? json['label']?.toString() ?? 'Home',
+      recipientName: json['recipient_name']?.toString() ?? json['recipientName']?.toString() ?? 'Patient',
+      phone: json['phone']?.toString() ?? '',
+      addressLine: json['address_line1']?.toString() ?? json['addressLine']?.toString() ?? '',
+      city: json['city']?.toString() ?? 'Bengaluru',
+      pincode: json['pincode']?.toString() ?? '560034',
+      isDefault: json['is_default'] == true || json['isDefault'] == true,
+    );
+  }
 }
 
 class MobilePrescription {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/cart_service.dart';
+import '../../../core/services/order_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -114,7 +116,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: AppButton(
                 text: 'Place Order (₹1,155)',
                 isFullWidth: true,
-                onPressed: () {
+                onPressed: () async {
+                  await OrderService.instance.createOrder(
+                    addressId: address.id,
+                    paymentMethod: _selectedPayment,
+                    items: CartService.instance.items,
+                  );
+                  CartService.instance.clearCart();
+                  if (!context.mounted) return;
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(

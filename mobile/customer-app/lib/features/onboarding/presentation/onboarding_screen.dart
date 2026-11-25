@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -42,6 +43,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 16),
+          child: AppLogo(size: 32, borderRadius: 8),
+        ),
         actions: [
           TextButton(
             onPressed: () => context.go('/home'),

@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
 import '../../../core/services/cart_service.dart';
+import '../../../core/services/catalog_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/brand_substitutes_widget.dart';
 import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/price_widget.dart';
@@ -31,6 +33,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       (p) => p.id == widget.productId,
       orElse: () => MockData.products.first,
     );
+    _loadLiveDetails();
+  }
+
+  Future<void> _loadLiveDetails() async {
+    final liveProduct = await CatalogService.instance.getProductById(widget.productId);
+    if (mounted) {
+      setState(() => _activeProduct = liveProduct);
+    }
   }
 
   @override
@@ -44,18 +54,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
         ),
-        title: Row(
+        title: const Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(Icons.local_hospital_rounded, color: AppColors.primary, size: 18),
-            ),
-            const SizedBox(width: 8),
-            const Text(
+            AppLogo(size: 28, borderRadius: 6),
+            SizedBox(width: 8),
+            Text(
               'Med24Plus',
               style: TextStyle(
                 fontSize: 17,
@@ -80,67 +83,64 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Hero Image Container
-            Hero(
-              tag: 'product_card_img_${_activeProduct.id}',
-              child: Container(
-                height: 220,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Icon(
-                        Icons.medication_rounded,
-                        size: 88,
-                        color: AppColors.primary.withValues(alpha: 0.35),
+            // Product Image Container
+            Container(
+              height: 220,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Icon(
+                      Icons.medication_rounded,
+                      size: 88,
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryLight,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Rx',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.secondaryDark,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Required',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.secondaryDark,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondaryLight,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Rx',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.secondaryDark,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Required',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.secondaryDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: AppBadge.schedule(_activeProduct.schedule),
-                    ),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: AppBadge.schedule(_activeProduct.schedule),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

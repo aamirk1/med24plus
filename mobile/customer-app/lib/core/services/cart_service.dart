@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import '../constants/api_endpoints.dart';
 import '../mock/mock_data.dart';
+import '../network/api_client.dart';
 
 class CartItem {
   final MobileProduct product;
@@ -10,6 +12,8 @@ class CartItem {
 
 class CartService extends ChangeNotifier {
   static final CartService instance = CartService._internal();
+
+  final ApiClient _apiClient = ApiClient.instance;
 
   CartService._internal() {
     // Initial sample cart items
@@ -43,6 +47,30 @@ class CartService extends ChangeNotifier {
 
   bool get isEmpty => _items.isEmpty;
 
+  /// Fetch cart from backend if authenticated
+  Future<void> fetchServerCart() async {
+    try {
+      final response = await _apiClient.dio.get(ApiEndpoints.cart);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'] ?? response.data;
+        if (data is Map && data.containsKey('items')) {
+          final itemsList = data['items'] as List;
+          if (itemsList.isNotEmpty) {
+            _items = itemsList.map((item) {
+              final productJson = item['product'] as Map<String, dynamic>;
+              final qty = (item['quantity'] as num?)?.toInt() ?? 1;
+              return CartItem(
+                product: MobileProduct.fromJson(productJson),
+                quantity: qty,
+              );
+            }).toList();
+            notifyListeners();
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
   void addItem(MobileProduct product, [int quantity = 1]) {
     final existingIndex = _items.indexWhere((i) => i.product.id == product.id);
     if (existingIndex >= 0) {
@@ -51,6 +79,7 @@ class CartService extends ChangeNotifier {
       _items.add(CartItem(product: product, quantity: quantity));
     }
     notifyListeners();
+    _syncItemToServer(product.id, quantity);
   }
 
   void removeItem(String productId) {
@@ -79,6 +108,7 @@ class CartService extends ChangeNotifier {
     if (existingIndex >= 0) {
       _items[existingIndex].quantity = quantity;
       notifyListeners();
+      _syncItemToServer(productId, quantity);
     }
   }
 
@@ -86,4 +116,17 @@ class CartService extends ChangeNotifier {
     _items.clear();
     notifyListeners();
   }
+
+  Future<void> _syncItemToServer(String productId, int quantity) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.cartItems,
+        data: {
+          'product_id': productId,
+          'quantity': quantity,
+        },
+      );
+    } catch (_) {}
+  }
 }
+

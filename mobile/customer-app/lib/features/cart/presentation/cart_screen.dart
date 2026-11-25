@@ -6,8 +6,19 @@ import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/quantity_selector.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    CartService.instance.fetchServerCart();
+  }
 
   void _removeItem(BuildContext context, int index) {
     final cart = CartService.instance;

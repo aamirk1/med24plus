@@ -4,20 +4,50 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/mock/mock_data.dart';
 import '../../../core/services/cart_service.dart';
+import '../../../core/services/catalog_service.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/smart_savings_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<MobileProduct> _products = MockData.products;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() => _isLoading = true);
+    final products = await CatalogService.instance.getProducts();
+    if (mounted) {
+      setState(() {
+        _products = products;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: CustomScrollView(
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: _loadProducts,
+          child: CustomScrollView(
           slivers: [
             // ================================================================
             // Top App Bar with Logo, Notification Badge (2), Cart (1) & Search
@@ -35,19 +65,11 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.local_hospital_rounded,
-                                color: AppColors.primary,
-                                size: 22,
-                              ),
+                            const AppLogo(
+                              size: 38,
+                              borderRadius: 8,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
                             const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -108,6 +130,17 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (_isLoading) ...[
+                      const SizedBox(height: 6),
+                      const ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(2)),
+                        child: LinearProgressIndicator(
+                          minHeight: 2,
+                          color: AppColors.primary,
+                          backgroundColor: AppColors.primaryLight,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -478,7 +511,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final product = MockData.products[index];
+                    final product = _products[index];
                     return AnimatedFadeSlide(
                       delay: Duration(milliseconds: index * 30),
                       child: ProductCard(
@@ -502,7 +535,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  childCount: MockData.products.length,
+                  childCount: _products.length,
                 ),
               ),
             ),
@@ -513,8 +546,9 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildQuickPill(BuildContext context, String title, IconData icon, String route) {
     return Padding(

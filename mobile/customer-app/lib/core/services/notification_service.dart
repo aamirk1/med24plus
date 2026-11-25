@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
+import '../constants/api_endpoints.dart';
 import '../mock/mock_data.dart';
+import '../network/api_client.dart';
 
 class NotificationService extends ChangeNotifier {
   static final NotificationService instance = NotificationService._internal();
+
+  final ApiClient _apiClient = ApiClient.instance;
 
   NotificationService._internal() {
     _notifications = List.from(MockData.notifications);
@@ -17,6 +21,36 @@ class NotificationService extends ChangeNotifier {
   int get totalCount => _notifications.length;
 
   bool get isEmpty => _notifications.isEmpty;
+
+  /// Fetch notifications from backend with fallback
+  Future<void> fetchNotifications() async {
+    try {
+      final response = await _apiClient.dio.get(ApiEndpoints.notifications);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        List itemsJson = [];
+        if (data is Map && data.containsKey('items')) {
+          itemsJson = data['items'] as List;
+        } else if (data is List) {
+          itemsJson = data;
+        }
+
+        if (itemsJson.isNotEmpty) {
+          _notifications = itemsJson.map((item) {
+            final m = item as Map<String, dynamic>;
+            return MobileNotification(
+              id: m['id']?.toString() ?? '',
+              title: m['title']?.toString() ?? 'Med24Plus Alert',
+              message: m['message']?.toString() ?? '',
+              time: m['created_at']?.toString().split('T').first ?? 'Today',
+              isRead: m['is_read'] == true,
+            );
+          }).toList();
+          notifyListeners();
+        }
+      }
+    } catch (_) {}
+  }
 
   void markAsRead(String id) {
     final index = _notifications.indexWhere((n) => n.id == id);
@@ -47,6 +81,10 @@ class NotificationService extends ChangeNotifier {
       );
     }).toList();
     notifyListeners();
+
+    try {
+      _apiClient.dio.post(ApiEndpoints.markAllNotificationsRead);
+    } catch (_) {}
   }
 
   void addNotification({

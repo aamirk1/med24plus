@@ -9,12 +9,14 @@ class ProductCard extends StatelessWidget {
   final MobileProduct product;
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
+  final String? heroTag;
 
   const ProductCard({
     super.key,
     required this.product,
     this.onTap,
     this.onAddToCart,
+    this.heroTag,
   });
 
   @override
@@ -39,34 +41,8 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Placeholder with Badge & Hero Transition
-            Hero(
-              tag: 'product_card_img_${product.id}',
-              child: Stack(
-                children: [
-                  Container(
-                    height: 98,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.medication_liquid_outlined,
-                        size: 38,
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: AppBadge.schedule(product.schedule),
-                  ),
-                ],
-              ),
-            ),
+            // Image Placeholder with Badge
+            _buildImageWidget(),
             const SizedBox(height: 6),
 
             // Brand & Salt
@@ -145,5 +121,40 @@ class ProductCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildImageWidget() {
+    final imageStack = Stack(
+      children: [
+        Container(
+          height: 98,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.medication_liquid_outlined,
+              size: 38,
+              color: AppColors.primary.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 6,
+          left: 6,
+          child: AppBadge.schedule(product.schedule),
+        ),
+      ],
+    );
+
+    if (heroTag != null) {
+      return Hero(
+        tag: heroTag!,
+        child: imageStack,
+      );
+    }
+    return imageStack;
   }
 }

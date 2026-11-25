@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/order_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
 
@@ -15,20 +16,39 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   int _selectedTabIndex = 0;
   static const List<String> _tabs = ['All Orders', 'Processing', 'Delivered'];
+  List<MobileOrder> _allOrders = MockData.orders;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    setState(() => _isLoading = true);
+    final orders = await OrderService.instance.getOrders();
+    if (mounted) {
+      setState(() {
+        _allOrders = orders;
+        _isLoading = false;
+      });
+    }
+  }
 
   List<MobileOrder> _getFilteredOrders() {
     if (_selectedTabIndex == 1) {
-      return MockData.orders
+      return _allOrders
           .where((o) =>
               o.status.toLowerCase().contains('process') ||
               o.status.toLowerCase().contains('dispatch'))
           .toList();
     } else if (_selectedTabIndex == 2) {
-      return MockData.orders
+      return _allOrders
           .where((o) => o.status.toLowerCase().contains('deliver'))
           .toList();
     }
-    return MockData.orders;
+    return _allOrders;
   }
 
   @override
@@ -42,38 +62,51 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       ),
       body: Column(
         children: [
+          if (_isLoading)
+            const LinearProgressIndicator(
+              minHeight: 2,
+              color: AppColors.primary,
+              backgroundColor: AppColors.primaryLight,
+            ),
           AnimatedSegmentedTabs(
             tabs: _tabs,
             selectedIndex: _selectedTabIndex,
             onTabSelected: (index) => setState(() => _selectedTabIndex = index),
           ),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: filtered.isEmpty
-                  ? Center(
-                      key: const ValueKey('empty_orders'),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            child: RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _loadOrders,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: filtered.isEmpty
+                    ? ListView(
                         children: [
-                          Icon(
-                            Icons.receipt_long_outlined,
-                            size: 48,
-                            color: AppColors.secondaryText.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No orders in this category',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.secondaryText,
-                              fontWeight: FontWeight.w500,
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.receipt_long_outlined,
+                                  size: 48,
+                                  color: AppColors.secondaryText.withValues(alpha: 0.4),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No orders in this category',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.secondaryText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    )
-                  : ListView.separated(
+                      )
+                    : ListView.separated(
                       key: ValueKey('orders_list_$_selectedTabIndex'),
                       padding: const EdgeInsets.all(16),
                       itemCount: filtered.length,
@@ -148,6 +181,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         );
                       },
                     ),
+              ),
             ),
           ),
         ],

@@ -7,6 +7,7 @@ import '../../../core/services/firebase_auth_service.dart';
 import '../../../core/services/secure_storage_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/app_text_field.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_event.dart';
@@ -266,19 +267,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  AnimatedFadeSlide(
-                    delay: const Duration(milliseconds: 20),
+                  const AnimatedFadeSlide(
+                    delay: Duration(milliseconds: 20),
                     child: Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          'assets/images/app_icon.png',
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                        ),
-                      ),
+                      child: AppLogo.auth(),
                     ),
                   ),
                   const SizedBox(height: 16),

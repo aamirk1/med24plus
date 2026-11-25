@@ -3,8 +3,19 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    NotificationService.instance.fetchNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +74,12 @@ class NotificationsScreen extends StatelessWidget {
                 ),
             ],
           ),
-          body: list.isEmpty
-              ? _buildEmptyNotifications()
-              : ListView.separated(
+          body: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: notifService.fetchNotifications,
+            child: list.isEmpty
+                ? _buildEmptyNotifications()
+                : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: list.length,
                   separatorBuilder: (context, index) =>
@@ -190,53 +204,59 @@ class NotificationsScreen extends StatelessWidget {
                     );
                   },
                 ),
+          ),
         );
       },
     );
   }
 
   Widget _buildEmptyNotifications() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_off_outlined,
-                size: 38,
-                color: AppColors.secondaryText,
-              ),
+    return ListView(
+      children: [
+        const SizedBox(height: 120),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.notifications_off_outlined,
+                    size: 38,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'No Notifications',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.mainText,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'You are all caught up! Order updates and refill reminders will appear here.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.secondaryText,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 18),
-            const Text(
-              'No Notifications',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppColors.mainText,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'You are all caught up! Order updates and refill reminders will appear here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.secondaryText,
-                height: 1.4,
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 

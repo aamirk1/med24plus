@@ -1,20 +1,42 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
+import '../../../core/services/order_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
 
-class OrderDetailScreen extends StatelessWidget {
+class OrderDetailScreen extends StatefulWidget {
   final String orderId;
 
   const OrderDetailScreen({super.key, required this.orderId});
 
   @override
-  Widget build(BuildContext context) {
-    final order = MockData.orders.firstWhere(
-      (o) => o.id == orderId,
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  late MobileOrder _order;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = MockData.orders.firstWhere(
+      (o) => o.id == widget.orderId,
       orElse: () => MockData.orders.first,
     );
+    _loadLiveOrder();
+  }
+
+  Future<void> _loadLiveOrder() async {
+    final live = await OrderService.instance.getOrderById(widget.orderId);
+    if (mounted && live != null) {
+      setState(() => _order = live);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final order = _order;
 
     return Scaffold(
       backgroundColor: AppColors.background,

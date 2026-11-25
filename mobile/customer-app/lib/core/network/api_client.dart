@@ -5,6 +5,9 @@ import '../constants/api_endpoints.dart';
 import '../services/secure_storage_service.dart';
 
 class ApiClient {
+  static ApiClient? _instance;
+  static ApiClient get instance => _instance ??= ApiClient();
+
   late final Dio dio;
   final SecureStorageService secureStorage;
 
@@ -28,6 +31,7 @@ class ApiClient {
         );
 
     _setupInterceptors();
+    _instance ??= this;
   }
 
   void _setupInterceptors() {

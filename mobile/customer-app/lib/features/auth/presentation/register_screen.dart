@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/app_text_field.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_event.dart';
@@ -137,6 +138,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const AnimatedFadeSlide(
+                    delay: Duration(milliseconds: 20),
+                    child: Center(
+                      child: AppLogo(
+                        size: 64,
+                        borderRadius: 16,
+                        withShadow: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   const AnimatedFadeSlide(
                     delay: Duration(milliseconds: 30),
                     child: Text(

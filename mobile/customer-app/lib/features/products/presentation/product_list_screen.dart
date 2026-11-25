@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
 import '../../../core/services/cart_service.dart';
+import '../../../core/services/catalog_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
@@ -18,6 +19,8 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   String _selectedSchedule = 'ALL';
+  List<MobileProduct> _allProducts = MockData.products;
+  bool _isLoading = false;
 
   static const List<Map<String, String>> _filterOptions = [
     {'value': 'ALL', 'label': 'All Drugs'},
@@ -28,11 +31,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() => _isLoading = true);
+    final products = await CatalogService.instance.getProducts(categoryId: widget.category);
+    if (mounted) {
+      setState(() {
+        _allProducts = products;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final title = widget.category ?? 'All Medicines & Essentials';
 
-    final products = MockData.products.where((p) {
-      final matchesCat = widget.category == null || p.category == widget.category;
+    final products = _allProducts.where((p) {
+      final matchesCat = widget.category == null || p.category.toLowerCase() == widget.category!.toLowerCase();
       final matchesSched = _selectedSchedule == 'ALL' || p.schedule == _selectedSchedule;
       return matchesCat && matchesSched;
     }).toList();
@@ -51,6 +71,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       body: Column(
         children: [
+          if (_isLoading)
+            const LinearProgressIndicator(
+              minHeight: 2,
+              color: AppColors.primary,
+              backgroundColor: AppColors.primaryLight,
+            ),
+
           // Animated Filter Tabs
           Container(
             color: AppColors.surface,
@@ -69,69 +96,77 @@ class _ProductListScreenState extends State<ProductListScreen> {
             ),
           ),
 
-          // Animated Grid
+          // Animated Grid with Pull to Refresh
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: products.isEmpty
-                  ? Center(
-                      key: const ValueKey('no_products_found'),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            child: RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _loadProducts,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: products.isEmpty
+                    ? ListView(
                         children: [
-                          Icon(
-                            Icons.medication_outlined,
-                            size: 48,
-                            color: AppColors.secondaryText.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No formulations found in this category',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.secondaryText,
-                              fontWeight: FontWeight.w500,
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.medication_outlined,
+                                  size: 48,
+                                  color: AppColors.secondaryText.withValues(alpha: 0.4),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No formulations found in this category',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.secondaryText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    )
-                  : GridView.builder(
-                      key: ValueKey('product_grid_$_selectedSchedule'),
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.58,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return AnimatedFadeSlide(
-                          delay: Duration(milliseconds: index * 25),
-                          child: ProductCard(
-                            product: product,
-                            onTap: () => context.push('/product/${product.id}'),
-                            onAddToCart: () {
-                              CartService.instance.addItem(product);
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('${product.name} added to cart'),
-                                  duration: const Duration(seconds: 2),
-                                  action: SnackBarAction(
-                                    label: 'VIEW CART',
-                                    textColor: AppColors.secondary,
-                                    onPressed: () => context.push('/cart'),
+                      )
+                    : GridView.builder(
+                        key: ValueKey('product_grid_$_selectedSchedule'),
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.58,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemCount: products.length,
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return AnimatedFadeSlide(
+                            delay: Duration(milliseconds: index * 25),
+                            child: ProductCard(
+                              product: product,
+                              onTap: () => context.push('/product/${product.id}'),
+                              onAddToCart: () {
+                                CartService.instance.addItem(product);
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${product.name} added to cart'),
+                                    duration: const Duration(seconds: 2),
+                                    action: SnackBarAction(
+                                      label: 'VIEW CART',
+                                      textColor: AppColors.secondary,
+                                      onPressed: () => context.push('/cart'),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ),
         ],
