@@ -132,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildTrustPill(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.09),
         borderRadius: BorderRadius.circular(16),
@@ -145,9 +145,10 @@ class _SplashScreenState extends State<SplashScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 12, color: const Color(0xFF2DD4BF)),
-          const SizedBox(width: 4.5),
+          const SizedBox(width: 4),
           Text(
             label,
+            maxLines: 1,
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -446,18 +447,22 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 24),
 
-                    // Sleek Trust Micro-Pills
+                    // Sleek Trust Micro-Pills (FittedBox ensures responsive fit on narrow screens)
                     FadeTransition(
                       opacity: _badgeFade,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildTrustPill(Icons.verified_rounded, '100% Genuine'),
-                          const SizedBox(width: 8),
-                          _buildTrustPill(Icons.bolt_rounded, '24/7 Delivery'),
-                          const SizedBox(width: 8),
-                          _buildTrustPill(Icons.health_and_safety_rounded, 'Verified Doctors'),
-                        ],
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildTrustPill(Icons.verified_rounded, '100% Genuine'),
+                            const SizedBox(width: 6),
+                            _buildTrustPill(Icons.bolt_rounded, '24/7 Delivery'),
+                            const SizedBox(width: 6),
+                            _buildTrustPill(Icons.health_and_safety_rounded, 'Verified Doctors'),
+                          ],
+                        ),
                       ),
                     ),
 

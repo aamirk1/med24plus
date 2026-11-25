@@ -189,7 +189,7 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Container(
-                  height: 135,
+                  constraints: const BoxConstraints(minHeight: 135),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.bannerBlueDark, AppColors.bannerBlueLight],
@@ -201,10 +201,11 @@ class HomeScreen extends StatelessWidget {
                   child: Stack(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 110, 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const Text(
                               'Up to',
@@ -223,7 +224,7 @@ class HomeScreen extends StatelessWidget {
                               'on Medicines & More',
                               style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             ElevatedButton(
                               onPressed: () => context.push('/products'),
                               style: ElevatedButton.styleFrom(
@@ -248,16 +249,19 @@ class HomeScreen extends StatelessWidget {
                       ),
                       Positioned(
                         right: 14,
-                        bottom: 10,
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.vaccines_rounded, color: Colors.white, size: 52),
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.vaccines_rounded, color: Colors.white, size: 48),
+                            ),
                           ),
                         ),
                       ),
