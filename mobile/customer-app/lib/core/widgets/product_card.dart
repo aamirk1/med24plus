@@ -35,7 +35,7 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -45,7 +45,7 @@ class ProductCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Container(
-                    height: 110,
+                    height: 98,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.background,
@@ -54,7 +54,7 @@ class ProductCard extends StatelessWidget {
                     child: Center(
                       child: Icon(
                         Icons.medication_liquid_outlined,
-                        size: 40,
+                        size: 38,
                         color: AppColors.primary.withValues(alpha: 0.3),
                       ),
                     ),
@@ -67,7 +67,7 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
 
             // Brand & Salt
             Text(
@@ -94,7 +94,7 @@ class ProductCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
 
             // Pack size
             Text(
@@ -103,6 +103,8 @@ class ProductCard extends StatelessWidget {
                 fontSize: 10,
                 color: AppColors.secondaryText,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const Spacer(),
 

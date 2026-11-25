@@ -6,6 +6,13 @@ import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/quantity_selector.dart';
 
+class _CartEntry {
+  final MobileProduct product;
+  int quantity;
+
+  _CartEntry({required this.product, required this.quantity});
+}
+
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -14,23 +21,97 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  int _item1Qty = 1;
-  int _item2Qty = 2;
+  late List<_CartEntry> _cartItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _cartItems = [
+      _CartEntry(product: MockData.products[0], quantity: 1), // Accu-Chek
+      _CartEntry(product: MockData.products[1], quantity: 2), // Calcirol D3
+    ];
+  }
+
+  void _removeItem(int index) {
+    final removed = _cartItems[index];
+    setState(() {
+      _cartItems.removeAt(index);
+    });
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${removed.product.name} removed from cart'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'UNDO',
+          textColor: AppColors.secondary,
+          onPressed: () {
+            setState(() {
+              _cartItems.insert(index, removed);
+            });
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final item1 = MockData.products[0]; // Accu-Chek
-    final item2 = MockData.products[1]; // Calcirol D3
+    if (_cartItems.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Shopping Cart'),
+        ),
+        body: _buildEmptyCart(),
+      );
+    }
 
-    final subtotal =
-        (item1.sellingPrice * _item1Qty) + (item2.sellingPrice * _item2Qty);
-    final mrpTotal = (item1.mrp * _item1Qty) + (item2.mrp * _item2Qty);
+    final subtotal = _cartItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.product.sellingPrice * item.quantity),
+    );
+    final mrpTotal = _cartItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.product.mrp * item.quantity),
+    );
     final savings = mrpTotal - subtotal;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Shopping Cart'),
+        title: Text('Shopping Cart (${_cartItems.length})'),
+        actions: [
+          if (_cartItems.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Clear Shopping Cart?'),
+                    content: const Text(
+                        'Are you sure you want to remove all items from your cart?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          setState(() => _cartItems.clear());
+                        },
+                        child: const Text('Clear All',
+                            style: TextStyle(color: AppColors.error)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text('Clear All',
+                  style: TextStyle(color: AppColors.error, fontSize: 12)),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -46,13 +127,39 @@ class _CartScreenState extends State<CartScreen> {
                   border: Border.all(color: AppColors.border),
                 ),
                 child: Column(
-                  children: [
-                    _buildCartRow(
-                        item1, _item1Qty, (q) => setState(() => _item1Qty = q)),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildCartRow(
-                        item2, _item2Qty, (q) => setState(() => _item2Qty = q)),
-                  ],
+                  children: List.generate(_cartItems.length, (index) {
+                    final entry = _cartItems[index];
+                    return Column(
+                      children: [
+                        if (index > 0)
+                          const Divider(height: 1, color: AppColors.border),
+                        Dismissible(
+                          key: Key('cart_item_${entry.product.id}'),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            color: AppColors.error.withValues(alpha: 0.12),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Icon(Icons.delete_outline_rounded,
+                                    color: AppColors.error, size: 22),
+                                SizedBox(width: 6),
+                                Text('Delete',
+                                    style: TextStyle(
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          onDismissed: (_) => _removeItem(index),
+                          child: _buildCartRow(entry, index),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),
@@ -138,8 +245,58 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartRow(
-      MobileProduct product, int quantity, ValueChanged<int> onQtyChanged) {
+  Widget _buildEmptyCart() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.4),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+                size: 44,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Your Shopping Cart is Empty',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.mainText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Explore our pharmacy catalog to add medicines and healthcare essentials.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.secondaryText,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 24),
+            AppButton(
+              text: 'Explore Products',
+              onPressed: () => context.push('/products'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartRow(_CartEntry entry, int index) {
+    final product = entry.product;
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -167,6 +324,7 @@ class _CartScreenState extends State<CartScreen> {
                       fontWeight: FontWeight.w600,
                       color: AppColors.mainText),
                   maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -177,9 +335,43 @@ class _CartScreenState extends State<CartScreen> {
               ],
             ),
           ),
-          QuantitySelector(
-            quantity: quantity,
-            onQuantityChanged: onQtyChanged,
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              QuantitySelector(
+                quantity: entry.quantity,
+                onQuantityChanged: (q) {
+                  setState(() {
+                    entry.quantity = q;
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () => _removeItem(index),
+                borderRadius: BorderRadius.circular(4),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.delete_outline_rounded,
+                          size: 14, color: AppColors.error),
+                      SizedBox(width: 3),
+                      Text(
+                        'Remove',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
