@@ -202,33 +202,39 @@ class Order(Base, UUIDMixin, TimestampMixin):
         "OrderItem",
         back_populates="order",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     status_history: Mapped[List["OrderStatusHistory"]] = relationship(
         "OrderStatusHistory",
         back_populates="order",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     batch_allocations: Mapped[List["OrderBatchAllocation"]] = relationship(
         "OrderBatchAllocation",
         back_populates="order",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     reservations: Mapped[List["InventoryReservation"]] = relationship(
         "InventoryReservation",
         back_populates="order",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     cancellation: Mapped[Optional["OrderCancellation"]] = relationship(
         "OrderCancellation",
         back_populates="order",
         uselist=False,
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     invoice: Mapped[Optional["Invoice"]] = relationship(
         "Invoice",
         back_populates="order",
         uselist=False,
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
     payments: Mapped[List["Payment"]] = relationship(
         "Payment",

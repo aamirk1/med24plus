@@ -101,6 +101,8 @@ class OrderRepository:
             query.options(
                 selectinload(Order.items),
                 selectinload(Order.status_history),
+                selectinload(Order.batch_allocations),
+                selectinload(Order.reservations),
                 selectinload(Order.cancellation),
                 selectinload(Order.invoice),
             )

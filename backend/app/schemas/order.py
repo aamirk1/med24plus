@@ -2,7 +2,8 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy.inspection import inspect
 
 
 class OrderItemResponse(BaseModel):
@@ -127,12 +128,12 @@ class OrderResponse(BaseModel):
     status: str
     payment_status: str
     subtotal: Decimal
-    discount_amount: Decimal
-    tax_amount: Decimal
-    cgst_amount: Decimal
-    sgst_amount: Decimal
-    igst_amount: Decimal
-    delivery_fee: Decimal
+    discount_amount: Decimal = Decimal("0.00")
+    tax_amount: Decimal = Decimal("0.00")
+    cgst_amount: Decimal = Decimal("0.00")
+    sgst_amount: Decimal = Decimal("0.00")
+    igst_amount: Decimal = Decimal("0.00")
+    delivery_fee: Decimal = Decimal("0.00")
     grand_total: Decimal
     currency: str = "INR"
     delivery_address_snapshot: Dict[str, Any]
@@ -144,8 +145,8 @@ class OrderResponse(BaseModel):
     confirmed_at: Optional[datetime] = None
     cancelled_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     item_count: int = 0
     items: List[OrderItemResponse] = Field(default_factory=list)
     cancellation: Optional[OrderCancellationResponse] = None
@@ -153,6 +154,30 @@ class OrderResponse(BaseModel):
     status_history: List[OrderStatusHistoryResponse] = Field(default_factory=list)
     batch_allocations: List[OrderBatchAllocationResponse] = Field(default_factory=list)
     reservations: List[InventoryReservationResponse] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def safe_from_orm(cls, data: Any) -> Any:
+        if hasattr(data, "_sa_instance_state"):
+            state = inspect(data)
+            result = {}
+            for col in state.mapper.column_attrs:
+                if col.key not in state.unloaded:
+                    result[col.key] = getattr(data, col.key)
+            for rel in state.mapper.relationships:
+                if rel.key in state.unloaded:
+                    result[rel.key] = [] if rel.uselist else None
+                else:
+                    try:
+                        result[rel.key] = getattr(data, rel.key)
+                    except Exception:
+                        result[rel.key] = [] if rel.uselist else None
+            for key in ("customer_name", "customer_phone", "customer_email", "item_count"):
+                val = getattr(data, key, None)
+                if val is not None:
+                    result[key] = val
+            return result
+        return data
 
 
 class OrderListResponse(BaseModel):

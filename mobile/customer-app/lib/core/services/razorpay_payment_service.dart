@@ -274,58 +274,6 @@ class _RazorpayCheckoutSheetState extends State<_RazorpayCheckoutSheet> {
 
     if (result.success) {
       Navigator.of(context).pop(true);
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
-              SizedBox(width: 8),
-              Text(
-                'Payment Verified',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.mainText),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Your payment of ₹${widget.session.amountRupees.toStringAsFixed(2)} was successfully captured via Razorpay.',
-                style: const TextStyle(fontSize: 12, height: 1.4, color: AppColors.secondaryText),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Payment ID: $paymentId', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.mainText)),
-                    const SizedBox(height: 4),
-                    Text('Order ID: ${widget.session.orderNumber}', style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Continue', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -409,20 +357,33 @@ class _RazorpayCheckoutSheetState extends State<_RazorpayCheckoutSheet> {
                           ),
                         ],
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      Row(
                         children: [
-                          Text(
-                            '₹${widget.session.amountRupees.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '₹${widget.session.amountRupees.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                widget.session.orderNumber,
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                              ),
+                            ],
                           ),
-                          Text(
-                            widget.session.orderNumber,
-                            style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () => Navigator.of(context).pop(false),
+                            borderRadius: BorderRadius.circular(16),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(Icons.close, color: Colors.white70, size: 20),
+                            ),
                           ),
                         ],
                       ),

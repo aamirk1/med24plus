@@ -217,29 +217,40 @@ export default function CheckoutPage() {
         },
         idempotencyKey
       );
-      await refreshCart();
       const targetId = newOrder?.id || (newOrder as any)?.data?.id || (newOrder as any)?.order_number;
 
       if (paymentMethod === "razorpay" && targetId) {
         try {
           const rzpOrder = await paymentService.createRazorpayOrder(targetId);
+          setIsPlacingOrder(false);
           paymentService.openRazorpayCheckout({
             orderData: rzpOrder,
-            onSuccess: () => {
+            onSuccess: async () => {
+              // Successfully paid: now refresh cart and navigate to order
+              await refreshCart();
               router.push(`/account/orders/${targetId}?payment=success`);
             },
-            onFailure: () => {
-              router.push(`/account/orders/${targetId}`);
+            onFailure: (err: any) => {
+              // Payment cancelled or failed: keep cart intact, remain on checkout
+              setOrderError(
+                err?.message ||
+                  "Payment cancelled or unsuccessful. Order was not placed. You can retry payment or select Cash on Delivery."
+              );
             },
           });
           return;
         } catch (payErr: any) {
-          console.warn("Razorpay flow deferred to order details page:", payErr);
-          router.push(`/account/orders/${targetId}`);
+          setIsPlacingOrder(false);
+          setOrderError(
+            payErr?.message ||
+              "Failed to initialize payment gateway. Please retry or choose Cash on Delivery."
+          );
           return;
         }
       }
 
+      // Cash on Delivery
+      await refreshCart();
       router.push(targetId ? `/account/orders/${targetId}` : "/account/orders");
     } catch (err: any) {
       setOrderError(err.message || "Failed to place order. Please review your cart or address.");
@@ -782,9 +793,13 @@ export default function CheckoutPage() {
                   className="w-full shadow-sm"
                 >
                   {isPlacingOrder
-                    ? "Placing Order & Reserving Batches..."
+                    ? paymentMethod === "razorpay"
+                      ? "Opening Razorpay Gateway..."
+                      : "Placing Order (COD)..."
                     : validation.is_eligible_for_checkout
-                    ? "Confirm & Place Order (Reserve Stock)"
+                    ? paymentMethod === "razorpay"
+                      ? `Proceed to Payment (${formatPriceINR(validation.grand_total)})`
+                      : "Confirm & Place Order (Cash on Delivery)"
                     : "Checkout Blocked (Resolve Issues)"}
                 </Button>
 

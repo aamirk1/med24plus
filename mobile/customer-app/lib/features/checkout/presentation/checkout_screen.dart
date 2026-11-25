@@ -95,24 +95,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         context: context,
         order: createdOrder,
         onSuccess: () {
+          // Successfully paid: now clear cart and confirm order placement!
           cart.clearCart();
           _showConfirmationDialog(createdOrder, isPaid: true);
         },
         onFailure: (err) {
-          cart.clearCart();
+          // Payment not completed or cancelled: cart remains intact, order is not completed
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Order registered. Payment status pending: $err'),
-                duration: const Duration(seconds: 4),
-                action: SnackBarAction(
-                  label: 'View Order',
-                  textColor: Colors.white,
-                  onPressed: () => context.go('/order/${createdOrder.id}'),
+              const SnackBar(
+                content: Text(
+                  'Payment was cancelled or unsuccessful. Order was not placed. You may retry payment or select Cash on Delivery.',
                 ),
+                backgroundColor: AppColors.error,
+                duration: Duration(seconds: 4),
               ),
             );
-            context.go('/order/${createdOrder.id}');
           }
         },
       );
@@ -577,13 +575,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Place Order Button
+                // Place Order / Payment Gateway Button
                 AnimatedFadeSlide(
                   delay: const Duration(milliseconds: 300),
                   child: AppButton(
                     text: _isPlacingOrder
-                        ? 'Placing Order...'
-                        : 'Place Order (₹${totalPayable.toStringAsFixed(0)})',
+                        ? (_selectedPayment == 'COD'
+                            ? 'Placing Order (COD)...'
+                            : 'Opening Razorpay Gateway...')
+                        : (_selectedPayment == 'COD'
+                            ? 'Confirm & Place Order (COD)'
+                            : 'Proceed to Payment (₹${totalPayable.toStringAsFixed(0)})'),
                     isFullWidth: true,
                     onPressed: (_isPlacingOrder || address == null)
                         ? null
