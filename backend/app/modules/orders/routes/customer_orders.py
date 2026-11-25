@@ -97,15 +97,24 @@ async def list_customer_orders(
 @router.get(
     "/{order_id}",
     response_model=OrderResponse,
-    summary="Get customer's specific order by UUID",
+    summary="Get customer's specific order by UUID or order number",
 )
 async def get_order_detail(
-    order_id: uuid.UUID,
+    order_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     repo = OrderRepository(db)
-    order = await repo.get_by_id(order_id, load_relations=True)
+    order = None
+    try:
+        parsed_uuid = uuid.UUID(order_id)
+        order = await repo.get_by_id(parsed_uuid, load_relations=True)
+    except (ValueError, TypeError):
+        pass
+
+    if not order:
+        order = await repo.get_by_order_number(order_id)
+
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

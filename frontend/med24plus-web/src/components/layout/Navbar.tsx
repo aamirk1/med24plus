@@ -104,13 +104,16 @@ export const Navbar: React.FC = () => {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-white/90">
-            <Link
-              href="/contact"
-              className="hidden sm:inline-flex items-center gap-1.5 hover:text-white transition"
+            <a
+              href="https://play.google.com/store/apps/details?id=com.technosolz.med24plus"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 hover:text-white transition group"
+              title="Download Med24Plus Android App from Google Play Store"
             >
-              <Smartphone className="w-3 h-3 text-emerald-400" />
-              <span>Download App</span>
-            </Link>
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold">Download App</span>
+            </a>
             <span className="text-white/30 hidden sm:inline">|</span>
             {isAuthenticated && user ? (
               <div className="flex items-center gap-2">
@@ -327,6 +330,18 @@ export const Navbar: React.FC = () => {
           </div>
 
           <div className="border-t border-slate-100 pt-3 space-y-2 text-xs font-medium text-slate-700">
+            <a
+              href="https://play.google.com/store/apps/details?id=com.technosolz.med24plus"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between py-2 px-3 bg-emerald-50 text-emerald-900 rounded-lg font-bold border border-emerald-200"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-emerald-600" />
+                <span>Download Android App</span>
+              </span>
+              <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded">Google Play</span>
+            </a>
             <Link
               href="/categories"
               onClick={() => setMobileMenuOpen(false)}

@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     settings,
     membership,
     coupons,
+    payments,
 )
 from app.modules.orders.routes import (
     admin_orders_router,
@@ -88,6 +89,9 @@ api_router.include_router(admin_checkout.router, prefix="/admin", tags=["Admin C
 api_router.include_router(customer_orders_router, prefix="/orders", tags=["Customer Orders"])
 api_router.include_router(pharmacist_orders_router, prefix="/pharmacist/orders", tags=["Pharmacist Order Review"])
 api_router.include_router(admin_orders_router, prefix="/admin/orders", tags=["Admin Orders Management"])
+
+# Razorpay Online Payment Gateway Integration
+api_router.include_router(payments.router, prefix="/payments", tags=["Payments & Razorpay"])
 
 # Store Settings & Drug Licensing (Public & Admin)
 api_router.include_router(settings.router, prefix="/settings", tags=["Store Settings"])

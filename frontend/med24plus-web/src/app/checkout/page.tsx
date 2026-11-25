@@ -21,6 +21,7 @@ import {
 } from "@/services/checkout.service";
 import { orderService } from "@/services/orderService";
 import { useCart } from "@/context/CartContext";
+import { paymentService } from "@/services/payment.service";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -42,6 +43,7 @@ export default function CheckoutPage() {
   const { refreshCart } = useCart();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
   const [acknowledgePriceChanges, setAcknowledgePriceChanges] = useState(false);
 
   const [validation, setValidation] = useState<CheckoutValidationResponse | null>(null);
@@ -216,7 +218,29 @@ export default function CheckoutPage() {
         idempotencyKey
       );
       await refreshCart();
-      router.push(`/account/orders/${newOrder.id}`);
+      const targetId = newOrder?.id || (newOrder as any)?.data?.id || (newOrder as any)?.order_number;
+
+      if (paymentMethod === "razorpay" && targetId) {
+        try {
+          const rzpOrder = await paymentService.createRazorpayOrder(targetId);
+          paymentService.openRazorpayCheckout({
+            orderData: rzpOrder,
+            onSuccess: () => {
+              router.push(`/account/orders/${targetId}?payment=success`);
+            },
+            onFailure: () => {
+              router.push(`/account/orders/${targetId}`);
+            },
+          });
+          return;
+        } catch (payErr: any) {
+          console.warn("Razorpay flow deferred to order details page:", payErr);
+          router.push(`/account/orders/${targetId}`);
+          return;
+        }
+      }
+
+      router.push(targetId ? `/account/orders/${targetId}` : "/account/orders");
     } catch (err: any) {
       setOrderError(err.message || "Failed to place order. Please review your cart or address.");
     } finally {
@@ -550,6 +574,79 @@ export default function CheckoutPage() {
             </div>
           )}
 
+          {/* Section 4: Payment Method Selection */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-subtle space-y-4">
+            <h2 className="text-sm font-bold text-[#172B24] flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-[#0D9488] text-white text-xs flex items-center justify-center">
+                3
+              </span>
+              <span>Select Payment Method</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                onClick={() => setPaymentMethod("razorpay")}
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "razorpay"
+                    ? "border-[#0D9488] bg-[#F0FDFA]/40 shadow-xs ring-1 ring-[#0D9488]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === "razorpay"}
+                        onChange={() => setPaymentMethod("razorpay")}
+                        className="text-[#0D9488] focus:ring-[#0D9488]"
+                      />
+                      <span className="text-xs font-bold text-[#172B24]">
+                        Online Payment (Razorpay)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 pl-5">
+                      UPI, Google Pay, PhonePe, Cards, NetBanking. Instant dispatch queue.
+                    </p>
+                  </div>
+                  <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                    Recommended
+                  </span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setPaymentMethod("cod")}
+                className={`p-4 rounded-xl border cursor-pointer transition ${
+                  paymentMethod === "cod"
+                    ? "border-[#0D9488] bg-[#F0FDFA]/40 shadow-xs ring-1 ring-[#0D9488]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === "cod"}
+                        onChange={() => setPaymentMethod("cod")}
+                        className="text-[#0D9488] focus:ring-[#0D9488]"
+                      />
+                      <span className="text-xs font-bold text-[#172B24]">
+                        Cash on Delivery (COD)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 pl-5">
+                      Pay via Cash or UPI QR code at your doorstep upon medicine delivery.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Section 4: Blocking Issues Banner (if any) */}
           {validation && validation.blocking_errors.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-5 space-y-3">
@@ -856,8 +953,8 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed">
-              <strong>Phase 7 Boundary Notice:</strong> Payment gateway integration (Razorpay / UPI / COD) and final Order Creation are scheduled for <strong>Phase 8: Order Placement & Payment Processing</strong>. No stock reservation has occurred in this phase.
+            <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg text-teal-900 text-[11px] leading-relaxed">
+              <strong>100% Genuine Pharmacy Assurance:</strong> Operating with licensed retail pharmacies under the Drugs and Cosmetics Act, 1940. All payments are encrypted and processed through RBI-authorized payment gateways.
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

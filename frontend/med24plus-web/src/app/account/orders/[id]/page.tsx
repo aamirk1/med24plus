@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { formatPriceINR } from "@/lib/utils";
 import { orderService, OrderDetail } from "@/services/orderService";
+import { paymentService } from "@/services/payment.service";
 import {
   CheckCircle2,
   Clock,
@@ -21,6 +22,7 @@ import {
   AlertCircle,
   XCircle,
   AlertTriangle,
+  CreditCard,
 } from "lucide-react";
 
 export default function OrderDetailPage() {
@@ -31,6 +33,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [payingOnline, setPayingOnline] = useState(false);
 
   // Cancellation modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -45,8 +48,13 @@ export default function OrderDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await orderService.getOrderDetail(orderId);
-      setOrder(data);
+      const res: any = await orderService.getOrderDetail(orderId);
+      const data = res?.data || res;
+      if (data && (data.id || data.order_number)) {
+        setOrder(data);
+      } else {
+        setError("Order record not found.");
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load order details");
     } finally {
@@ -221,14 +229,56 @@ export default function OrderDetailPage() {
         </div>
       )}
 
-      {order.status === "pending_payment" && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 text-xs">
-          <Clock className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
+      {order.payment_status !== "paid" && order.status !== "cancelled" && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
+          <div className="flex items-start gap-3">
+            <CreditCard className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-emerald-950 text-sm">Payment Pending ({formatPriceINR(order.grand_total)})</p>
+              <p className="text-emerald-800 text-[11px] mt-0.5">
+                Complete your payment securely via Razorpay (UPI, Google Pay, Cards, NetBanking) to confirm dispatch.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={payingOnline}
+            isLoading={payingOnline}
+            onClick={async () => {
+              setPayingOnline(true);
+              try {
+                const rzpData = await paymentService.createRazorpayOrder(order.id);
+                paymentService.openRazorpayCheckout({
+                  orderData: rzpData,
+                  onSuccess: async () => {
+                    await fetchOrderDetail();
+                  },
+                  onFailure: (err) => {
+                    console.warn("Payment dismissed or cancelled:", err);
+                  },
+                });
+              } catch (err: any) {
+                alert(err?.message || "Failed to initiate Razorpay payment");
+              } finally {
+                setPayingOnline(false);
+              }
+            }}
+            className="shrink-0 shadow-xs"
+          >
+            <CreditCard className="w-3.5 h-3.5 shrink-0" />
+            <span>Pay Now with Razorpay</span>
+          </Button>
+        </div>
+      )}
+
+      {order.status === "pending_payment" && order.payment_status === "paid" && (
+        <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start gap-3 text-xs">
+          <CheckCircle2 className="w-5 h-5 text-teal-700 shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-blue-900">Order Placed — Payment Pending</p>
-            <p className="text-blue-800 text-[11px] mt-0.5">
-              Your items and physical batch quantities have been reserved. Online payment gateway integration
-              (Razorpay / UPI / Cards) will be active in Phase 9. Your order is secured in our system.
+            <p className="font-bold text-teal-900">Payment Confirmed</p>
+            <p className="text-teal-800 text-[11px] mt-0.5">
+              Your payment has been successfully captured. Pharmacy team is preparing your package.
             </p>
           </div>
         </div>

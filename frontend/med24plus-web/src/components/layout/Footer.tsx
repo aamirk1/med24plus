@@ -113,6 +113,23 @@ export const Footer: React.FC = () => {
                                     <span>care@med24plus.in</span>
                                   </div>
                                 </div>
+
+                                <div className="pt-3">
+                                  <a
+                                    href="https://play.google.com/store/apps/details?id=com.technosolz.med24plus"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl border border-slate-700 transition group"
+                                  >
+                                    <svg className="w-5 h-5 text-emerald-400 shrink-0 group-hover:scale-105 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                                      <path d="M3.609 1.814L13.792 12 3.61 22.186a1.99 1.99 0 0 1-.61-1.424V3.238c0-.54.225-1.03.609-1.424zm11.602 11.605l2.482-2.482-11.83-6.83 9.348 9.312zm2.482-2.482l2.482 2.482-2.482 2.482 2.482-2.482zm-9.348 9.312l11.83-6.83-2.482-2.482-9.348 9.312z"/>
+                                    </svg>
+                                    <div className="text-left">
+                                      <span className="block text-[9px] uppercase tracking-wider text-slate-400">Get it on</span>
+                                      <span className="block text-xs font-bold text-white leading-none">Google Play</span>
+                                    </div>
+                                  </a>
+                                </div>
                               </div>
                             </div>
                           </div>

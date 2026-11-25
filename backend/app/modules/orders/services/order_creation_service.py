@@ -409,6 +409,9 @@ class OrderCreationService:
                 idempotency_record.response_payload = response_data
                 await self.db.flush()
 
+            # Commit the entire transaction atomically to make the order persistent
+            await self.db.commit()
+
             return response_data
 
         except Exception as e:
