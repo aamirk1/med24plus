@@ -94,18 +94,15 @@ class RazorpayService:
             payment = existing_payment
             payment.gateway_order_id = rzp_order_id
             payment.amount = order.grand_total
-            payment.initiated_at = datetime.now(timezone.utc)
         else:
             payment = Payment(
                 order_id=order.id,
-                customer_id=customer.id,
                 payment_number=payment_num,
                 gateway_name="razorpay",
                 gateway_order_id=rzp_order_id,
                 amount=order.grand_total,
                 currency="INR",
                 status="initiated",
-                initiated_at=datetime.now(timezone.utc),
             )
             self.db.add(payment)
 
@@ -189,9 +186,8 @@ class RazorpayService:
         if not is_valid:
             if payment:
                 payment.status = "failed"
-                payment.failed_at = now
-                payment.failure_code = "SIGNATURE_VERIFICATION_FAILED"
-                payment.failure_message = "Cryptographic signature check failed."
+                payment.error_code = "SIGNATURE_VERIFICATION_FAILED"
+                payment.error_description = "Cryptographic signature check failed."
                 await self.db.commit()
 
             raise HTTPException(
@@ -204,12 +200,10 @@ class RazorpayService:
             payment.status = "captured"
             payment.gateway_payment_id = razorpay_payment_id
             payment.gateway_signature = razorpay_signature
-            payment.authorized_at = now
             payment.captured_at = now
         else:
             payment = Payment(
                 order_id=order.id,
-                customer_id=current_user.id,
                 payment_number=f"PAY-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}",
                 gateway_name="razorpay",
                 gateway_order_id=razorpay_order_id,
@@ -218,7 +212,6 @@ class RazorpayService:
                 amount=order.grand_total,
                 currency="INR",
                 status="captured",
-                authorized_at=now,
                 captured_at=now,
             )
             self.db.add(payment)
@@ -236,7 +229,6 @@ class RazorpayService:
             new_status=order.status,
             actor_role="customer",
             changed_by_id=current_user.id,
-            changed_by_name=current_user.full_name or "Customer",
             reason="Razorpay online payment captured successfully",
             notes=f"Payment ID: {razorpay_payment_id}",
         )

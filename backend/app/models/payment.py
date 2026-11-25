@@ -36,12 +36,6 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         index=True,
         nullable=False,
     )
-    customer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("users.id", ondelete="RESTRICT"),
-        index=True,
-        nullable=True,
-    )
     payment_number: Mapped[str] = mapped_column(
         String(50),
         unique=True,
@@ -63,10 +57,6 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         nullable=True,
     )
     gateway_signature: Mapped[Optional[str]] = mapped_column(
-        String(255),
-        nullable=True,
-    )
-    gateway_response_reference: Mapped[Optional[str]] = mapped_column(
         String(255),
         nullable=True,
     )
@@ -97,30 +87,67 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         Text,
         nullable=True,
     )
-    failure_code: Mapped[Optional[str]] = mapped_column(
-        String(50),
-        nullable=True,
-    )
-    failure_message: Mapped[Optional[str]] = mapped_column(
-        Text,
-        nullable=True,
-    )
-    initiated_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
-    authorized_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
     captured_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
-    failed_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
+
+    # In-memory / virtual property compatibility aliases
+    @property
+    def customer_id(self) -> Optional[uuid.UUID]:
+        return self.order.customer_id if self.order else None
+
+    @customer_id.setter
+    def customer_id(self, val: Any) -> None:
+        pass
+
+    @property
+    def initiated_at(self) -> Optional[datetime]:
+        return self.created_at
+
+    @initiated_at.setter
+    def initiated_at(self, val: Any) -> None:
+        pass
+
+    @property
+    def authorized_at(self) -> Optional[datetime]:
+        return self.captured_at
+
+    @authorized_at.setter
+    def authorized_at(self, val: Any) -> None:
+        pass
+
+    @property
+    def failed_at(self) -> Optional[datetime]:
+        return self.updated_at
+
+    @failed_at.setter
+    def failed_at(self, val: Any) -> None:
+        pass
+
+    @property
+    def failure_code(self) -> Optional[str]:
+        return self.error_code
+
+    @failure_code.setter
+    def failure_code(self, val: Optional[str]) -> None:
+        self.error_code = val
+
+    @property
+    def failure_message(self) -> Optional[str]:
+        return self.error_description
+
+    @failure_message.setter
+    def failure_message(self, val: Optional[str]) -> None:
+        self.error_description = val
+
+    @property
+    def gateway_response_reference(self) -> Optional[str]:
+        return self.gateway_payment_id
+
+    @gateway_response_reference.setter
+    def gateway_response_reference(self, val: Optional[str]) -> None:
+        self.gateway_payment_id = val
 
     # Convenience aliases adhering to Phase 9 specification
     @property
@@ -168,10 +195,6 @@ class Payment(Base, UUIDMixin, TimestampMixin):
         "Order",
         back_populates="payments",
     )
-    customer: Mapped[Optional["User"]] = relationship(
-        "User",
-        foreign_keys=[customer_id],
-    )
     refunds: Mapped[List["Refund"]] = relationship(
         "Refund",
         back_populates="payment",
@@ -191,7 +214,6 @@ class Payment(Base, UUIDMixin, TimestampMixin):
     __table_args__ = (
         CheckConstraint("amount >= 0", name="check_payment_amount_non_negative"),
         Index("ix_payments_gateway_lookup", "gateway_name", "gateway_payment_id"),
-        Index("ix_payments_customer_status", "customer_id", "status"),
     )
 
 
