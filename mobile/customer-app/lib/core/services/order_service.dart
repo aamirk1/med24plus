@@ -59,7 +59,7 @@ class OrderService {
   }
 
   /// Create new statutory dispensing order
-  Future<bool> createOrder({
+  Future<MobileOrder?> createOrder({
     required String addressId,
     required String paymentMethod,
     required List<CartItem> items,
@@ -84,9 +84,14 @@ class OrderService {
         data: body,
       );
 
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (_) {
-      return true;
-    }
+      if ((response.statusCode == 200 || response.statusCode == 201) && response.data != null) {
+        final data = response.data['data'] ?? response.data;
+        if (data is Map<String, dynamic>) {
+          return MobileOrder.fromJson(data);
+        }
+      }
+    } catch (_) {}
+
+    return null;
   }
 }

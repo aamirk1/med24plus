@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/mock/mock_data.dart';
 import '../../../core/services/order_service.dart';
+import '../../../core/services/razorpay_payment_service.dart';
 import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../core/widgets/app_button.dart';
@@ -122,7 +123,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           order.orderNumber,
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.mainText),
                         ),
-                        AppBadge.orderStatus(order.status),
+                        Row(
+                          children: [
+                            AppBadge.orderStatus(order.status),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: order.paymentStatus.toLowerCase() == 'paid'
+                                    ? const Color(0xFFDCFCE7)
+                                    : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                order.paymentStatus.toLowerCase() == 'paid' ? 'PAID' : 'PAYMENT PENDING',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: order.paymentStatus.toLowerCase() == 'paid'
+                                      ? const Color(0xFF15803D)
+                                      : const Color(0xFFB45309),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -135,6 +160,55 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
+
+            // Pay Now with Razorpay Card (if pending and not COD)
+            if (order.paymentStatus.toLowerCase() != 'paid' &&
+                order.paymentMethod.toLowerCase() != 'cod') ...[
+              AnimatedFadeSlide(
+                delay: const Duration(milliseconds: 75),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.shield_outlined, color: Color(0xFF1D4ED8), size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Complete Payment with Razorpay',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Your statutory dispensing order is reserved. Please complete the online payment via UPI, Card, or Net Banking to begin pharmacy packing.',
+                        style: TextStyle(fontSize: 11, height: 1.4, color: Color(0xFF3B82F6)),
+                      ),
+                      const SizedBox(height: 12),
+                      AppButton(
+                        text: 'Pay Now with Razorpay (₹${order.totalAmount.toStringAsFixed(0)})',
+                        isFullWidth: true,
+                        onPressed: () async {
+                          await RazorpayPaymentService.instance.startCheckout(
+                            context: context,
+                            order: order,
+                            onSuccess: () => _loadLiveOrder(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Delivery Protocol Card
             AnimatedFadeSlide(
@@ -259,6 +333,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     _buildBillRow('Delivery', 'FREE (Compliant Cold-Chain)'),
                     const SizedBox(height: 6),
                     _buildBillRow('Payment Mode', order.paymentMethod),
+                    const SizedBox(height: 6),
+                    _buildBillRow('Payment Status', order.paymentStatus.toUpperCase()),
                     const Divider(height: 20, color: AppColors.border),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

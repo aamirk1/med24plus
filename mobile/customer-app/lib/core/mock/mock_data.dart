@@ -165,6 +165,7 @@ class MobileOrder {
   final int itemCount;
   final bool hasPrescription;
   final String paymentMethod;
+  final String paymentStatus;
   final String deliveryPincode;
   final List<OrderItemSnapshot> items;
   final String? couponCode;
@@ -179,6 +180,7 @@ class MobileOrder {
     required this.itemCount,
     required this.hasPrescription,
     required this.paymentMethod,
+    this.paymentStatus = 'pending',
     required this.deliveryPincode,
     this.items = const [],
     this.couponCode,
@@ -196,10 +198,14 @@ class MobileOrder {
       orderNumber: json['order_number']?.toString() ?? json['orderNumber']?.toString() ?? 'ORD-M24',
       date: json['created_at']?.toString().split('T').first ?? json['date']?.toString() ?? 'Today',
       status: json['status']?.toString() ?? 'Processing',
-      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      totalAmount: (json['grand_total'] as num?)?.toDouble() ??
+          (json['total_amount'] as num?)?.toDouble() ??
+          (json['totalAmount'] as num?)?.toDouble() ??
+          0.0,
       itemCount: parsedItems.isNotEmpty ? parsedItems.length : ((json['itemCount'] as num?)?.toInt() ?? 1),
       hasPrescription: json['has_prescription'] == true || json['hasPrescription'] == true,
-      paymentMethod: json['payment_method']?.toString() ?? json['paymentMethod']?.toString() ?? 'UPI / Card',
+      paymentMethod: json['payment_method']?.toString() ?? json['paymentMethod']?.toString() ?? 'Razorpay Secure',
+      paymentStatus: json['payment_status']?.toString() ?? json['paymentStatus']?.toString() ?? 'pending',
       deliveryPincode: json['shipping_pincode']?.toString() ?? json['deliveryPincode']?.toString() ?? '560034',
       items: parsedItems,
       couponCode: json['coupon_code']?.toString(),

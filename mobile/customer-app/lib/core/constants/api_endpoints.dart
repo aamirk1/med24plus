@@ -41,6 +41,10 @@ class ApiEndpoints {
   static String orderDetail(String id) => '/orders/$id';
   static String orderTracking(String id) => '/orders/$id/tracking';
 
+  // Razorpay Payments (High-Security Gateway Integration)
+  static const String razorpayCreateOrder = '/payments/create-order';
+  static const String razorpayVerify = '/payments/verify';
+
   // Delivery Addresses
   static const String addresses = '/addresses';
   static String addressDetail(String id) => '/addresses/$id';
