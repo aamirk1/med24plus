@@ -244,26 +244,6 @@ export default function CartPage() {
               </span>
             </div>
 
-            {/* Prescription Banner if applicable */}
-            {cart?.has_prescription_items && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 flex items-start justify-between gap-3">
-                <div className="flex items-start gap-2.5">
-                  <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="font-bold">Prescription Required Medications Present:</strong>
-                    <p className="text-[11px] text-blue-800 mt-0.5">
-                      Doctor&apos;s prescription required under statutory Rule 65. Our Registered Pharmacist will verify validity prior to packing.
-                    </p>
-                  </div>
-                </div>
-                <Link href="/prescription/upload" className="shrink-0">
-                  <Button variant="outline" size="sm" className="text-xs bg-white">
-                    Upload Rx
-                  </Button>
-                </Link>
-              </div>
-            )}
-
             {/* Cart Items List */}
             <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-subtle overflow-hidden">
               {items.map((item) => (

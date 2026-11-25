@@ -432,14 +432,8 @@ export default function CheckoutPage() {
                 <span className="w-5 h-5 rounded-full bg-[#0D9488] text-white text-xs flex items-center justify-center">
                   2
                 </span>
-                <span>Doctor Prescription Compliance (Rule 65)</span>
+                <span>Prescription Compliance Status</span>
               </h2>
-              <Link
-                href="/prescription/upload"
-                className="text-xs text-[#0D9488] font-semibold hover:underline flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" /> Upload Prescription
-              </Link>
             </div>
 
             {validation && validation.items.some((i) => i.requires_prescription) ? (
@@ -570,13 +564,6 @@ export default function CheckoutPage() {
                     <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Return to Cart to Adjust
                   </Button>
                 </Link>
-                {validation.blocking_errors.some((e) => e.toLowerCase().includes("prescription")) && (
-                  <Link href="/prescription/upload">
-                    <Button variant="primary" size="sm">
-                      <FileText className="w-3.5 h-3.5 mr-1" /> Upload Prescription
-                    </Button>
-                  </Link>
-                )}
               </div>
             </div>
           )}

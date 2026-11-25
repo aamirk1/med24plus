@@ -79,69 +79,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Prescription Verification Attachment Card
-            AnimatedFadeSlide(
-              delay: const Duration(milliseconds: 100),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.receipt_long, color: AppColors.warning, size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          'Prescription (Rule 65 Requirement)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'dr_prescription_nov2026.pdf',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.mainText),
-                                ),
-                                Text('Attached for pharmacist audit', style: TextStyle(fontSize: 10, color: AppColors.secondaryText)),
-                              ],
-                            ),
-                          ),
-                          AnimatedTapScale(
-                            onTap: () => context.push('/prescription-upload'),
-                            child: TextButton(
-                              onPressed: () => context.push('/prescription-upload'),
-                              child: const Text('Re-upload', style: TextStyle(fontSize: 11, color: AppColors.primary)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
             // Payment Mode Selection
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 150),
@@ -175,7 +112,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 200),
               child: AppButton(
-                text: 'Place Dispensing Order (₹1,155)',
+                text: 'Place Order (₹1,155)',
                 isFullWidth: true,
                 onPressed: () {
                   showDialog(
@@ -189,7 +126,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ],
                       ),
                       content: const Text(
-                        'Your order has been queued for Registered Pharmacist review per Rule 65. Order Ref: MED-2026-8820.',
+                        'Your order has been placed successfully. Order Ref: MED-2026-8820.',
                         style: TextStyle(fontSize: 12, height: 1.4),
                       ),
                       actions: [

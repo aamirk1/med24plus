@@ -58,37 +58,6 @@ class _CartScreenState extends State<CartScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Prescription Reminder Banner
-            AnimatedFadeSlide(
-              delay: const Duration(milliseconds: 100),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(10),
-                  border:
-                      Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.shield_outlined,
-                        color: AppColors.primary, size: 20),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'This order contains Schedule H medicines. You can attach a doctor prescription in the next checkout step.',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.primaryDark,
-                            height: 1.3),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
             // Bill Breakdown Card
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 150),
