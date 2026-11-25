@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
@@ -163,6 +164,7 @@ async def login(
         is_phone_verified=user.is_phone_verified,
         is_email_verified=user.is_email_verified,
         status=user.status,
+        last_login_at=user.last_login_at,
         roles=role_slugs,
     )
 
@@ -200,6 +202,7 @@ async def get_me(
         is_phone_verified=current_user.is_phone_verified,
         is_email_verified=current_user.is_email_verified,
         status=current_user.status,
+        last_login_at=current_user.last_login_at,
         roles=role_slugs,
         permissions=getattr(current_user, "_cached_permissions", []),
         profile=current_user.profile,
@@ -489,6 +492,7 @@ async def verify_firebase_phone_otp(
             device_info="Firebase Phone Auth",
         )
         _set_auth_cookies(response, token_data["access_token"], token_data["refresh_token"])
+        user.last_login_at = datetime.now(timezone.utc)
 
         user_resp = UserResponse(
             id=user.id,
@@ -499,6 +503,7 @@ async def verify_firebase_phone_otp(
             is_phone_verified=user.is_phone_verified,
             is_email_verified=user.is_email_verified,
             status=user.status,
+            last_login_at=user.last_login_at,
             roles=role_slugs,
         )
 

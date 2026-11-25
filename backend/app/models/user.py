@@ -63,6 +63,10 @@ class User(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
         nullable=False,
         index=True,
     )
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     # Relationships
     profile: Mapped[Optional["UserProfile"]] = relationship(

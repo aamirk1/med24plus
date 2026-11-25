@@ -238,3 +238,41 @@ async def generate_order_invoice(
     dto = InvoiceResponse.model_validate(invoice)
     dto.has_pdf = invoice.document_storage_key is not None
     return dto
+
+
+@router.get(
+    "/{order_id}/invoice",
+    summary="Download or view invoice PDF for admin/pharmacist",
+)
+async def download_admin_order_invoice(
+    order_id: uuid.UUID,
+    format: str = Query("pdf", description="Format: pdf or json"),
+    current_user: User = Depends(require_role(*ALLOWED_ADMIN_ROLES)),
+    db: AsyncSession = Depends(get_db),
+):
+    repo = OrderRepository(db)
+    order = await repo.get_by_id(order_id, load_relations=True)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"success": False, "message": "Order not found.", "error": {"code": "ORDER_NOT_FOUND"}},
+        )
+
+    inv_service = InvoiceService(db)
+    invoice = order.invoice
+    if not invoice:
+        invoice = await inv_service.generate_invoice_for_order(order, acting_user=current_user)
+
+    if format.lower() == "json":
+        dto = InvoiceResponse.model_validate(invoice)
+        dto.has_pdf = invoice.document_storage_key is not None
+        return dto
+
+    pdf_bytes = await inv_service.get_invoice_pdf_bytes(invoice, order=order)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="{invoice.invoice_number}.pdf"',
+        },
+    )

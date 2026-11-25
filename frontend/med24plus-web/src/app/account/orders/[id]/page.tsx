@@ -185,7 +185,7 @@ export default function OrderDetailPage() {
           <p className="text-xs text-slate-500 mt-0.5">Placed on {dateStr} • Currency: {order.currency}</p>
         </div>
         <div className="flex items-center gap-2">
-          {order.invoice && (
+          {order.status !== "failed" && (
             <Button
               variant="outline"
               size="sm"

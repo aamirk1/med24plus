@@ -1,4 +1,4 @@
-import { apiClient } from "./api";
+import { apiClient, getBaseUrl } from "./api";
 
 export interface OrderItem {
   id: string;
@@ -141,14 +141,14 @@ export const orderService = {
   },
 
   async getInvoiceBlob(orderId: string): Promise<Blob> {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8024/api/v1";
+    const baseUrl = getBaseUrl();
     const token = typeof window !== "undefined" ? localStorage.getItem("med24_access_token") : null;
     const response = await fetch(`${baseUrl}/orders/${orderId}/invoice`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       credentials: "include",
     });
     if (!response.ok) {
-      throw new Error("Failed to download invoice");
+      throw new Error("Failed to download Form 20 cash memo invoice");
     }
     return response.blob();
   },

@@ -149,18 +149,72 @@ class InvoiceService:
         created_invoice = await self.order_repo.create_invoice(invoice)
         return created_invoice
 
-    def get_invoice_pdf_bytes(self, invoice: Invoice) -> bytes:
-        """Read invoice PDF from private storage."""
-        if not invoice.document_storage_key:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"success": False, "message": "Invoice PDF document not available on disk."},
-            )
-        file_path = Path(invoice.document_storage_key)
-        if not file_path.exists():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"success": False, "message": "Invoice PDF document not found in private storage."},
-            )
-        with open(file_path, "rb") as f:
-            return f.read()
+    async def get_invoice_pdf_bytes(self, invoice: Invoice, order: Optional[Order] = None) -> bytes:
+        """Read invoice PDF from private storage, or regenerate on demand if missing from disk."""
+        if invoice.document_storage_key:
+            file_path = Path(invoice.document_storage_key)
+            if file_path.exists():
+                with open(file_path, "rb") as f:
+                    return f.read()
+
+        # Regenerate on demand
+        if order is None:
+            order = await self.order_repo.get_by_id(invoice.order_id, load_relations=True)
+
+        now_utc = invoice.invoice_date or datetime.now(timezone.utc)
+        pharmacy_details = invoice.pharmacy_details_snapshot or {
+            "name": "MED24PLUS PHARMACY PRIVATE LIMITED",
+            "dl_number": "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)",
+            "gstin": "29AABCM2424P1Z3",
+            "fssai": "11226999000123",
+            "address": "Plot 42, HSR Layout Sector 2, Bengaluru, Karnataka 560102",
+        }
+        customer_details = invoice.customer_details_snapshot or {
+            "name": order.customer.full_name if (order and order.customer) else "Registered Customer",
+            "phone": order.customer.phone if (order and order.customer) else "",
+            "email": order.customer.email if (order and order.customer) else "",
+        }
+        delivery_addr = order.delivery_address_snapshot if order else {}
+
+        item_dicts = []
+        if order and order.items:
+            for item in order.items:
+                item_dicts.append({
+                    "product_name_snapshot": item.product_name,
+                    "quantity": item.quantity,
+                    "batch_number_snapshot": item.batch_number or "FEFO-ASSIGN",
+                    "expiry_date_snapshot": item.expiry_date or "2027-12-31",
+                    "unit_mrp": item.unit_mrp,
+                    "unit_price": item.unit_selling_price,
+                    "gst_rate_snapshot": item.gst_rate,
+                    "total_amount": item.total_amount,
+                })
+
+        pdf_bytes = PDFInvoiceGenerator.generate_invoice_pdf(
+            invoice_number=invoice.invoice_number,
+            order_number=order.order_number if order else f"ORD-{invoice.invoice_number}",
+            invoice_date=now_utc,
+            pharmacy_details=pharmacy_details,
+            customer_details=customer_details,
+            delivery_address=delivery_addr,
+            items=item_dicts,
+            subtotal=invoice.subtotal,
+            discount_total=invoice.discount_total,
+            cgst_amount=getattr(order, "cgst_amount", Decimal("0")),
+            sgst_amount=getattr(order, "sgst_amount", Decimal("0")),
+            igst_amount=getattr(order, "igst_amount", Decimal("0")),
+            tax_total=invoice.tax_total,
+            delivery_fee=invoice.delivery_fee,
+            grand_total=invoice.grand_total,
+            payment_status=getattr(order, "payment_status", "pending"),
+        )
+
+        storage_filename = f"{invoice.invoice_number}_{invoice.order_id}.pdf"
+        file_path = self.storage_dir / storage_filename
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(pdf_bytes)
+
+        invoice.document_storage_key = str(file_path)
+        await self.db.flush()
+        return pdf_bytes

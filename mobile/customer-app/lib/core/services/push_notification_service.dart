@@ -89,14 +89,14 @@ class PushNotificationService {
       developer.log('FCM Device Registration Token: $_fcmToken', name: 'PushNotificationService');
 
       if (_fcmToken != null) {
-        await _registerTokenWithBackend(_fcmToken!);
+        await syncDeviceToken(force: false);
       }
 
       // 6. Listen for token refreshes
       _messaging!.onTokenRefresh.listen((newToken) async {
         _fcmToken = newToken;
         developer.log('FCM Device Token refreshed: $newToken', name: 'PushNotificationService');
-        await _registerTokenWithBackend(newToken);
+        await syncDeviceToken(force: true);
       });
 
       // 7. Foreground message listener
@@ -143,24 +143,65 @@ class PushNotificationService {
     }
   }
 
-  /// Register FCM device token with the backend
-  Future<void> _registerTokenWithBackend(String token) async {
-    if (_apiClient == null) return;
+  /// Sync FCM device token with backend.
+  /// If [force] is true (e.g. during login or register), immediately registers with the backend.
+  /// If [force] is false, checks if 5 days have passed since the last successful sync.
+  Future<void> syncDeviceToken({ApiClient? client, bool force = false}) async {
+    final activeClient = client ?? _apiClient;
+    if (activeClient == null) {
+      developer.log('Skipping device token sync: ApiClient not initialized.', name: 'PushNotificationService');
+      return;
+    }
+
     try {
-      final hasSession = await _apiClient!.secureStorage.hasValidSession();
+      final storage = activeClient.secureStorage;
+      final hasSession = await storage.hasValidSession();
       if (!hasSession) {
         developer.log('Skipping device token sync: User not signed in yet.', name: 'PushNotificationService');
         return;
       }
 
-      await _apiClient!.dio.post(
+      // Check 5-day periodic threshold if not forced
+      if (!force) {
+        final lastUpdateMs = await storage.getLastFcmUpdateTimestamp();
+        final savedToken = await storage.getSyncedFcmToken();
+        if (lastUpdateMs != null) {
+          final lastDate = DateTime.fromMillisecondsSinceEpoch(lastUpdateMs);
+          final daysSince = DateTime.now().difference(lastDate).inDays;
+          if (daysSince < 5 && savedToken != null && savedToken == _fcmToken) {
+            developer.log('FCM token is up-to-date (last synced $daysSince days ago). Skipping sync.', name: 'PushNotificationService');
+            return;
+          }
+        }
+      }
+
+      // Retrieve latest token if available
+      if (_messaging != null) {
+        try {
+          final token = await _messaging!.getToken();
+          if (token != null && token.isNotEmpty) {
+            _fcmToken = token;
+          }
+        } catch (_) {}
+      }
+
+      final tokenToSync = _fcmToken;
+      if (tokenToSync == null || tokenToSync.isEmpty) {
+        developer.log('No FCM token available to sync.', name: 'PushNotificationService');
+        return;
+      }
+
+      await activeClient.dio.post(
         ApiEndpoints.registerDeviceToken,
         data: {
-          'fcm_token': token,
+          'fcm_token': tokenToSync,
           'device_type': 'android',
         },
       );
-      developer.log('Device FCM token successfully synced to backend.', name: 'PushNotificationService');
+
+      await storage.saveLastFcmUpdateTimestamp(DateTime.now().millisecondsSinceEpoch);
+      await storage.saveSyncedFcmToken(tokenToSync);
+      developer.log('Device FCM token successfully synced to backend (force=$force).', name: 'PushNotificationService');
     } catch (e) {
       developer.log('Failed to register device token with backend: $e', name: 'PushNotificationService');
     }

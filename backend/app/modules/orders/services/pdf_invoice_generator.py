@@ -64,9 +64,14 @@ class PDFInvoiceGenerator:
         rect(36, 735, 523, 70, fill_gray=0.96)
         line(36, 735, 559, 735, width=1.0)
 
+        pharmacy_details = pharmacy_details or {}
+        customer_details = customer_details or {}
+        delivery_address = delivery_address or {}
+        items = items or []
+
         # Pharmacy Brand Header
-        pharm_name = pharmacy_details.get("name", "MED24PLUS PHARMACY PRIVATE LIMITED")
-        dl_num = pharmacy_details.get("dl_number", "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)")
+        pharm_name = pharmacy_details.get("name") or pharmacy_details.get("legal_name") or "MED24PLUS PHARMACY PRIVATE LIMITED"
+        dl_num = pharmacy_details.get("dl_number") or pharmacy_details.get("form_20_dl") or "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)"
         gstin = pharmacy_details.get("gstin", "29AABCM2424P1Z3")
         fssai = pharmacy_details.get("fssai", "11226999000123")
         address_line = pharmacy_details.get("address", "Plot 42, HSR Layout Sector 2, Bengaluru, Karnataka 560102")
@@ -92,8 +97,8 @@ class PDFInvoiceGenerator:
 
         # Delivery Address
         recipient_name = delivery_address.get("recipient_name") or c_name
-        street = delivery_address.get("street_address", "")
-        area = delivery_address.get("area", "")
+        street = delivery_address.get("address_line1") or delivery_address.get("street_address") or ""
+        area = delivery_address.get("address_line2") or delivery_address.get("area") or ""
         city = delivery_address.get("city", "Bengaluru")
         state = delivery_address.get("state", "Karnataka")
         pincode = delivery_address.get("pincode", "")
@@ -139,16 +144,16 @@ class PDFInvoiceGenerator:
             # Draw row separator line
             line(36, curr_y, 559, curr_y, width=0.3)
 
-            name = str(it.get("product_name_snapshot", "Medicine"))[:34]
-            hsn = str(it.get("hsn_code_snapshot", "3004"))
-            batch_num = str(it.get("batch_number_snapshot") or "FEFO-ASSIGN")[:12]
-            exp_date = it.get("expiry_date_snapshot")
+            name = str(it.get("product_name_snapshot") or it.get("product_name") or "Medicine")[:34]
+            hsn = str(it.get("hsn_code_snapshot") or it.get("hsn_code") or "3004")
+            batch_num = str(it.get("batch_number_snapshot") or it.get("batch_number") or "FEFO-ASSIGN")[:12]
+            exp_date = it.get("expiry_date_snapshot") or it.get("expiry_date")
             exp_str = exp_date.strftime("%m/%y") if isinstance(exp_date, datetime) or hasattr(exp_date, "strftime") else (str(exp_date)[:7] if exp_date else "N/A")
             qty = str(it.get("quantity", 1))
-            mrp = f"{Decimal(str(it.get('unit_mrp', 0))):.2f}"
-            price = f"{Decimal(str(it.get('unit_price', 0))):.2f}"
-            gst_rate = f"{Decimal(str(it.get('gst_rate_snapshot', 12))):.0f}%"
-            tot = f"{Decimal(str(it.get('total_amount', 0))):.2f}"
+            mrp = f"{Decimal(str(it.get('unit_mrp') or it.get('unit_selling_price') or it.get('unit_price') or 0)):.2f}"
+            price = f"{Decimal(str(it.get('unit_price') or it.get('unit_selling_price') or 0)):.2f}"
+            gst_rate = f"{Decimal(str(it.get('gst_rate_snapshot') or it.get('gst_rate') or 12)):.0f}%"
+            tot = f"{Decimal(str(it.get('total_amount') or 0)):.2f}"
 
             text(40, curr_y + 6, str(idx), font="F1", size=8)
             text(58, curr_y + 6, name, font="F1", size=7.5)

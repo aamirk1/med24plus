@@ -16,6 +16,8 @@ class SecureStorageService {
   static const String _keySavedIdentifier = 'med24_saved_identifier';
   static const String _keySavedPassword = 'med24_saved_password';
   static const String _keyIsRemembered = 'med24_remember_me';
+  static const String _keyLastFcmUpdate = 'med24_last_fcm_update_timestamp';
+  static const String _keySyncedFcmToken = 'med24_synced_fcm_token';
 
   Future<void> saveTokens({
     required String accessToken,
@@ -93,5 +95,22 @@ class SecureStorageService {
   Future<bool> hasValidSession() async {
     final token = await getAccessToken();
     return token != null && token.isNotEmpty;
+  }
+
+  Future<void> saveLastFcmUpdateTimestamp(int timestampMs) async {
+    await _storage.write(key: _keyLastFcmUpdate, value: timestampMs.toString());
+  }
+
+  Future<int?> getLastFcmUpdateTimestamp() async {
+    final val = await _storage.read(key: _keyLastFcmUpdate);
+    return val != null ? int.tryParse(val) : null;
+  }
+
+  Future<void> saveSyncedFcmToken(String token) async {
+    await _storage.write(key: _keySyncedFcmToken, value: token);
+  }
+
+  Future<String?> getSyncedFcmToken() async {
+    return await _storage.read(key: _keySyncedFcmToken);
   }
 }

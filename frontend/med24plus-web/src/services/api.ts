@@ -1,4 +1,4 @@
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   if (typeof window !== "undefined") {
     if (window.location.hostname.endsWith("serwex.in") || window.location.protocol === "https:") {
       return "https://med24plus-api.serwex.in/api/v1";

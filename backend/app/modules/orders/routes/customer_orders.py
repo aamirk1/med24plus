@@ -6,11 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
+from app.core.permissions import RoleEnum
 from app.models.user import User
 from app.modules.orders.services.invoice_service import InvoiceService
 from app.modules.orders.services.order_cancellation_service import OrderCancellationService
 from app.modules.orders.services.order_creation_service import OrderCreationService
 from app.repositories.order_repository import OrderRepository
+from app.services.auth_service import AuthService
 from app.schemas.order import (
     InvoiceResponse,
     OrderCancelRequest,
@@ -229,7 +231,8 @@ async def cancel_order(
 async def download_invoice(
     order_id: uuid.UUID,
     format: str = Query("pdf", description="Format: pdf or json"),
-    current_user: User = Depends(get_current_user),
+    token: Optional[str] = Query(None, description="Auth token for direct browser downloads"),
+    current_user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     repo = OrderRepository(db)
@@ -240,7 +243,36 @@ async def download_invoice(
             detail={"success": False, "message": "Order not found.", "error": {"code": "ORDER_NOT_FOUND"}},
         )
 
-    if order.customer_id != current_user.id:
+    # If auth header was missing but query token was provided (e.g. direct window download)
+    if not current_user and token:
+        try:
+            auth_service = AuthService(db)
+            token_payload = auth_service.token_service.verify_access_token(token)
+            if token_payload and "sub" in token_payload:
+                current_user = await auth_service.user_repo.get_by_id(uuid.UUID(token_payload["sub"]))
+        except Exception:
+            pass
+
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"success": False, "message": "Authentication required to download invoice.", "error": {"code": "UNAUTHORIZED"}},
+        )
+
+    # Permission check: Customer who placed order OR Staff / Pharmacist / Admin
+    user_roles = getattr(current_user, "_cached_roles", [])
+    if not user_roles and current_user:
+        auth_service = AuthService(db)
+        user_roles = await auth_service.user_repo.get_user_role_slugs(current_user)
+
+    is_staff_or_admin = (
+        RoleEnum.SUPER_ADMIN.value in user_roles
+        or RoleEnum.ADMIN.value in user_roles
+        or RoleEnum.PHARMACIST.value in user_roles
+        or RoleEnum.STAFF.value in user_roles
+    )
+
+    if order.customer_id != current_user.id and not is_staff_or_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"success": False, "message": "Access forbidden.", "error": {"code": "FORBIDDEN_ORDER_ACCESS"}},
@@ -257,7 +289,7 @@ async def download_invoice(
         dto.has_pdf = invoice.document_storage_key is not None
         return dto
 
-    pdf_bytes = inv_service.get_invoice_pdf_bytes(invoice)
+    pdf_bytes = await inv_service.get_invoice_pdf_bytes(invoice, order=order)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

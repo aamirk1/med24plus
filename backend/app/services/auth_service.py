@@ -1,5 +1,6 @@
 import re
 import uuid
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -221,7 +222,8 @@ class AuthService:
             device_info=device_info,
         )
 
-        # 6. Log success
+        # 6. Update last_login_at & log success
+        user.last_login_at = datetime.now(timezone.utc)
         await self.auth_event_repo.log_event(
             identifier=raw_identifier,
             event_type="login_success",

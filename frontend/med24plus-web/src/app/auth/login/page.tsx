@@ -36,6 +36,17 @@ export default function LoginPage() {
     }
   }, []);
 
+  const getRedirectDestination = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || params.get("returnUrl") || params.get("from");
+      if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+        return redirect;
+      }
+    }
+    return "/";
+  };
+
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -49,10 +60,11 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(mobile.trim(), password);
-      setSuccessMessage("Sign in successful. Redirecting to your account...");
+      setSuccessMessage("Sign in successful. Redirecting...");
       setTimeout(() => {
-        router.push("/account/profile");
-      }, 800);
+        const dest = getRedirectDestination();
+        router.push(dest);
+      }, 600);
     } catch (err: any) {
       setErrorMessage(err.message || "Invalid credentials. Please verify your mobile number and password.");
     } finally {
@@ -96,10 +108,11 @@ export default function LoginPage() {
     try {
       await authService.verifyOtp(mobile.trim(), otpCode.trim(), "login");
       await refreshUser();
-      setSuccessMessage("OTP verified successfully. Redirecting to account...");
+      setSuccessMessage("OTP verified successfully. Redirecting...");
       setTimeout(() => {
-        router.push("/account/profile");
-      }, 800);
+        const dest = getRedirectDestination();
+        router.push(dest);
+      }, 600);
     } catch (err: any) {
       setErrorMessage(err.message || "Invalid verification OTP code.");
     } finally {

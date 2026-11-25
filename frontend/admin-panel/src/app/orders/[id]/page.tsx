@@ -266,15 +266,26 @@ export default function AdminOrderDetailPage() {
 
             {/* Operational transitions */}
             {order.status === "processing" && (
-              <button
-                type="button"
-                onClick={() => handleUpdateStatus("ready_for_dispatch")}
-                disabled={actionLoading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-lg shadow-sm transition"
-              >
-                <Package className="w-4 h-4" />
-                <span>Mark Ready for Dispatch</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateStatus("ready_for_dispatch")}
+                  disabled={actionLoading}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-lg shadow-sm transition"
+                >
+                  <Package className="w-4 h-4" />
+                  <span>Mark Ready for Dispatch</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateStatus("dispatched")}
+                  disabled={actionLoading}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-purple-700 hover:bg-purple-800 rounded-lg shadow-sm transition"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Confirm Dispatch (Consume Stock)</span>
+                </button>
+              </>
             )}
 
             {order.status === "ready_for_dispatch" && (

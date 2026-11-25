@@ -22,6 +22,7 @@ admin_router = APIRouter()
 
 class UpdateProfileRequest(BaseModel):
     full_name: Optional[str] = Field(None, max_length=150)
+    email: Optional[str] = Field(None, max_length=255)
     gender: Optional[str] = Field(None, max_length=20)
     date_of_birth: Optional[str] = None
     blood_group: Optional[str] = Field(None, max_length=10)
@@ -92,6 +93,9 @@ async def update_user_profile(
     """Update customer demographic and medical profile."""
     if payload.full_name is not None:
         current_user.full_name = payload.full_name.strip()
+    if payload.email is not None:
+        clean_email = payload.email.strip()
+        current_user.email = clean_email if clean_email else None
 
     profile = current_user.profile
     if not profile:
@@ -104,12 +108,16 @@ async def update_user_profile(
         profile.blood_group = payload.blood_group
     if payload.emergency_contact is not None:
         profile.emergency_contact = payload.emergency_contact
-    if payload.date_of_birth:
-        from datetime import datetime
-        try:
-            profile.date_of_birth = datetime.strptime(payload.date_of_birth, "%Y-%m-%d").date()
-        except ValueError:
-            pass
+    if payload.date_of_birth is not None:
+        dob_str = payload.date_of_birth.strip()
+        if dob_str:
+            from datetime import datetime
+            try:
+                profile.date_of_birth = datetime.strptime(dob_str, "%Y-%m-%d").date()
+            except ValueError:
+                pass
+        else:
+            profile.date_of_birth = None
 
     await db.commit()
     await db.refresh(profile)

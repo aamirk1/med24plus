@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/push_notification_service.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -27,6 +29,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = await authRepository.getCurrentUser();
       if (user != null) {
         emit(AuthAuthenticated(user));
+        // Check 5-day periodic FCM token renewal
+        unawaited(PushNotificationService().syncDeviceToken(force: false));
       } else {
         emit(const AuthUnauthenticated());
       }
@@ -46,6 +50,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
       );
       emit(AuthAuthenticated(user));
+      // Update FCM token on successful login
+      unawaited(PushNotificationService().syncDeviceToken(force: true));
     } catch (e) {
       final errorMsg = e.toString().replaceFirst('Exception: ', '');
       emit(AuthFailure(errorMsg));
@@ -67,6 +73,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       // Auto-authenticate directly without asking for credentials again
       emit(AuthAuthenticated(user));
+      // Update FCM token on successful registration
+      unawaited(PushNotificationService().syncDeviceToken(force: true));
     } catch (e) {
       final errorMsg = e.toString().replaceFirst('Exception: ', '');
       emit(AuthFailure(errorMsg));
@@ -78,6 +86,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading(message: 'Signing out...'));
+    unawaited(PushNotificationService().unregisterDeviceToken());
     try {
       await authRepository.logout();
     } catch (_) {}
@@ -120,6 +129,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final user = await authRepository.getCurrentUser();
         if (user != null) {
           emit(AuthAuthenticated(user));
+          unawaited(PushNotificationService().syncDeviceToken(force: true));
         } else {
           emit(const AuthUnauthenticated('OTP verified. Please sign in.'));
         }
@@ -165,6 +175,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         firebaseIdToken: event.firebaseIdToken,
       );
       emit(AuthAuthenticated(user));
+      unawaited(PushNotificationService().syncDeviceToken(force: true));
     } catch (e) {
       final errorMsg = e.toString().replaceFirst('Exception: ', '');
       emit(AuthFailure(errorMsg));
@@ -190,6 +201,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final user = await authRepository.getCurrentUser();
           if (user != null) {
             emit(AuthAuthenticated(user));
+            unawaited(PushNotificationService().syncDeviceToken(force: true));
           } else {
             emit(const AuthUnauthenticated('Mobile verified via Firebase. Please sign in.'));
           }

@@ -1,21 +1,80 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { User, MapPin, FileText, ShoppingBag, ShieldCheck, LogOut, Loader2, AlertCircle } from "lucide-react";
+import {
+  User as UserIcon,
+  MapPin,
+  FileText,
+  ShoppingBag,
+  ShieldCheck,
+  LogOut,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, refreshUser } = useAuth();
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [gender, setGender] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || "");
+      setEmail(user.email || "");
+      setDateOfBirth(user.profile?.date_of_birth || "");
+      setBloodGroup(user.profile?.blood_group || "");
+      setEmergencyContact(user.profile?.emergency_contact || "");
+      setGender(user.profile?.gender || "");
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
     router.push("/");
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+
+    try {
+      await authService.updateProfile({
+        full_name: fullName.trim() || undefined,
+        email: email.trim() || undefined,
+        gender: gender.trim() || undefined,
+        date_of_birth: dateOfBirth.trim() || undefined,
+        blood_group: bloodGroup.trim() || undefined,
+        emergency_contact: emergencyContact.trim() || undefined,
+      });
+
+      await refreshUser();
+      setSaveSuccess("Profile changes saved successfully!");
+      setTimeout(() => setSaveSuccess(null), 4000);
+    } catch (err: any) {
+      setSaveError(err?.message || "Failed to save profile changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -31,7 +90,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-12 text-center">
         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
-          <User className="w-7 h-7" />
+          <UserIcon className="w-7 h-7" />
         </div>
         <h2 className="text-xl font-bold text-slate-900">Sign in to Access Your Profile</h2>
         <p className="text-xs text-slate-500 max-w-sm mt-1 mb-6">
@@ -98,7 +157,7 @@ export default function ProfilePage() {
 
             <nav className="space-y-1 text-xs font-semibold text-slate-600">
               <Link href="/account/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F0FDFA] text-[#0D9488]">
-                <User className="w-4 h-4" /> Personal Profile
+                <UserIcon className="w-4 h-4" /> Personal Profile
               </Link>
               <Link href="/account/addresses" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700">
                 <MapPin className="w-4 h-4" /> Saved Addresses
@@ -125,21 +184,83 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Full Name" defaultValue={user.full_name || ""} />
-            <Input label="Mobile Number" defaultValue={user.phone} disabled helperText="Verified contact registered under Indian telecommunications" />
-            <Input label="Email Address" defaultValue={user.email || "Not specified"} type="email" />
-            <Input label="Date of Birth / Age" defaultValue={user.profile?.date_of_birth || "Not specified"} />
-            <Input label="Blood Group" defaultValue={user.profile?.blood_group || "Not specified"} />
-            <Input label="Emergency Contact" defaultValue={user.profile?.emergency_contact || "+91 98451 99999"} />
-          </div>
+          {saveSuccess && (
+            <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg text-xs text-teal-800 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-teal-600 shrink-0" />
+              <span>{saveSuccess}</span>
+            </div>
+          )}
 
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-[11px] text-slate-400">Account status: <strong className="text-slate-700 uppercase">{user.status}</strong></p>
-            <Button variant="primary" size="sm">
-              Save Profile Changes
-            </Button>
-          </div>
+          {saveError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{saveError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full legal name"
+              />
+              <Input
+                label="Mobile Number"
+                value={user.phone}
+                disabled
+                helperText="Verified contact registered under Indian telecommunications"
+              />
+              <Input
+                label="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="name@example.com"
+              />
+              <Input
+                label="Date of Birth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+              />
+              <Input
+                label="Blood Group"
+                value={bloodGroup}
+                onChange={(e) => setBloodGroup(e.target.value)}
+                placeholder="e.g. O+, A+, B+"
+              />
+              <Input
+                label="Emergency Contact"
+                value={emergencyContact}
+                onChange={(e) => setEmergencyContact(e.target.value)}
+                placeholder="+91 98765 43210"
+              />
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <p className="text-[11px] text-slate-400">
+                Account status: <strong className="text-slate-700 uppercase">{user.status}</strong>
+              </p>
+              <Button
+                variant="primary"
+                size="sm"
+                type="submit"
+                disabled={isSaving}
+                className="min-w-[160px]"
+              >
+                {isSaving ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  "Save Profile Changes"
+                )}
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

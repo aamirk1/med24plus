@@ -114,5 +114,19 @@ export const authService = {
       data,
     });
   },
+
+  async updateProfile(data: {
+    full_name?: string;
+    email?: string;
+    gender?: string;
+    date_of_birth?: string;
+    blood_group?: string;
+    emergency_contact?: string;
+  }): Promise<{ success: boolean; message: string; data: UserProfile }> {
+    return apiClient<{ success: boolean; message: string; data: UserProfile }>("/users/me/profile", {
+      method: "PUT",
+      data,
+    });
+  },
 };
 

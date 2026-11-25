@@ -46,6 +46,7 @@ class UserResponse(BaseModel):
     is_phone_verified: bool
     is_email_verified: bool
     status: str
+    last_login_at: Optional[datetime] = None
     roles: List[str] = []
     permissions: List[str] = []
     profile: Optional[UserProfileSchema] = None

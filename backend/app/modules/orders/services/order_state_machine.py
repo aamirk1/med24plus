@@ -38,11 +38,11 @@ class OrderStateMachine:
     """
 
     VALID_TRANSITIONS: Dict[str, Set[str]] = {
-        "placed": {"pending_payment", "payment_confirmed", "pharmacist_review", "cancelled", "failed"},
-        "pending_payment": {"payment_confirmed", "pharmacist_review", "cancelled", "failed"},
-        "payment_confirmed": {"pharmacist_review", "processing", "cancelled"},
-        "pharmacist_review": {"processing", "rejected", "cancelled"},
-        "processing": {"ready_for_dispatch", "cancelled"},
+        "placed": {"pending_payment", "payment_confirmed", "pharmacist_review", "processing", "cancelled", "failed"},
+        "pending_payment": {"payment_confirmed", "pharmacist_review", "processing", "cancelled", "failed"},
+        "payment_confirmed": {"pharmacist_review", "processing", "ready_for_dispatch", "dispatched", "cancelled"},
+        "pharmacist_review": {"processing", "ready_for_dispatch", "dispatched", "rejected", "cancelled"},
+        "processing": {"ready_for_dispatch", "dispatched", "cancelled"},
         "ready_for_dispatch": {"dispatched", "cancelled"},
         "dispatched": {"delivered"},
         "delivered": set(),   # Terminal
