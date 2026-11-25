@@ -12,6 +12,7 @@ export interface DataTableProps<T> {
   data: T[];
   keyExtractor: (row: T) => string;
   emptyMessage?: string;
+  isLoading?: boolean;
 }
 
 export function DataTable<T>({
@@ -19,6 +20,7 @@ export function DataTable<T>({
   data,
   keyExtractor,
   emptyMessage = "No records found.",
+  isLoading = false,
 }: DataTableProps<T>) {
   return (
     <div className="bg-white rounded-xl border border-slate-200/90 shadow-subtle overflow-hidden text-left">
@@ -34,7 +36,16 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
-            {data.length > 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={columns.length} className="py-12 text-center text-slate-400">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-[#0D9488] border-t-transparent rounded-full animate-spin" />
+                    <span>Loading data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : data.length > 0 ? (
               data.map((row) => (
                 <tr key={keyExtractor(row)} className="hover:bg-slate-50/70 transition">
                   {columns.map((col, cIdx) => (
@@ -42,8 +53,8 @@ export function DataTable<T>({
                       {col.cell
                         ? col.cell(row)
                         : col.accessorKey
-                        ? String(row[col.accessorKey] ?? "")
-                        : null}
+                          ? String(row[col.accessorKey] ?? "")
+                          : null}
                     </td>
                   ))}
                 </tr>
