@@ -14,14 +14,16 @@ class CatalogService {
     String? categoryId,
     String? search,
     int page = 1,
-    int pageSize = 20,
+    int pageSize = 50,
   }) async {
     try {
       final queryParams = <String, dynamic>{
         'page': page,
         'page_size': pageSize,
       };
-      if (categoryId != null && categoryId.isNotEmpty) {
+      // Only send category_id query param if it is a valid UUID
+      final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+      if (categoryId != null && categoryId.isNotEmpty && uuidRegex.hasMatch(categoryId)) {
         queryParams['category_id'] = categoryId;
       }
       if (search != null && search.trim().isNotEmpty) {

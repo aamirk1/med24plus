@@ -41,31 +41,103 @@ class MobileProduct {
   });
 
   factory MobileProduct.fromJson(Map<String, dynamic> json) {
-    final mrpVal = (json['mrp'] as num?)?.toDouble() ?? 0.0;
-    final spVal = (json['selling_price'] as num?)?.toDouble() ?? (json['price'] as num?)?.toDouble() ?? mrpVal;
+    // Robust double parsing for mrp and selling_price (handles num, string, or null)
+    double parseDouble(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is num) return val.toDouble();
+      if (val is String) {
+        return double.tryParse(val.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+      }
+      return 0.0;
+    }
+
+    final mrpVal = parseDouble(json['mrp']);
+    final spValRaw = parseDouble(json['selling_price']);
+    final priceRaw = parseDouble(json['price']);
+    final spVal = spValRaw > 0 ? spValRaw : (priceRaw > 0 ? priceRaw : mrpVal);
+
     int disc = 0;
     if (mrpVal > spVal && mrpVal > 0) {
       disc = (((mrpVal - spVal) / mrpVal) * 100).round();
     }
 
+    // Resolve schedule classification
+    String schedule = 'OTC';
+    final rawSchedule = json['schedule_classification']?.toString() ?? json['schedule']?.toString() ?? '';
+    final rawSchedUpper = rawSchedule.toUpperCase();
+    if (rawSchedUpper.contains('H1')) {
+      schedule = 'SCHEDULE_H1';
+    } else if (rawSchedUpper.contains('H') || rawSchedUpper.contains('SCHEDULE H')) {
+      schedule = 'SCHEDULE_H';
+    } else if (rawSchedUpper.contains('DEVICE')) {
+      schedule = 'DEVICE';
+    } else if (rawSchedUpper.contains('AYUSH') || rawSchedUpper.contains('HERBAL')) {
+      schedule = 'AYUSH';
+    } else if (json['requires_prescription'] == true || json['is_prescription_required'] == true) {
+      schedule = 'SCHEDULE_H';
+    }
+
+    // Resolve primary image URL
+    String imgUrl = json['primary_image_url']?.toString() ?? json['image_url']?.toString() ?? '';
+    if (imgUrl.isEmpty && json['images'] is List && (json['images'] as List).isNotEmpty) {
+      final firstImg = (json['images'] as List).first;
+      if (firstImg is Map) {
+        imgUrl = firstImg['image_url']?.toString() ?? '';
+      } else if (firstImg is String) {
+        imgUrl = firstImg;
+      }
+    }
+
+    // Resolve brand name
+    String brandName = 'Generic';
+    if (json['brand_name'] != null && json['brand_name'].toString().isNotEmpty) {
+      brandName = json['brand_name'].toString();
+    } else if (json['brand'] != null) {
+      if (json['brand'] is Map) {
+        brandName = json['brand']['name']?.toString() ?? 'Generic';
+      } else {
+        brandName = json['brand'].toString();
+      }
+    } else if (json['manufacturer'] != null && json['manufacturer'].toString().isNotEmpty) {
+      brandName = json['manufacturer'].toString();
+    }
+
+    // Resolve category name
+    String categoryName = 'Medicines';
+    if (json['category_name'] != null && json['category_name'].toString().isNotEmpty) {
+      categoryName = json['category_name'].toString();
+    } else if (json['category'] != null) {
+      if (json['category'] is Map) {
+        categoryName = json['category']['name']?.toString() ?? 'Medicines';
+      } else {
+        categoryName = json['category'].toString();
+      }
+    }
+
+    // In stock status
+    final bool isInStock = json['is_in_stock'] == true ||
+        (json['sellable_quantity'] != null && (json['sellable_quantity'] as num) > 0) ||
+        (json['stock'] != null && (json['stock'] as num) > 0) ||
+        (json['is_active'] != false && json['is_in_stock'] == null);
+
     return MobileProduct(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
-      brand: json['brand']?.toString() ?? json['manufacturer']?.toString() ?? 'Generic',
-      category: json['category']?.toString() ?? 'Medicines',
+      brand: brandName,
+      category: categoryName,
       dosageForm: json['dosage_form']?.toString() ?? 'Tablet',
-      saltComposition: json['salt_composition']?.toString() ?? json['composition']?.toString() ?? '',
+      saltComposition: json['generic_name']?.toString() ?? json['salt_composition']?.toString() ?? json['composition']?.toString() ?? '',
       mrp: mrpVal,
       sellingPrice: spVal,
       discountPercent: (json['discount_percent'] as num?)?.toInt() ?? disc,
       packSize: json['pack_size']?.toString() ?? '1 Strip',
       requiresPrescription: json['requires_prescription'] == true || json['is_prescription_required'] == true,
-      schedule: json['schedule']?.toString() ?? (json['requires_prescription'] == true ? 'SCHEDULE_H' : 'OTC'),
-      inStock: json['is_active'] != false && (json['stock'] == null || (json['stock'] as num) > 0),
+      schedule: schedule,
+      inStock: isInStock,
       rating: (json['rating'] as num?)?.toDouble() ?? 4.7,
       reviewsCount: (json['reviews_count'] as num?)?.toInt() ?? 10,
-      description: json['description']?.toString() ?? '',
-      imageUrl: json['image_url']?.toString() ?? '',
+      description: json['description']?.toString() ?? json['generic_name']?.toString() ?? '',
+      imageUrl: imgUrl,
     );
   }
 }

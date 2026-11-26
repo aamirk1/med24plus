@@ -133,13 +133,26 @@ class ProductCard extends StatelessWidget {
             color: AppColors.background,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Center(
-            child: Icon(
-              Icons.medication_liquid_outlined,
-              size: 38,
-              color: AppColors.primary.withValues(alpha: 0.3),
-            ),
-          ),
+          clipBehavior: Clip.antiAlias,
+          child: product.imageUrl.isNotEmpty
+              ? Image.network(
+                  product.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(
+                      Icons.medication_liquid_outlined,
+                      size: 38,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Icon(
+                    Icons.medication_liquid_outlined,
+                    size: 38,
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
         ),
         Positioned(
           top: 6,

@@ -52,7 +52,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final title = widget.category ?? 'All Medicines & Essentials';
 
     final products = _allProducts.where((p) {
-      final matchesCat = widget.category == null || p.category.toLowerCase() == widget.category!.toLowerCase();
+      bool matchesCat = true;
+      if (widget.category != null && widget.category!.isNotEmpty && widget.category != 'Medicines') {
+        final queryCat = widget.category!.toLowerCase();
+        final pCat = p.category.toLowerCase();
+        matchesCat = pCat.contains(queryCat) || queryCat.contains(pCat);
+      }
       final matchesSched = _selectedSchedule == 'ALL' || p.schedule == _selectedSchedule;
       return matchesCat && matchesSched;
     }).toList();

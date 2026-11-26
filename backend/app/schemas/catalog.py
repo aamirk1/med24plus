@@ -50,7 +50,7 @@ class CategoryResponse(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    subcategories: List["CategoryResponse"] = Field(default_factory=list)
+    subcategories: List["CategorySimpleResponse"] = Field(default_factory=list)
 
 
 class CategorySimpleResponse(BaseModel):
