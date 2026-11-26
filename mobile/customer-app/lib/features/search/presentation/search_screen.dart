@@ -7,9 +7,10 @@ import '../../../core/mock/mock_data.dart';
 import '../../../core/services/cart_service.dart';
 import '../../../core/services/catalog_service.dart';
 import '../../../core/widgets/animated_entry.dart';
+import '../../../core/widgets/app_empty_widget.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/product_card.dart';
-import '../../../core/widgets/app_empty_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -126,7 +127,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: const EdgeInsets.all(16),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.58,
+                      childAspectRatio: 0.70,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),
@@ -140,17 +141,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           onTap: () => context.push('/product/${product.id}'),
                           onAddToCart: () {
                             CartService.instance.addItem(product);
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${product.name} added to cart'),
-                                duration: const Duration(seconds: 2),
-                                action: SnackBarAction(
-                                  label: 'VIEW CART',
-                                  textColor: AppColors.secondary,
-                                  onPressed: () => context.push('/cart'),
-                                ),
-                              ),
+                            AppSnackBar.showCartSuccess(
+                              context,
+                              productName: product.name,
+                              onViewCart: () => context.push('/cart'),
                             );
                           },
                         ),

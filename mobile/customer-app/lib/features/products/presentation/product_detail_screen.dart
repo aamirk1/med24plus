@@ -8,6 +8,7 @@ import '../../../core/widgets/animated_entry.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_logo.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/brand_substitutes_widget.dart';
 import '../../../core/widgets/counter_badges.dart';
 import '../../../core/widgets/price_widget.dart';
@@ -39,7 +40,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _loadLiveDetails() async {
     setState(() => _isLoading = true);
-    final liveProduct = await CatalogService.instance.getProductById(widget.productId);
+    final liveProduct =
+        await CatalogService.instance.getProductById(widget.productId);
     final subs = await CatalogService.instance.getSubstitutes(widget.productId);
     if (mounted) {
       setState(() {
@@ -58,7 +60,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
+            onPressed: () => Navigator.of(context).canPop()
+                ? Navigator.of(context).pop()
+                : context.go('/home'),
           ),
           title: const Text('Loading Medicine...'),
         ),
@@ -74,7 +78,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
+            onPressed: () => Navigator.of(context).canPop()
+                ? Navigator.of(context).pop()
+                : context.go('/home'),
           ),
           title: const Text('Medicine Not Found'),
         ),
@@ -84,17 +90,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.secondaryText),
+                const Icon(Icons.error_outline_rounded,
+                    size: 48, color: AppColors.secondaryText),
                 const SizedBox(height: 16),
                 const Text(
                   'Product Not Available',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.mainText),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'The requested medication could not be found in catalog.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.secondaryText),
                 ),
                 const SizedBox(height: 20),
                 AppButton(
@@ -115,7 +126,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.of(context).canPop() ? Navigator.of(context).pop() : context.go('/home'),
+          onPressed: () => Navigator.of(context).canPop()
+              ? Navigator.of(context).pop()
+              : context.go('/home'),
         ),
         title: const Row(
           children: [
@@ -168,11 +181,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     top: 12,
                     left: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.secondaryLight,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: AppColors.secondary.withValues(alpha: 0.4)),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -198,11 +213,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: AppBadge.schedule(_product.schedule),
-                  ),
+                  if (_product.requiresPrescription)
+                    const Positioned(
+                      top: 12,
+                      right: 12,
+                      child: AppBadge(
+                        label: 'Rx Required',
+                        variant: AppBadgeVariant.warning,
+                        icon: Icons.receipt_long_outlined,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -215,7 +235,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _selectedSubstitute != null ? _selectedSubstitute!.name : _product.name,
+                    _selectedSubstitute != null
+                        ? _selectedSubstitute!.name
+                        : _product.name,
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w800,
@@ -238,14 +260,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEF3C7),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.star_rounded, size: 13, color: Color(0xFFD97706)),
+                            const Icon(Icons.star_rounded,
+                                size: 13, color: Color(0xFFD97706)),
                             const SizedBox(width: 3),
                             Text(
                               '${_product.rating}',
@@ -261,7 +285,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const SizedBox(width: 8),
                       Text(
                         '(${_product.reviewsCount} Reviews)',
-                        style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.secondaryText),
                       ),
                     ],
                   ),
@@ -274,9 +299,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 90),
               child: PriceWidget(
-                sellingPrice: _selectedSubstitute != null ? _selectedSubstitute!.sellingPrice : _product.sellingPrice,
-                mrp: _selectedSubstitute != null ? _selectedSubstitute!.mrp : _product.mrp,
-                discountPercent: _selectedSubstitute != null ? _selectedSubstitute!.savingsPercent : _product.discountPercent,
+                sellingPrice: _selectedSubstitute != null
+                    ? _selectedSubstitute!.sellingPrice
+                    : _product.sellingPrice,
+                mrp: _selectedSubstitute != null
+                    ? _selectedSubstitute!.mrp
+                    : _product.mrp,
+                discountPercent: _selectedSubstitute != null
+                    ? _selectedSubstitute!.savingsPercent
+                    : _product.discountPercent,
                 fontSize: 22,
               ),
             ),
@@ -295,33 +326,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.verified_outlined, size: 14, color: AppColors.secondary),
+                      Icon(Icons.verified_outlined,
+                          size: 14, color: AppColors.secondary),
                       SizedBox(width: 4),
                       Text(
                         '100% Genuine',
-                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.mainText),
+                        style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.mainText),
                       ),
                     ],
                   ),
                   Text('•', style: TextStyle(color: AppColors.border)),
                   Row(
                     children: [
-                      Icon(Icons.person_pin_outlined, size: 14, color: AppColors.primary),
+                      Icon(Icons.person_pin_outlined,
+                          size: 14, color: AppColors.primary),
                       SizedBox(width: 4),
                       Text(
                         'Pharmacist Verified',
-                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.mainText),
+                        style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.mainText),
                       ),
                     ],
                   ),
                   Text('•', style: TextStyle(color: AppColors.border)),
                   Row(
                     children: [
-                      Icon(Icons.replay_rounded, size: 14, color: AppColors.secondaryDark),
+                      Icon(Icons.replay_rounded,
+                          size: 14, color: AppColors.secondaryDark),
                       SizedBox(width: 4),
                       Text(
                         'Easy Returns',
-                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.mainText),
+                        style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.mainText),
                       ),
                     ],
                   ),
@@ -331,24 +374,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const SizedBox(height: 18),
 
             // ================================================================
-            // COMPARE BRAND SUBSTITUTION SECTION (Matches Screenshot 2)
+            // COMPARE MEDICINES / BRAND SUBSTITUTES SECTION
             // ================================================================
             AnimatedFadeSlide(
               delay: const Duration(milliseconds: 120),
               child: BrandSubstitutesWidget(
                 options: substituteOptions,
-                activeSalt: _product.saltComposition.split(' ')[0],
-                strength: '500 mg',
+                activeSalt: _product.saltComposition.isNotEmpty
+                    ? _product.saltComposition.split(' ')[0]
+                    : _product.name.split(' ')[0],
+                strength: _product.dosageForm,
                 onOptionSelected: (selected) {
                   setState(() {
                     _selectedSubstitute = selected;
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: const Duration(milliseconds: 1500),
-                      content: Text('Switched to ${selected.name} • Save ₹${selected.savingsAmount.toInt()}!'),
-                      backgroundColor: AppColors.secondaryDark,
-                    ),
+                  AppSnackBar.showSuccess(
+                    context,
+                    'Switched to ${selected.name} • Save ₹${selected.savingsAmount.toInt()}!',
                   );
                 },
               ),
@@ -364,18 +406,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.warning.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.receipt_long, color: AppColors.warning, size: 20),
+                      const Icon(Icons.receipt_long,
+                          color: AppColors.warning, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Prescription Required (Rule 65)',
+                              'Prescription Required',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -408,12 +452,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   const Text(
                     'Therapeutic Salt Composition',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.mainText),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _product.saltComposition,
-                    style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.secondaryText),
                   ),
                 ],
               ),
@@ -428,12 +476,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   const Text(
                     'Product Overview',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mainText),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.mainText),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _product.description,
-                    style: const TextStyle(fontSize: 12, color: AppColors.secondaryText, height: 1.5),
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.secondaryText,
+                        height: 1.5),
                   ),
                 ],
               ),
@@ -460,26 +514,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               flex: 1,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  final displayName = _selectedSubstitute?.name ?? _product.name;
+                  final displayName =
+                      _selectedSubstitute?.name ?? _product.name;
                   CartService.instance.addItem(_product, _quantity);
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$displayName (x$_quantity) added to cart'),
-                      duration: const Duration(seconds: 2),
-                      action: SnackBarAction(
-                        label: 'VIEW CART',
-                        textColor: AppColors.secondary,
-                        onPressed: () => context.push('/cart'),
-                      ),
-                    ),
+                  AppSnackBar.showCartSuccess(
+                    context,
+                    productName: displayName,
+                    quantity: _quantity,
+                    onViewCart: () => context.push('/cart'),
                   );
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.primary, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 icon: const Icon(Icons.shopping_cart_outlined, size: 16),
                 label: const Text(
@@ -500,7 +550,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   backgroundColor: AppColors.secondary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
                 child: const Text(

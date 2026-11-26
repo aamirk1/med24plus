@@ -17,50 +17,53 @@ class PriceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text(
-          '₹${sellingPrice.toStringAsFixed(0)}',
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: AppColors.mainText,
-          ),
-        ),
-        if (mrp != null && mrp! > sellingPrice) ...[
-          const SizedBox(width: 6),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
           Text(
-            '₹${mrp!.toStringAsFixed(0)}',
+            '₹${sellingPrice.toStringAsFixed(0)}',
             style: TextStyle(
-              fontSize: fontSize * 0.78,
-              decoration: TextDecoration.lineThrough,
-              color: AppColors.secondaryText,
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: AppColors.mainText,
             ),
           ),
-        ],
-        if (discountPercent != null && discountPercent! > 0) ...[
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '$discountPercent% OFF',
-              style: const TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+          if (mrp != null && mrp! > sellingPrice) ...[
+            const SizedBox(width: 4),
+            Text(
+              '₹${mrp!.toStringAsFixed(0)}',
+              style: TextStyle(
+                fontSize: fontSize * 0.78,
+                decoration: TextDecoration.lineThrough,
+                color: AppColors.secondaryText,
               ),
             ),
-          ),
+          ],
+          if (discountPercent != null && discountPercent! > 0) ...[
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '$discountPercent% OFF',
+                style: const TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
-

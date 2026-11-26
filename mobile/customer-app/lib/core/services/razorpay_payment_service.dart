@@ -131,34 +131,46 @@ class RazorpayPaymentService {
   Future<bool> startCheckout({
     required BuildContext context,
     required MobileOrder order,
+    RazorpayOrderSession? initialSession,
     VoidCallback? onSuccess,
     Function(String error)? onFailure,
   }) async {
-    // 1. Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: Card(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(color: AppColors.primary),
-                SizedBox(width: 16),
-                Text('Connecting to Razorpay...', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-              ],
+    RazorpayOrderSession? session = initialSession;
+
+    // If session was pre-initialized in the order by the backend, use it directly
+    if (session == null && order.rawRazorpayOrder != null) {
+      try {
+        session = RazorpayOrderSession.fromJson(order.rawRazorpayOrder!);
+      } catch (_) {}
+    }
+
+    // 1. Show loading indicator and request backend to initialize Razorpay session if needed
+    if (session == null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: AppColors.primary),
+                  SizedBox(width: 16),
+                  Text('Connecting to Razorpay...', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    final session = await createPaymentSession(order.id);
+      session = await createPaymentSession(order.id);
 
-    if (context.mounted) {
-      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+      }
     }
 
     if (session == null) {
@@ -181,7 +193,7 @@ class RazorpayPaymentService {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _RazorpayCheckoutSheet(session: session, order: order),
+      builder: (ctx) => _RazorpayCheckoutSheet(session: session!, order: order),
     );
 
     if (paymentSuccess == true) {
@@ -192,13 +204,53 @@ class RazorpayPaymentService {
       return false;
     }
   }
+
+  /// Launch Razorpay checkout flow specifically for purchasing a VIP membership plan
+  Future<bool> startMembershipCheckout({
+    required BuildContext context,
+    required RazorpayOrderSession session,
+    required Future<bool> Function({
+      required String razorpayOrderId,
+      required String razorpayPaymentId,
+      required String razorpaySignature,
+    }) onVerifyPayment,
+    VoidCallback? onSuccess,
+    Function(String error)? onFailure,
+  }) async {
+    final paymentSuccess = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _RazorpayCheckoutSheet(
+        session: session,
+        onCustomVerify: onVerifyPayment,
+      ),
+    );
+
+    if (paymentSuccess == true) {
+      onSuccess?.call();
+      return true;
+    } else {
+      onFailure?.call('Payment was cancelled or could not be completed.');
+      return false;
+    }
+  }
 }
 
 class _RazorpayCheckoutSheet extends StatefulWidget {
   final RazorpayOrderSession session;
-  final MobileOrder order;
+  final MobileOrder? order;
+  final Future<bool> Function({
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  })? onCustomVerify;
 
-  const _RazorpayCheckoutSheet({required this.session, required this.order});
+  const _RazorpayCheckoutSheet({
+    required this.session,
+    this.order,
+    this.onCustomVerify,
+  });
 
   @override
   State<_RazorpayCheckoutSheet> createState() => _RazorpayCheckoutSheetState();
@@ -262,22 +314,38 @@ class _RazorpayCheckoutSheetState extends State<_RazorpayCheckoutSheet> {
       _processingStep = 'Verifying HMAC-SHA256 cryptographic signature...';
     });
 
-    final result = await RazorpayPaymentService.instance.verifyPayment(
-      orderId: widget.session.orderId,
-      razorpayOrderId: widget.session.razorpayOrderId,
-      razorpayPaymentId: paymentId,
-      razorpaySignature: signature,
-    );
+    bool isSuccess = false;
+    String errorMsg = '';
+
+    if (widget.onCustomVerify != null) {
+      isSuccess = await widget.onCustomVerify!(
+        razorpayOrderId: widget.session.razorpayOrderId,
+        razorpayPaymentId: paymentId,
+        razorpaySignature: signature,
+      );
+      if (!isSuccess) {
+        errorMsg = 'Could not verify membership payment with server.';
+      }
+    } else {
+      final result = await RazorpayPaymentService.instance.verifyPayment(
+        orderId: widget.session.orderId,
+        razorpayOrderId: widget.session.razorpayOrderId,
+        razorpayPaymentId: paymentId,
+        razorpaySignature: signature,
+      );
+      isSuccess = result.success;
+      errorMsg = result.message;
+    }
 
     if (!mounted) return;
     setState(() => _isProcessing = false);
 
-    if (result.success) {
+    if (isSuccess) {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.message),
+          content: Text(errorMsg.isNotEmpty ? errorMsg : 'Payment verification failed.'),
           backgroundColor: AppColors.error,
         ),
       );

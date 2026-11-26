@@ -13,23 +13,33 @@ class CategoryCard extends StatelessWidget {
     this.onTap,
   });
 
-  IconData _getIconData(String icon) {
-    switch (icon) {
-      case 'activity':
-        return Icons.monitor_heart_outlined;
-      case 'heart':
-        return Icons.favorite_border_rounded;
-      case 'sparkles':
-        return Icons.auto_awesome_outlined;
-      case 'leaf':
-        return Icons.eco_outlined;
-      case 'cross':
-        return Icons.medical_services_outlined;
-      case 'thermometer':
-        return Icons.thermostat_outlined;
-      default:
-        return Icons.category_outlined;
+  IconData _getIconData(String icon, String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('anti') || lowerName.contains('infect')) {
+      return Icons.coronavirus_outlined;
     }
+    if (lowerName.contains('pain') || lowerName.contains('analgesic')) {
+      return Icons.healing_rounded;
+    }
+    if (lowerName.contains('vitamin') || lowerName.contains('supplement') || lowerName.contains('calcium')) {
+      return Icons.eco_rounded;
+    }
+    if (lowerName.contains('device') || lowerName.contains('monitor') || lowerName.contains('glucometer')) {
+      return Icons.thermostat_outlined;
+    }
+    if (lowerName.contains('heart') || lowerName.contains('pressure') || lowerName.contains('cardio')) {
+      return Icons.favorite_rounded;
+    }
+    if (lowerName.contains('stomach') || lowerName.contains('acid') || lowerName.contains('gastro') || lowerName.contains('antacid')) {
+      return Icons.spa_rounded;
+    }
+    if (lowerName.contains('baby') || lowerName.contains('mother')) {
+      return Icons.child_care_rounded;
+    }
+    if (lowerName.contains('skin') || lowerName.contains('derma')) {
+      return Icons.face_retouching_natural_rounded;
+    }
+    return Icons.medication_rounded;
   }
 
   @override
@@ -38,15 +48,15 @@ class CategoryCard extends StatelessWidget {
       onTap: onTap,
       scaleDown: 0.94,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 4,
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
@@ -56,36 +66,41 @@ class CategoryCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
                 color: AppColors.primaryLight,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
               ),
-              child: Icon(
-                _getIconData(category.icon),
-                color: AppColors.primary,
-                size: 20,
+              child: Center(
+                child: Icon(
+                  _getIconData(category.icon, category.name),
+                  color: AppColors.primary,
+                  size: 26,
+                ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Text(
               category.name,
               style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
                 color: AppColors.mainText,
+                height: 1.25,
               ),
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
-              '${category.count} items',
+              '${category.count} medicines',
               style: const TextStyle(
-                fontSize: 9,
+                fontSize: 11,
                 color: AppColors.secondaryText,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

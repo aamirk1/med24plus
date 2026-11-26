@@ -58,7 +58,7 @@ class OrderService {
     return null;
   }
 
-  /// Create new statutory dispensing order
+  /// Create new statutory dispensing order with backend Razorpay initialization
   Future<MobileOrder?> createOrder({
     required String addressId,
     required String paymentMethod,
@@ -68,6 +68,7 @@ class OrderService {
   }) async {
     try {
       final body = {
+        'delivery_address_id': addressId,
         'shipping_address_id': addressId,
         'payment_method': paymentMethod,
         'coupon_code': couponCode,
@@ -90,7 +91,10 @@ class OrderService {
           return MobileOrder.fromJson(data);
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      // ignore: avoid_print
+      print('[OrderService] createOrder error: $e');
+    }
 
     return null;
   }

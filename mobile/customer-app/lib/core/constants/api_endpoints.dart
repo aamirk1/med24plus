@@ -63,6 +63,9 @@ class ApiEndpoints {
   // Store Licensing & Compliance
   static const String settings = '/settings';
   static const String membership = '/membership';
+  static const String membershipCreateOrder = '/membership/create-order';
+  static const String membershipVerify = '/membership/verify-and-activate';
+  static const String myMembership = '/membership/my-membership';
 
   // Promotional Marketing Coupons & Offers
   static const String coupons = '/coupons';

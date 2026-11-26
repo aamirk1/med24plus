@@ -580,12 +580,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   delay: const Duration(milliseconds: 300),
                   child: AppButton(
                     text: _isPlacingOrder
-                        ? (_selectedPayment == 'COD'
+                        ? (_selectedPayment == 'cod'
                             ? 'Placing Order (COD)...'
-                            : 'Opening Razorpay Gateway...')
-                        : (_selectedPayment == 'COD'
+                            : 'Initializing Secure Razorpay...')
+                        : (_selectedPayment == 'cod'
                             ? 'Confirm & Place Order (COD)'
-                            : 'Proceed to Payment (₹${totalPayable.toStringAsFixed(0)})'),
+                            : 'Proceed to Pay with Razorpay (₹${totalPayable.toStringAsFixed(0)})'),
                     isFullWidth: true,
                     onPressed: (_isPlacingOrder || address == null)
                         ? null

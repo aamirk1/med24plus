@@ -69,11 +69,17 @@ class AppLogo extends StatelessWidget {
     final effectiveHeight = height ?? size ?? 48;
 
     final imageWidget = Image.asset(
-      'assets/images/app_logo.png',
+      'assets/images/splash_logo.png',
       width: effectiveWidth,
       height: effectiveHeight,
       fit: fit,
-      errorBuilder: (context, error, stackTrace) => _buildFallback(effectiveWidth, effectiveHeight),
+      errorBuilder: (context, error, stackTrace) => Image.asset(
+        'assets/images/app_logo.png',
+        width: effectiveWidth,
+        height: effectiveHeight,
+        fit: fit,
+        errorBuilder: (_, __, ___) => _buildFallback(effectiveWidth, effectiveHeight),
+      ),
     );
 
     if (!withShadow && border == null && backgroundColor == null) {

@@ -6,6 +6,7 @@ from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.models.category import Category
 from app.models.inventory import InventoryBatch
 from app.models.order import OrderItem
 from app.models.product import Product, ProductAttribute, ProductImage
@@ -111,7 +112,13 @@ class ProductRepository:
             stmt = stmt.where(Product.is_active == is_active)
 
         if category_id is not None:
-            stmt = stmt.where(Product.category_id == category_id)
+            subcategories_subquery = select(Category.id).where(Category.parent_id == category_id)
+            stmt = stmt.where(
+                or_(
+                    Product.category_id == category_id,
+                    Product.category_id.in_(subcategories_subquery),
+                )
+            )
 
         if brand_id is not None:
             stmt = stmt.where(Product.brand_id == brand_id)

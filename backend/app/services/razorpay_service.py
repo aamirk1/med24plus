@@ -219,7 +219,7 @@ class RazorpayService:
         # Update Order state
         prev_status = order.status
         order.payment_status = "paid"
-        if order.status == "pending_payment":
+        if order.status in ("pending_payment", "placed", "pending"):
             order.status = "processing"
         order.confirmed_at = now
 
@@ -234,6 +234,29 @@ class RazorpayService:
         )
         self.db.add(history)
         await self.db.commit()
+
+        # Send confirmation email receipt if customer has an email address
+        if current_user.email:
+            try:
+                from app.services.email_service import EmailService
+                addr_text = "Registered Delivery Address"
+                if order.delivery_address_snapshot and isinstance(order.delivery_address_snapshot, dict):
+                    street = order.delivery_address_snapshot.get("street_address") or order.delivery_address_snapshot.get("address_line1", "")
+                    city = order.delivery_address_snapshot.get("city", "")
+                    pincode = order.delivery_address_snapshot.get("pincode", "")
+                    addr_text = f"{street}, {city} - {pincode}".strip(", -")
+                await EmailService.send_order_receipt(
+                    to_email=current_user.email,
+                    customer_name=current_user.full_name or "Med24Plus Customer",
+                    order_number=order.order_number,
+                    amount_paid=float(order.grand_total),
+                    payment_id=razorpay_payment_id,
+                    payment_method="Razorpay Secure Online",
+                    items_count=len(order.items) if order.items else 1,
+                    delivery_address=addr_text or "Selected Delivery Address",
+                )
+            except Exception as mail_err:
+                print(f"[RazorpayService] Receipt email notice: {mail_err}")
 
         return {
             "success": True,

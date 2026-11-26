@@ -18,16 +18,11 @@ class AppBadge extends StatelessWidget {
   factory AppBadge.schedule(String schedule) {
     switch (schedule.toUpperCase()) {
       case 'SCHEDULE_H':
-        return const AppBadge(
-          label: 'Schedule H (Rx)',
-          variant: AppBadgeVariant.warning,
-          icon: Icons.receipt_long_outlined,
-        );
       case 'SCHEDULE_H1':
         return const AppBadge(
-          label: 'Schedule H1 (High Alert)',
-          variant: AppBadgeVariant.danger,
-          icon: Icons.shield_outlined,
+          label: 'Rx Required',
+          variant: AppBadgeVariant.warning,
+          icon: Icons.receipt_long_outlined,
         );
       case 'AYUSH':
         return const AppBadge(

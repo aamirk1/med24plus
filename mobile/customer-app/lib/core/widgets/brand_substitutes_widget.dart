@@ -74,7 +74,7 @@ class _BrandSubstitutesWidgetState extends State<BrandSubstitutesWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Compare Brand Substitutes',
+                      'Compare Medicines (Generic Substitutes)',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

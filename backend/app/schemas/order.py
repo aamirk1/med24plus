@@ -148,6 +148,8 @@ class OrderResponse(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     item_count: int = 0
+    payment_method: Optional[str] = "razorpay"
+    razorpay_order: Optional[Dict[str, Any]] = None
     items: List[OrderItemResponse] = Field(default_factory=list)
     cancellation: Optional[OrderCancellationResponse] = None
     invoice: Optional[InvoiceResponse] = None
@@ -172,7 +174,7 @@ class OrderResponse(BaseModel):
                         result[rel.key] = getattr(data, rel.key)
                     except Exception:
                         result[rel.key] = [] if rel.uselist else None
-            for key in ("customer_name", "customer_phone", "customer_email", "item_count"):
+            for key in ("customer_name", "customer_phone", "customer_email", "item_count", "payment_method", "razorpay_order"):
                 val = getattr(data, key, None)
                 if val is not None:
                     result[key] = val
@@ -188,11 +190,32 @@ class OrderListResponse(BaseModel):
     total_pages: int
 
 
+class OrderItemCreate(BaseModel):
+    product_id: uuid.UUID
+    quantity: int = Field(1, ge=1)
+    unit_price: Optional[Decimal] = None
+
+
 class OrderCreateRequest(BaseModel):
-    delivery_address_id: uuid.UUID
+    delivery_address_id: Optional[uuid.UUID] = None
+    shipping_address_id: Optional[uuid.UUID] = None
+    payment_method: Optional[str] = "razorpay"
+    coupon_code: Optional[str] = None
+    discount_amount: Optional[Decimal] = Decimal("0.00")
+    items: Optional[List[OrderItemCreate]] = None
     customer_notes: Optional[str] = None
     acknowledge_price_changes: bool = False
     checkout_validation_id: Optional[uuid.UUID] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_address_and_items(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            if "shipping_address_id" in values and "delivery_address_id" not in values:
+                values["delivery_address_id"] = values["shipping_address_id"]
+            elif "delivery_address_id" in values and "shipping_address_id" not in values:
+                values["shipping_address_id"] = values["delivery_address_id"]
+        return values
 
 
 class OrderCancelRequest(BaseModel):

@@ -50,7 +50,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Drugs & Cosmetics Act, 1940 — Rule 65',
+                            'Prescription Verification Notice',
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -58,7 +58,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'A valid digital image of a signed prescription issued by a Registered Medical Practitioner is legally required before Schedule H/H1 drugs can be dispensed.',
+                            'A valid digital image of a signed doctor\'s prescription is required before prescription medicines can be dispensed.',
                             style: TextStyle(
                                 fontSize: 10,
                                 color: AppColors.primaryDark,

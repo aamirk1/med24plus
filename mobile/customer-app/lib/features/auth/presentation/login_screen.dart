@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Firebase Phone OTP Sign-In',
+                        'Phone OTP Sign-In',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Instant SMS verification without external SMS gateways',
+                    'Instant SMS verification to sign in quickly',
                     style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
                   ),
                   const SizedBox(height: 20),
@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (isOtpSent) ...[
                     const SizedBox(height: 16),
                     AppTextField(
-                      label: 'Firebase SMS Code',
+                      label: '6-Digit SMS Code',
                       hint: '6-digit OTP code',
                       controller: otpController,
                       keyboardType: TextInputType.number,
@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   if (!isOtpSent)
                     AppButton(
-                      text: isSending ? 'Sending SMS OTP...' : 'Send Firebase OTP',
+                      text: isSending ? 'Sending SMS OTP...' : 'Send SMS OTP',
                       isFullWidth: true,
                       isLoading: isSending,
                       onPressed: isSending
@@ -389,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         icon: const Icon(Icons.phone_android_rounded, size: 18, color: AppColors.primary),
                         label: const Text(
-                          'Sign In with Firebase Phone OTP',
+                          'Sign In with Phone OTP',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,

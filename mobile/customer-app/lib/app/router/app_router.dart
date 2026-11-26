@@ -21,6 +21,7 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/common/presentation/about_screen.dart';
 import '../../features/common/presentation/contact_screen.dart';
+import '../../features/membership/presentation/membership_plans_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -201,10 +202,11 @@ class AppRouter {
         name: 'products',
         pageBuilder: (context, state) {
           final cat = state.uri.queryParameters['category'];
+          final catId = state.uri.queryParameters['categoryId'];
           return _buildSmoothTransitionPage(
             context: context,
             state: state,
-            child: ProductListScreen(category: cat),
+            child: ProductListScreen(category: cat, categoryId: catId),
           );
         },
       ),
@@ -293,6 +295,15 @@ class AppRouter {
           context: context,
           state: state,
           child: const ContactScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/membership',
+        name: 'membership',
+        pageBuilder: (context, state) => _buildSmoothTransitionPage(
+          context: context,
+          state: state,
+          child: const MembershipPlansScreen(),
         ),
       ),
     ],

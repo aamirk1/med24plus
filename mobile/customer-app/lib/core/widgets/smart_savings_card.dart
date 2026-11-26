@@ -95,7 +95,7 @@ class SmartSavingsCard extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: onTap ?? () => context.push('/product/p-azithral'),
+                onTap: onTap ?? () => context.push('/product/azithral-500-tablet'),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   width: 32,
@@ -214,7 +214,7 @@ class SmartSavingsCard extends StatelessWidget {
 
           // Bottom Action Trigger Button
           InkWell(
-            onTap: onTap ?? () => context.push('/product/p-azithral'),
+            onTap: onTap ?? () => context.push('/product/azithral-500-tablet'),
             borderRadius: BorderRadius.circular(10),
             child: Container(
               width: double.infinity,

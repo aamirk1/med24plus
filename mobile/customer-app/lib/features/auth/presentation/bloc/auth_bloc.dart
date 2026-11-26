@@ -169,7 +169,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     FirebaseOtpLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading(message: 'Authenticating via Firebase...'));
+    emit(const AuthLoading(message: 'Authenticating...'));
     try {
       final user = await authRepository.loginWithFirebaseOtp(
         firebaseIdToken: event.firebaseIdToken,
@@ -186,7 +186,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     FirebasePhoneVerifyRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading(message: 'Verifying with Firebase...'));
+    emit(const AuthLoading(message: 'Verifying OTP...'));
     try {
       final success = await authRepository.verifyFirebaseOtp(
         firebaseIdToken: event.firebaseIdToken,
@@ -196,18 +196,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       if (success) {
         if (event.purpose == 'password_reset') {
-          emit(const PasswordResetSuccess('Password reset successfully via Firebase. Please sign in.'));
+          emit(const PasswordResetSuccess('Password reset successfully. Please sign in.'));
         } else {
           final user = await authRepository.getCurrentUser();
           if (user != null) {
             emit(AuthAuthenticated(user));
             unawaited(PushNotificationService().syncDeviceToken(force: true));
           } else {
-            emit(const AuthUnauthenticated('Mobile verified via Firebase. Please sign in.'));
+            emit(const AuthUnauthenticated('Mobile number verified. Please sign in.'));
           }
         }
       } else {
-        emit(const AuthFailure('Firebase verification failed.'));
+        emit(const AuthFailure('Phone verification failed. Please try again.'));
       }
     } catch (e) {
       final errorMsg = e.toString().replaceFirst('Exception: ', '');

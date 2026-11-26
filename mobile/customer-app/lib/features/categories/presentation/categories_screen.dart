@@ -87,7 +87,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 padding: const EdgeInsets.all(16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.15,
+                  childAspectRatio: 1.05,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
@@ -98,7 +98,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     delay: Duration(milliseconds: index * 35),
                     child: CategoryCard(
                       category: cat,
-                      onTap: () => context.push('/products?category=${cat.name}'),
+                      onTap: () => context.push(
+                          '/products?category=${Uri.encodeComponent(cat.name)}&categoryId=${cat.id}'),
                     ),
                   );
                 },

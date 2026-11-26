@@ -65,7 +65,8 @@ class _CouponInputCardState extends State<CouponInputCard> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.check_circle_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Expanded(child: Text(result.message)),
             ],
@@ -94,7 +95,9 @@ class _CouponInputCardState extends State<CouponInputCard> {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: appliedCode != null ? AppColors.secondary.withValues(alpha: 0.5) : AppColors.border,
+              color: appliedCode != null
+                  ? AppColors.secondary.withValues(alpha: 0.5)
+                  : AppColors.border,
               width: appliedCode != null ? 1.5 : 1.0,
             ),
             boxShadow: appliedCode != null
@@ -121,13 +124,18 @@ class _CouponInputCardState extends State<CouponInputCard> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: (appliedCode != null ? AppColors.secondary : AppColors.primary).withValues(alpha: 0.1),
+                      color: (appliedCode != null
+                              ? AppColors.secondary
+                              : AppColors.primary)
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.local_offer_rounded,
                       size: 18,
-                      color: appliedCode != null ? AppColors.secondary : AppColors.primary,
+                      color: appliedCode != null
+                          ? AppColors.secondary
+                          : AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -142,7 +150,8 @@ class _CouponInputCardState extends State<CouponInputCard> {
                   if (appliedCode != null) ...[
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.savingsBadgeBg,
                         borderRadius: BorderRadius.circular(6),
@@ -164,7 +173,8 @@ class _CouponInputCardState extends State<CouponInputCard> {
               if (appliedCode != null) ...[
                 // Applied Coupon Card
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryLight.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(8),
@@ -222,16 +232,19 @@ class _CouponInputCardState extends State<CouponInputCard> {
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                            border: Border.all(
+                                color: AppColors.error.withValues(alpha: 0.3)),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.close_rounded, size: 14, color: AppColors.error),
+                              Icon(Icons.close_rounded,
+                                  size: 14, color: AppColors.error),
                               SizedBox(width: 4),
                               Text(
                                 'Remove',
@@ -259,7 +272,9 @@ class _CouponInputCardState extends State<CouponInputCard> {
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: _errorMessage != null ? AppColors.error : AppColors.border,
+                            color: _errorMessage != null
+                                ? AppColors.error
+                                : AppColors.border,
                           ),
                         ),
                         child: TextField(
@@ -276,10 +291,12 @@ class _CouponInputCardState extends State<CouponInputCard> {
                             hintStyle: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.normal,
-                              color: AppColors.secondaryText.withValues(alpha: 0.7),
+                              color: AppColors.secondaryText
+                                  .withValues(alpha: 0.7),
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
                             isDense: true,
                           ),
                           onSubmitted: _applyCoupon,
@@ -288,7 +305,9 @@ class _CouponInputCardState extends State<CouponInputCard> {
                     ),
                     const SizedBox(width: 8),
                     AnimatedTapScale(
-                      onTap: _isApplying ? null : () => _applyCoupon(_controller.text),
+                      onTap: _isApplying
+                          ? null
+                          : () => _applyCoupon(_controller.text),
                       child: Container(
                         height: 44,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -324,7 +343,8 @@ class _CouponInputCardState extends State<CouponInputCard> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.error),
+                      const Icon(Icons.info_outline_rounded,
+                          size: 14, color: AppColors.error),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -337,73 +357,6 @@ class _CouponInputCardState extends State<CouponInputCard> {
                         ),
                       ),
                     ],
-                  ),
-                ],
-
-                if (widget.showSuggestions && availableCoupons.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Available Offers (Created by Admin):',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.secondaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: availableCoupons.map((coupon) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: AnimatedTapScale(
-                            onTap: () {
-                              _controller.text = coupon.code;
-                              _applyCoupon(coupon.code);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    coupon.code,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primaryDark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      coupon.discountBadge,
-                                      style: const TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
                   ),
                 ],
               ],

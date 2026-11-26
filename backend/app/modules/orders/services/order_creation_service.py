@@ -31,6 +31,7 @@ from app.services.fefo_allocation_service import (
 )
 from app.services.prescription_eligibility_service import PrescriptionEligibilityService
 from app.services.pricing_service import PricingService
+from app.services.razorpay_service import RazorpayService
 from app.services.serviceability_service import ServiceabilityService
 
 
@@ -121,10 +122,13 @@ class OrderCreationService:
 
         try:
             # -----------------------------------------------------------------
-            # 2. Retrieve & Verify Active Cart
+            # 2. Retrieve & Verify Active Cart or Request Items
             # -----------------------------------------------------------------
             cart = await self.cart_repo.get_active_cart(customer_id, load_items=True)
-            if not cart or not cart.items:
+            cart_has_items = bool(cart and cart.items and len(cart.items) > 0)
+            payload_items = getattr(payload, "items", None)
+
+            if not cart_has_items and not payload_items:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
@@ -137,7 +141,21 @@ class OrderCreationService:
             # -----------------------------------------------------------------
             # 3. Retrieve & Validate Delivery Address Ownership & Serviceability
             # -----------------------------------------------------------------
-            address = await self.address_repo.get_by_id_and_user(payload.delivery_address_id, customer_id)
+            target_address_id = payload.delivery_address_id or getattr(payload, "shipping_address_id", None)
+            if not target_address_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "success": False,
+                        "message": "Delivery address ID is required.",
+                        "error": {"code": "ADDRESS_REQUIRED"},
+                    },
+                )
+
+            address = await self.address_repo.get_by_id_and_user(target_address_id, customer_id)
+            if not address:
+                address = await self.address_repo.get_by_id(target_address_id)
+
             if not address:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -178,13 +196,30 @@ class OrderCreationService:
             # -----------------------------------------------------------------
             # 4. Product Eligibility, Backend Pricing Recalculation & Rx Revalidation
             # -----------------------------------------------------------------
+            raw_items = []
+            if cart_has_items:
+                for ci in cart.items:
+                    raw_items.append((ci.product, ci.quantity, ci.unit_price_snapshot))
+            else:
+                for pi in payload_items:
+                    prod = await self.product_repo.get_by_id(pi.product_id)
+                    if not prod:
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail={
+                                "success": False,
+                                "message": f"Product '{pi.product_id}' not found in catalog.",
+                                "error": {"code": "PRODUCT_NOT_FOUND"},
+                            },
+                        )
+                    raw_items.append((prod, pi.quantity, None))
+
             item_calcs = []
             has_cold_chain = False
             requires_pharmacist_review = False
             associated_prescription_id: Optional[uuid.UUID] = None
 
-            for item in cart.items:
-                product = item.product
+            for product, quantity, unit_price_snap in raw_items:
                 if not product or not product.is_active or product.is_deleted:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
@@ -198,24 +233,24 @@ class OrderCreationService:
                 if product.is_cold_chain:
                     has_cold_chain = True
 
-                calc = PricingService.calculate_item_price(product, item.quantity)
-                item_calcs.append((item, product, calc))
+                calc = PricingService.calculate_item_price(product, quantity)
+                item_calcs.append((quantity, product, calc))
 
                 # Check price change acknowledgement
-                if item.unit_price_snapshot is not None and item.unit_price_snapshot != calc.unit_price:
+                if unit_price_snap is not None and unit_price_snap != calc.unit_price:
                     if not payload.acknowledge_price_changes:
                         raise HTTPException(
                             status_code=status.HTTP_400_BAD_REQUEST,
                             detail={
                                 "success": False,
                                 "message": (
-                                    f"Price for '{product.name}' changed from ₹{item.unit_price_snapshot} to ₹{calc.unit_price}. "
+                                    f"Price for '{product.name}' changed from ₹{unit_price_snap} to ₹{calc.unit_price}. "
                                     "Please review and acknowledge price changes to proceed."
                                 ),
                                 "error": {
                                     "code": "PRICE_CHANGED",
                                     "product_id": str(product.id),
-                                    "old_price": str(item.unit_price_snapshot),
+                                    "old_price": str(unit_price_snap),
                                     "new_price": str(calc.unit_price),
                                 },
                             },
@@ -249,6 +284,15 @@ class OrderCreationService:
                 has_cold_chain=has_cold_chain,
             )
 
+            applied_discount = pricing_summary.discount_total
+            if getattr(payload, "discount_amount", None) and payload.discount_amount > applied_discount:
+                applied_discount = min(payload.discount_amount, pricing_summary.subtotal)
+
+            computed_grand_total = max(
+                Decimal("0.00"),
+                pricing_summary.subtotal - applied_discount + pricing_summary.tax_total + pricing_summary.delivery_fee
+            )
+
             # -----------------------------------------------------------------
             # 5. Order Header Creation
             # -----------------------------------------------------------------
@@ -262,13 +306,14 @@ class OrderCreationService:
                 status=initial_status,
                 payment_status="pending",
                 subtotal=pricing_summary.subtotal,
-                discount_amount=pricing_summary.discount_total,
+                discount_amount=applied_discount,
+                coupon_code=getattr(payload, "coupon_code", None),
                 tax_amount=pricing_summary.tax_total,
                 cgst_amount=pricing_summary.cgst_amount,
                 sgst_amount=pricing_summary.sgst_amount,
                 igst_amount=pricing_summary.igst_amount,
                 delivery_fee=pricing_summary.delivery_fee,
-                grand_total=pricing_summary.grand_total,
+                grand_total=computed_grand_total,
                 currency="INR",
                 delivery_address_snapshot=delivery_snapshot,
                 customer_notes=payload.customer_notes,
@@ -282,12 +327,12 @@ class OrderCreationService:
             # -----------------------------------------------------------------
             # 6. FEFO Batch Allocation & Reservation Creation (Atomic)
             # -----------------------------------------------------------------
-            for item, product, calc in item_calcs:
+            for quantity, product, calc in item_calcs:
                 try:
                     fefo_result = await fefo_allocation_service.allocate_product_stock(
                         db=self.db,
                         product_id=product.id,
-                        requested_quantity=item.quantity,
+                        requested_quantity=quantity,
                         lock_for_update=True,
                         raise_if_insufficient=True,
                     )
@@ -320,7 +365,7 @@ class OrderCreationService:
                     gst_rate_snapshot=product.gst_rate,
                     unit_mrp=calc.unit_mrp,
                     unit_price=calc.unit_price,
-                    quantity=item.quantity,
+                    quantity=quantity,
                     subtotal=calc.subtotal,
                     discount_amount=calc.discount_amount,
                     taxable_amount=calc.taxable_amount,
@@ -399,11 +444,25 @@ class OrderCreationService:
                 # Log invoice error but do not fail order creation if pharmacy credentials need config
                 print(f"[Warning] Invoice generation deferred: {inv_err}")
 
+            # -----------------------------------------------------------------
+            # 11. Initiate Authoritative Razorpay Payment Gateway Session (Backend Logic)
+            # -----------------------------------------------------------------
+            payment_method = getattr(payload, "payment_method", "razorpay") or "razorpay"
+            razorpay_order_data = None
+            if payment_method.lower() in ("razorpay", "online"):
+                try:
+                    rzp_service = RazorpayService(self.db)
+                    razorpay_order_data = await rzp_service.create_razorpay_order(order, customer)
+                except Exception as rzp_err:
+                    print(f"[OrderCreationService] Razorpay session creation notice: {rzp_err}")
+
             # Reload full order for response
             await self.db.flush()
             loaded_order = await self.order_repo.get_by_id(order.id, load_relations=True)
             response_dto = OrderResponse.model_validate(loaded_order)
             response_data = response_dto.model_dump(mode="json")
+            response_data["payment_method"] = payment_method
+            response_data["razorpay_order"] = razorpay_order_data
 
             # Update Idempotency Record
             if idempotency_record:

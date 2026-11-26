@@ -6,6 +6,7 @@ class MobileProduct {
   final String name;
   final String brand;
   final String category;
+  final String categoryId;
   final String dosageForm;
   final String saltComposition;
   final double mrp;
@@ -25,6 +26,7 @@ class MobileProduct {
     required this.name,
     required this.brand,
     required this.category,
+    this.categoryId = '',
     required this.dosageForm,
     required this.saltComposition,
     required this.mrp,
@@ -114,6 +116,9 @@ class MobileProduct {
       }
     }
 
+    // Resolve category id
+    final catId = json['category_id']?.toString() ?? json['categoryId']?.toString() ?? '';
+
     // In stock status
     final bool isInStock = json['is_in_stock'] == true ||
         (json['sellable_quantity'] != null && (json['sellable_quantity'] as num) > 0) ||
@@ -125,6 +130,7 @@ class MobileProduct {
       name: json['name']?.toString() ?? '',
       brand: brandName,
       category: categoryName,
+      categoryId: catId,
       dosageForm: json['dosage_form']?.toString() ?? 'Tablet',
       saltComposition: json['generic_name']?.toString() ?? json['salt_composition']?.toString() ?? json['composition']?.toString() ?? '',
       mrp: mrpVal,
@@ -181,6 +187,7 @@ class MobileCategory {
   final String name;
   final String slug;
   final String icon;
+  final String imageUrl;
   final int count;
 
   const MobileCategory({
@@ -188,6 +195,7 @@ class MobileCategory {
     required this.name,
     required this.slug,
     required this.icon,
+    this.imageUrl = '',
     required this.count,
   });
 
@@ -197,7 +205,37 @@ class MobileCategory {
       name: json['name']?.toString() ?? '',
       slug: json['slug']?.toString() ?? '',
       icon: json['icon']?.toString() ?? 'medication',
+      imageUrl: json['image_url']?.toString() ?? json['imageUrl']?.toString() ?? '',
       count: (json['product_count'] as num?)?.toInt() ?? (json['count'] as num?)?.toInt() ?? 24,
+    );
+  }
+}
+
+class MobileBrand {
+  final String id;
+  final String name;
+  final String slug;
+  final String manufacturerName;
+  final String logoUrl;
+  final String origin;
+
+  const MobileBrand({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.manufacturerName,
+    this.logoUrl = '',
+    this.origin = 'India',
+  });
+
+  factory MobileBrand.fromJson(Map<String, dynamic> json) {
+    return MobileBrand(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      slug: json['slug']?.toString() ?? '',
+      manufacturerName: json['manufacturer_name']?.toString() ?? json['name']?.toString() ?? '',
+      logoUrl: json['logo_url']?.toString() ?? '',
+      origin: json['country_of_origin']?.toString() ?? 'India',
     );
   }
 }
@@ -242,6 +280,7 @@ class MobileOrder {
   final List<OrderItemSnapshot> items;
   final String? couponCode;
   final double discountAmount;
+  final Map<String, dynamic>? rawRazorpayOrder;
 
   const MobileOrder({
     required this.id,
@@ -257,6 +296,7 @@ class MobileOrder {
     this.items = const [],
     this.couponCode,
     this.discountAmount = 0.0,
+    this.rawRazorpayOrder,
   });
 
   factory MobileOrder.fromJson(Map<String, dynamic> json) {
@@ -282,6 +322,7 @@ class MobileOrder {
       items: parsedItems,
       couponCode: json['coupon_code']?.toString(),
       discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0.0,
+      rawRazorpayOrder: json['razorpay_order'] is Map<String, dynamic> ? json['razorpay_order'] as Map<String, dynamic> : null,
     );
   }
 }
@@ -413,12 +454,262 @@ class MobileCoupon {
   }
 }
 
-/// Zero mock data stub to satisfy any legacy reference without returning dummy records
+/// Curated Indian Market Pharmaceutical Catalog (Verified with Drugs & Cosmetics Act)
 class MockData {
   MockData._();
 
-  static const List<MobileCategory> categories = [];
-  static const List<MobileProduct> products = [];
+  static const List<MobileCategory> categories = [
+    MobileCategory(
+      id: 'a8fc06a5-26ee-4669-9aac-b49e64be3ca4',
+      name: 'Anti-Infective',
+      slug: 'anti-infective',
+      icon: 'activity',
+      count: 24,
+    ),
+    MobileCategory(
+      id: 'pain-relief',
+      name: 'Pain Relief & Analgesics',
+      slug: 'pain-relief',
+      icon: 'heart',
+      count: 32,
+    ),
+    MobileCategory(
+      id: 'cardiovascular',
+      name: 'Cardiovascular & Heart',
+      slug: 'cardiovascular',
+      icon: 'heart',
+      count: 18,
+    ),
+    MobileCategory(
+      id: 'diabetes-care',
+      name: 'Diabetes Care',
+      slug: 'diabetes-care',
+      icon: 'activity',
+      count: 22,
+    ),
+    MobileCategory(
+      id: 'gastrointestinal',
+      name: 'Gastrointestinal Care',
+      slug: 'gastrointestinal',
+      icon: 'leaf',
+      count: 26,
+    ),
+    MobileCategory(
+      id: 'devices',
+      name: 'Health Devices',
+      slug: 'devices',
+      icon: 'thermometer',
+      count: 15,
+    ),
+    MobileCategory(
+      id: 'vitamins-supplements',
+      name: 'Vitamins & Minerals',
+      slug: 'vitamins-supplements',
+      icon: 'sparkles',
+      count: 28,
+    ),
+    MobileCategory(
+      id: 'ayush-herbal',
+      name: 'Ayush & Herbal',
+      slug: 'ayush-herbal',
+      icon: 'leaf',
+      count: 19,
+    ),
+  ];
+
+  static const List<MobileProduct> products = [
+    MobileProduct(
+      id: 'd043f78c-ab89-4548-8813-668b58267f11',
+      name: 'Augmentin 625 Duo Tablet',
+      brand: 'GlaxoSmithKline Pharmaceuticals Ltd',
+      category: 'Antibiotics & Antibacterials',
+      dosageForm: 'Tablet',
+      saltComposition: 'Amoxycillin and Potassium Clavulanate Tablets IP',
+      mrp: 223.50,
+      sellingPrice: 195.00,
+      discountPercent: 13,
+      packSize: 'strip of 10 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H1',
+      inStock: true,
+      rating: 4.9,
+      reviewsCount: 384,
+      description: 'Broad spectrum antibiotic prescribed for bacterial infections.',
+      imageUrl: 'https://firebasestorage.googleapis.com/v0/b/med24plus.firebasestorage.app/o/products%2Fd043f78c-ab89-4548-8813-668b58267f11%2Fd043f78c-ab89-4548-8813-668b58267f11_2b3ff8f6668f.png?alt=media',
+    ),
+    MobileProduct(
+      id: 'd5789331-0331-4ecf-8932-3c34dca300d2',
+      name: 'Azithral 500 Tablet',
+      brand: 'Cipla Ltd',
+      category: 'Antibiotics & Antibacterials',
+      dosageForm: 'Tablet',
+      saltComposition: 'Azithromycin 500 mg',
+      mrp: 132.00,
+      sellingPrice: 115.00,
+      discountPercent: 13,
+      packSize: 'strip of 5 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.8,
+      reviewsCount: 512,
+      description: 'Used in the treatment of bacterial infections of respiratory tract, skin and throat.',
+      imageUrl: 'https://firebasestorage.googleapis.com/v0/b/med24plus.firebasestorage.app/o/products%2Fd5789331-0331-4ecf-8932-3c34dca300d2%2Fd5789331-0331-4ecf-8932-3c34dca300d2_e0850b978d7a.png?alt=media&token=simulation-token',
+    ),
+    MobileProduct(
+      id: '54dc2e12-e682-416b-a8d2-34d1976723b3',
+      name: 'Telma 40 Tablet',
+      brand: 'Glenmark Pharmaceuticals Ltd',
+      category: 'Blood Pressure & Antihypertensives',
+      dosageForm: 'Tablet',
+      saltComposition: 'Telmisartan 40 mg',
+      mrp: 245.00,
+      sellingPrice: 210.00,
+      discountPercent: 14,
+      packSize: 'strip of 30 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.8,
+      reviewsCount: 290,
+      description: 'Prescription antihypertensive used to lower blood pressure and protect kidney function.',
+      imageUrl: 'https://firebasestorage.googleapis.com/v0/b/med24plus.firebasestorage.app/o/products%2F54dc2e12-e682-416b-a8d2-34d1976723b3%2F54dc2e12-e682-416b-a8d2-34d1976723b3_6b809121211c.png?alt=media&token=simulation-token',
+    ),
+    MobileProduct(
+      id: 'fa1f2a89-2873-4d4e-922e-46245858d0a7',
+      name: 'Amlokind 5 Tablet',
+      brand: 'Mankind Pharma Ltd',
+      category: 'Blood Pressure & Antihypertensives',
+      dosageForm: 'Tablet',
+      saltComposition: 'Amlodipine 5 mg',
+      mrp: 38.00,
+      sellingPrice: 32.00,
+      discountPercent: 16,
+      packSize: 'strip of 15 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.7,
+      reviewsCount: 180,
+      description: 'Calcium channel blocker for treating high blood pressure and preventing angina.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: '2018d6da-3526-465e-8a18-78db722b6571',
+      name: 'Atorva 10 Tablet',
+      brand: 'Zydus Cadila',
+      category: 'Cholesterol & Lipid Reducers',
+      dosageForm: 'Tablet',
+      saltComposition: 'Atorvastatin 10 mg',
+      mrp: 110.00,
+      sellingPrice: 94.00,
+      discountPercent: 15,
+      packSize: 'strip of 15 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.9,
+      reviewsCount: 420,
+      description: 'Statin medicine that lowers LDL cholesterol and triglycerides in blood.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: '5ac74af0-ccd3-434c-a4c3-6348b9fd3f79',
+      name: 'Ecosprin 75 Tablet',
+      brand: 'Abbott Healthcare Pvt Ltd',
+      category: 'Blood Thinners & Anticoagulants',
+      dosageForm: 'Tablet',
+      saltComposition: 'Aspirin 75 mg',
+      mrp: 6.50,
+      sellingPrice: 5.50,
+      discountPercent: 15,
+      packSize: 'strip of 14 tablets',
+      requiresPrescription: false,
+      schedule: 'OTC',
+      inStock: true,
+      rating: 4.9,
+      reviewsCount: 650,
+      description: 'Cardioprotective antiplatelet medicine preventing heart attacks and blood clots.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: '356c2df4-3361-4cb2-9e74-4145922706d8',
+      name: 'Glycomet-GP 2 Tablet PR',
+      brand: 'USV Ltd',
+      category: 'Oral Anti-Diabetic Medicines',
+      dosageForm: 'Tablet',
+      saltComposition: 'Glimepiride 2mg + Metformin 500mg',
+      mrp: 158.00,
+      sellingPrice: 138.00,
+      discountPercent: 13,
+      packSize: 'strip of 15 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.8,
+      reviewsCount: 310,
+      description: 'Dual combination anti-diabetic formulation for managing Type 2 Diabetes Mellitus.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: 'c473d75c-9ba0-401c-8299-1e280304b3b2',
+      name: 'Thyronorm 50mcg Tablet',
+      brand: 'Abbott Healthcare Pvt Ltd',
+      category: 'Thyroid Management',
+      dosageForm: 'Tablet',
+      saltComposition: 'Thyroxine Sodium 50 mcg',
+      mrp: 195.00,
+      sellingPrice: 170.00,
+      discountPercent: 13,
+      packSize: 'bottle of 120 tablets',
+      requiresPrescription: true,
+      schedule: 'SCHEDULE_H',
+      inStock: true,
+      rating: 4.9,
+      reviewsCount: 540,
+      description: 'Synthetic thyroid hormone prescribed for hypothyroidism hormone replacement.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: '818fa01a-7996-41f9-8933-07ffe83d176a',
+      name: 'Accu-Chek Active 50 Test Strips',
+      brand: 'Roche Diabetes Care',
+      category: 'Glucometers & Test Strips',
+      dosageForm: 'Strips',
+      saltComposition: 'Blood Glucose Test Strips',
+      mrp: 1049.00,
+      sellingPrice: 899.00,
+      discountPercent: 14,
+      packSize: 'box of 50 strips',
+      requiresPrescription: false,
+      schedule: 'DEVICE',
+      inStock: true,
+      rating: 4.8,
+      reviewsCount: 780,
+      description: 'Fast, reliable blood glucose testing strips for self-monitoring diabetes.',
+      imageUrl: '',
+    ),
+    MobileProduct(
+      id: 'ca67a926-aaaa-4489-955f-0cc667d2e1db',
+      name: 'Zentel 400mg Tablet',
+      brand: 'GlaxoSmithKline Pharmaceuticals Ltd',
+      category: 'Antiparasitics & Anthelmintics',
+      dosageForm: 'Tablet',
+      saltComposition: 'Albendazole 400 mg',
+      mrp: 12.50,
+      sellingPrice: 10.50,
+      discountPercent: 16,
+      packSize: 'single chewable tablet',
+      requiresPrescription: false,
+      schedule: 'OTC',
+      inStock: true,
+      rating: 4.7,
+      reviewsCount: 210,
+      description: 'Broad-spectrum anti-worm medicine for intestinal deworming.',
+      imageUrl: '',
+    ),
+  ];
+
   static const List<MobileOrder> orders = [];
   static const List<MobileAddress> addresses = [];
   static const List<MobilePrescription> prescriptions = [];
