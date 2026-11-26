@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/app_colors.dart';
 import '../mock/mock_data.dart';
 import '../network/api_client.dart';
-import '../widgets/animated_entry.dart';
 import '../widgets/app_button.dart';
 
 /// Data returned by backend upon initializing Razorpay order
@@ -127,7 +128,29 @@ class RazorpayPaymentService {
     );
   }
 
-  /// Launch Razorpay checkout flow with bottom sheet modal and HMAC-SHA256 signature verification
+  Map<String, dynamic> _buildRazorpayOptions(RazorpayOrderSession session, {String? description}) {
+    return {
+      'key': session.keyId.isNotEmpty ? session.keyId : 'rzp_test_placeholder',
+      'amount': session.amountPaise,
+      'name': 'Med24Plus Pharmacy',
+      'order_id': session.razorpayOrderId.isNotEmpty ? session.razorpayOrderId : null,
+      'description': description ?? (session.orderNumber.isNotEmpty ? 'Order #${session.orderNumber}' : 'VIP Membership Plan'),
+      'timeout': 300,
+      'prefill': {
+        'contact': session.customerPhone,
+        'email': session.customerEmail,
+        'name': session.customerName,
+      },
+      'theme': {
+        'color': '#0052CC',
+      },
+      'external': {
+        'wallets': ['paytm', 'phonepe', 'gpay'],
+      },
+    };
+  }
+
+  /// Launch Razorpay checkout flow with official native SDK and HMAC-SHA256 signature verification
   Future<bool> startCheckout({
     required BuildContext context,
     required MobileOrder order,
@@ -188,12 +211,77 @@ class RazorpayPaymentService {
 
     if (!context.mounted) return false;
 
-    // 2. Open Razorpay Bottom Sheet
+    final activeSession = session;
+
+    // 2. Launch Official Razorpay Native SDK
+    try {
+      final razorpay = Razorpay();
+      final completer = Completer<bool>();
+      bool hasReplied = false;
+
+      razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse response) async {
+        if (hasReplied) return;
+        hasReplied = true;
+        try {
+          razorpay.clear();
+        } catch (_) {}
+
+        final verifyResult = await verifyPayment(
+          orderId: activeSession.orderId,
+          razorpayOrderId: response.orderId ?? activeSession.razorpayOrderId,
+          razorpayPaymentId: response.paymentId ?? '',
+          razorpaySignature: response.signature ?? '',
+        );
+
+        if (verifyResult.success) {
+          if (!completer.isCompleted) completer.complete(true);
+        } else {
+          if (!completer.isCompleted) {
+            onFailure?.call(verifyResult.message);
+            completer.complete(false);
+          }
+        }
+      });
+
+      razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
+        if (hasReplied) return;
+        hasReplied = true;
+        try {
+          razorpay.clear();
+        } catch (_) {}
+        if (!completer.isCompleted) {
+          onFailure?.call(response.message ?? 'Payment cancelled or failed');
+          completer.complete(false);
+        }
+      });
+
+      razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse response) {
+        try {
+          razorpay.clear();
+        } catch (_) {}
+      });
+
+      final options = _buildRazorpayOptions(activeSession, description: 'Medicine Order #${order.orderNumber}');
+      razorpay.open(options);
+
+      final nativeSuccess = await completer.future;
+      if (nativeSuccess) {
+        onSuccess?.call();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('[RazorpayPaymentService] Native open fallback to bottom sheet: $e');
+    }
+
+    if (!context.mounted) return false;
+
+    // 3. Fallback to In-App Checkout Sheet if native platform channel is not available
     final paymentSuccess = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _RazorpayCheckoutSheet(session: session!, order: order),
+      builder: (ctx) => _RazorpayCheckoutSheet(session: activeSession, order: order),
     );
 
     if (paymentSuccess == true) {
@@ -217,6 +305,62 @@ class RazorpayPaymentService {
     VoidCallback? onSuccess,
     Function(String error)? onFailure,
   }) async {
+    // 1. Launch Official Razorpay Native SDK
+    try {
+      final razorpay = Razorpay();
+      final completer = Completer<bool>();
+      bool hasReplied = false;
+
+      razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse response) async {
+        if (hasReplied) return;
+        hasReplied = true;
+        try {
+          razorpay.clear();
+        } catch (_) {}
+
+        final isSuccess = await onVerifyPayment(
+          razorpayOrderId: response.orderId ?? session.razorpayOrderId,
+          razorpayPaymentId: response.paymentId ?? '',
+          razorpaySignature: response.signature ?? '',
+        );
+
+        if (!completer.isCompleted) completer.complete(isSuccess);
+      });
+
+      razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
+        if (hasReplied) return;
+        hasReplied = true;
+        try {
+          razorpay.clear();
+        } catch (_) {}
+        if (!completer.isCompleted) {
+          onFailure?.call(response.message ?? 'Membership payment failed or cancelled');
+          completer.complete(false);
+        }
+      });
+
+      razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse response) {
+        try {
+          razorpay.clear();
+        } catch (_) {}
+      });
+
+      final options = _buildRazorpayOptions(session, description: 'VIP Membership Plan Activation');
+      razorpay.open(options);
+
+      final nativeSuccess = await completer.future;
+      if (nativeSuccess) {
+        onSuccess?.call();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('[RazorpayPaymentService] Membership native open fallback: $e');
+    }
+
+    if (!context.mounted) return false;
+
+    // 2. Fallback to In-App Checkout Sheet if native platform channel is not available
     final paymentSuccess = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
