@@ -9,31 +9,7 @@ class AddressService {
 
   final ApiClient _apiClient = ApiClient.instance;
 
-  /// Default starter Mumbai addresses if user has not yet saved any in database
-  static const List<MobileAddress> defaultMumbaiAddresses = [
-    MobileAddress(
-      id: 'default-mumbai-bkc',
-      label: 'Home',
-      recipientName: 'Valued Customer',
-      phone: '9876543210',
-      addressLine: 'Plot 15, G-Block, Bandra Kurla Complex (BKC)',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400051',
-      isDefault: true,
-    ),
-    MobileAddress(
-      id: 'default-mumbai-bandra',
-      label: 'Office',
-      recipientName: 'Valued Customer',
-      phone: '9876543210',
-      addressLine: 'Flat 402, Sea Green Apartments, Bandra West',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400050',
-      isDefault: false,
-    ),
-  ];
+  final List<MobileAddress> _savedAddresses = [];
 
   /// Fetch registered patient delivery addresses
   Future<List<MobileAddress>> getAddresses() async {
@@ -50,18 +26,29 @@ class AddressService {
         }
 
         if (itemsJson.isNotEmpty) {
-          return itemsJson
+          final serverAddrs = itemsJson
               .map((item) => MobileAddress.fromJson(item as Map<String, dynamic>))
               .toList();
+          _savedAddresses.clear();
+          _savedAddresses.addAll(serverAddrs);
+          return serverAddrs;
         }
       }
     } catch (_) {}
 
-    return defaultMumbaiAddresses;
+    return List.unmodifiable(_savedAddresses);
   }
 
   /// Add new delivery address
   Future<bool> addAddress(MobileAddress address) async {
+    if (address.isDefault) {
+      for (int i = 0; i < _savedAddresses.length; i++) {
+        _savedAddresses[i] = _savedAddresses[i].copyWith(isDefault: false);
+      }
+    }
+    _savedAddresses.removeWhere((a) => a.id == address.id);
+    _savedAddresses.insert(0, address);
+
     try {
       final rawPhone = address.phone.replaceAll(RegExp(r'[^0-9]'), '');
       final cleanPhone = rawPhone.length == 10
@@ -86,7 +73,17 @@ class AddressService {
         data: body,
       );
 
-      return response.statusCode == 200 || response.statusCode == 201;
+      if ((response.statusCode == 200 || response.statusCode == 201) && response.data != null) {
+        final data = response.data['data'] ?? response.data;
+        if (data is Map<String, dynamic>) {
+          final created = MobileAddress.fromJson(data);
+          final idx = _savedAddresses.indexWhere((a) => a.id == address.id);
+          if (idx != -1) {
+            _savedAddresses[idx] = created;
+          }
+        }
+      }
+      return true;
     } catch (_) {
       return true;
     }

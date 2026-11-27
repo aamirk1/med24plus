@@ -59,8 +59,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please select or add a delivery address')),
+          content: Text(
+              'Delivery address is mandatory. Please add your address to proceed.'),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 4),
+        ),
       );
+      _showAddAddressSheet(context);
       return;
     }
 
@@ -359,41 +364,60 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                 ],
                               )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(Icons.location_off_outlined,
-                                          color: AppColors.warning, size: 20),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'No Delivery Address',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.mainText),
+                            : Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: const Color(0xFFFCA5A5)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.location_off_outlined,
+                                            color: AppColors.error, size: 20),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Delivery Address Required',
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.error),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      'A delivery address is mandatory before placing your order. Please add your address.',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.secondaryText),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  const Text(
-                                    'Please add a delivery address to complete your order.',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.secondaryText),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  OutlinedButton.icon(
-                                    onPressed: () async {
-                                      await context.push('/addresses');
-                                      _loadAddresses();
-                                    },
-                                    icon: const Icon(Icons.add, size: 16),
-                                    label: const Text('Add Address',
-                                        style: TextStyle(fontSize: 12)),
-                                  ),
-                                ],
+                                      onPressed: () =>
+                                          _showAddAddressSheet(context),
+                                      icon: const Icon(Icons.add_location_alt,
+                                          size: 16),
+                                      label: const Text('Add Address Now',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
                               ),
                   ),
                 ),
@@ -594,13 +618,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ? (_selectedPayment == 'cod'
                             ? 'Placing Order (COD)...'
                             : 'Initializing Secure Razorpay...')
-                        : (_selectedPayment == 'cod'
-                            ? 'Confirm & Place Order (COD)'
-                            : 'Proceed to Pay with Razorpay (₹${totalPayable.toStringAsFixed(0)})'),
+                        : address == null
+                            ? 'Add Delivery Address to Proceed'
+                            : (_selectedPayment == 'cod'
+                                ? 'Confirm & Place Order (COD)'
+                                : 'Proceed to Pay with Razorpay (₹${totalPayable.toStringAsFixed(0)})'),
+                    icon: address == null
+                        ? const Icon(Icons.add_location_alt_outlined,
+                            size: 18, color: Colors.white)
+                        : null,
                     isFullWidth: true,
-                    onPressed: (_isPlacingOrder || address == null)
+                    onPressed: _isPlacingOrder
                         ? null
-                        : _placeOrder,
+                        : address == null
+                            ? () => _showAddAddressSheet(context)
+                            : _placeOrder,
                   ),
                 ),
               ],
@@ -731,6 +763,228 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddAddressSheet(BuildContext context) {
+    final nameCtrl = TextEditingController(text: 'Customer');
+    final phoneCtrl = TextEditingController(text: '9876543210');
+    final lineCtrl = TextEditingController(text: 'Flat 101, Sagar Darshan');
+    final areaCtrl = TextEditingController(text: 'Bandra West');
+    final pinCtrl = TextEditingController(text: '400050');
+    String selectedType = 'Home';
+    bool isDefault = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Add Mumbai Delivery Address',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.mainText,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Home'),
+                      selected: selectedType == 'Home',
+                      onSelected: (val) {
+                        if (val) setModalState(() => selectedType = 'Home');
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text('Office / Work'),
+                      selected: selectedType == 'Office',
+                      onSelected: (val) {
+                        if (val) setModalState(() => selectedType = 'Office');
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Recipient Full Name',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: phoneCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: '10-Digit Mobile Number',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: lineCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'House / Flat / Building Name',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: areaCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Street / Area / Locality (Mumbai)',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: pinCtrl,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        decoration: const InputDecoration(
+                          labelText: 'PIN Code',
+                          counterText: '',
+                          border: OutlineInputBorder(),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: 'Mumbai',
+                        enabled: false,
+                        decoration: const InputDecoration(
+                          labelText: 'City',
+                          border: OutlineInputBorder(),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: 'Maharashtra',
+                        enabled: false,
+                        decoration: const InputDecoration(
+                          labelText: 'State',
+                          border: OutlineInputBorder(),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isDefault,
+                      onChanged: (val) =>
+                          setModalState(() => isDefault = val ?? true),
+                    ),
+                    const Text('Set as default delivery address',
+                        style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: AppButton(
+                    text: 'Save & Deliver Here',
+                    onPressed: () async {
+                      if (pinCtrl.text.trim().length != 6) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Please enter a valid 6-digit Mumbai PIN code')),
+                        );
+                        return;
+                      }
+                      final fullAddressLine = areaCtrl.text.trim().isNotEmpty
+                          ? '${lineCtrl.text.trim()}, ${areaCtrl.text.trim()}'
+                          : lineCtrl.text.trim();
+
+                      final newAddress = MobileAddress(
+                        id: 'mumbai_${DateTime.now().millisecondsSinceEpoch}',
+                        label: selectedType,
+                        recipientName: nameCtrl.text.trim(),
+                        phone: phoneCtrl.text.trim(),
+                        addressLine: fullAddressLine,
+                        city: 'Mumbai',
+                        state: 'Maharashtra',
+                        pincode: pinCtrl.text.trim(),
+                        isDefault: isDefault,
+                      );
+
+                      Navigator.pop(ctx);
+                      await AddressService.instance.addAddress(newAddress);
+                      await _loadAddresses();
+
+                      if (!mounted) return;
+                      setState(() {
+                        _selectedAddress = newAddress;
+                      });
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Delivery address added successfully! You can now place your order.'),
+                          backgroundColor: AppColors.primary,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

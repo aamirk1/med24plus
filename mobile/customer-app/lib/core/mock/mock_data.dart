@@ -363,6 +363,30 @@ class MobileAddress {
       isDefault: json['is_default'] == true || json['isDefault'] == true,
     );
   }
+
+  MobileAddress copyWith({
+    String? id,
+    String? label,
+    String? recipientName,
+    String? phone,
+    String? addressLine,
+    String? city,
+    String? state,
+    String? pincode,
+    bool? isDefault,
+  }) {
+    return MobileAddress(
+      id: id ?? this.id,
+      label: label ?? this.label,
+      recipientName: recipientName ?? this.recipientName,
+      phone: phone ?? this.phone,
+      addressLine: addressLine ?? this.addressLine,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      pincode: pincode ?? this.pincode,
+      isDefault: isDefault ?? this.isDefault,
+    );
+  }
 }
 
 class MobilePrescription {

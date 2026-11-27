@@ -162,21 +162,16 @@ class OrderCreationService:
                     if user_addrs:
                         address = user_addrs[0]
 
-            # If user has no saved addresses in DB yet, auto-provision a verified delivery address
+            # Ensure user has a valid delivery address - do NOT allow order placement without address
             if not address:
-                address = UserAddress(
-                    user_id=customer_id,
-                    recipient_name=customer.full_name or "Med24Plus Patient",
-                    recipient_phone=customer.phone or "9876543210",
-                    address_line1="Bandra Kurla Complex (BKC)",
-                    city="Mumbai",
-                    state="Maharashtra",
-                    pincode="400051",
-                    address_type="home",
-                    is_default=True,
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "success": False,
+                        "code": "DELIVERY_ADDRESS_REQUIRED",
+                        "message": "Delivery address is mandatory. Please add and select a delivery address before placing your order.",
+                    },
                 )
-                self.db.add(address)
-                await self.db.flush()
 
             settings = await self.settings_repo.get_or_create_settings()
             serviceability_check = await self.serviceability_service.check_pincode_serviceability(address.pincode)
