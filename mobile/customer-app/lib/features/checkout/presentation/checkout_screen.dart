@@ -66,7 +66,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     setState(() => _isPlacingOrder = true);
 
-    final createdOrder = await OrderService.instance.createOrder(
+    final result = await OrderService.instance.createOrder(
       addressId: _selectedAddress!.id,
       paymentMethod: _selectedPayment == 'razorpay' ? 'razorpay' : 'cod',
       items: cart.items,
@@ -78,16 +78,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     if (!mounted) return;
 
-    if (createdOrder == null) {
+    if (!result.success || result.order == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-              'Failed to place order. Please check your connection and retry.'),
+            result.errorMessage ?? 'Failed to place order. Please try again.',
+          ),
           backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 4),
+          action: result.isAuthError
+              ? SnackBarAction(
+                  label: 'Sign In',
+                  textColor: Colors.white,
+                  onPressed: () => context.push('/login'),
+                )
+              : null,
         ),
       );
       return;
     }
+
+    final createdOrder = result.order!;
 
     // Handle Payment Modes
     if (_selectedPayment == 'razorpay') {

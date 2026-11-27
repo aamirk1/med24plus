@@ -13,24 +13,24 @@ export const JsonLd: React.FC = () => {
     image: "https://med24plus.in/apple-icon.png",
     description:
       "Licensed Indian 24x7 online pharmacy delivering 100% genuine prescription medicines, healthcare devices, and wellness essentials with licensed pharmacist verification under Rule 65.",
-    telephone: "+91-80-4123-4567",
+    telephone: "+91-22-8069-0161",
     email: "care@med24plus.in",
     priceRange: "₹₹",
     currenciesAccepted: "INR",
     paymentAccepted: "Cash, Credit Card, Debit Card, UPI, NetBanking, Razorpay",
-    hasMap: "https://maps.google.com/?q=Koramangala+Bengaluru",
+    hasMap: "https://maps.google.com/?q=Bandra+Kurla+Complex+Mumbai",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "No. 42, 80 Feet Road, 4th Block, Koramangala",
-      addressLocality: "Bengaluru",
-      addressRegion: "Karnataka",
-      postalCode: "560034",
+      streetAddress: "Plot 15, Bandra Kurla Complex (BKC), Bandra East",
+      addressLocality: "Mumbai",
+      addressRegion: "Maharashtra",
+      postalCode: "400051",
       addressCountry: "IN",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: "12.9352",
-      longitude: "77.6245",
+      latitude: "19.0657",
+      longitude: "72.8687",
     },
     openingHoursSpecification: [
       {

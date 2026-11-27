@@ -147,12 +147,12 @@ class ServiceablePincode(Base, UUIDMixin, TimestampMixin):
     )
     city: Mapped[str] = mapped_column(
         String(100),
-        default="Bengaluru",
+        default="Mumbai",
         nullable=False,
     )
     state: Mapped[str] = mapped_column(
         String(100),
-        default="Karnataka",
+        default="Maharashtra",
         nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(

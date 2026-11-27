@@ -71,10 +71,10 @@ class PDFInvoiceGenerator:
 
         # Pharmacy Brand Header
         pharm_name = pharmacy_details.get("name") or pharmacy_details.get("legal_name") or "MED24PLUS PHARMACY PRIVATE LIMITED"
-        dl_num = pharmacy_details.get("dl_number") or pharmacy_details.get("form_20_dl") or "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)"
-        gstin = pharmacy_details.get("gstin", "29AABCM2424P1Z3")
+        dl_num = pharmacy_details.get("dl_number") or pharmacy_details.get("form_20_dl") or "DL-MH-MUM-2026-094182 / DL-MH-MUM-2026-094183 (Form 20/21)"
+        gstin = pharmacy_details.get("gstin", "27AABCM2424P1Z3")
         fssai = pharmacy_details.get("fssai", "11226999000123")
-        address_line = pharmacy_details.get("address", "Plot 42, HSR Layout Sector 2, Bengaluru, Karnataka 560102")
+        address_line = pharmacy_details.get("address", "Plot 15, Bandra Kurla Complex (BKC), Bandra East, Mumbai, Maharashtra 400051")
 
         text(45, 785, pharm_name.upper(), font="F2", size=14)
         text(45, 770, f"Drug Lic: {dl_num} | GSTIN: {gstin}", font="F1", size=8.5)
@@ -99,13 +99,13 @@ class PDFInvoiceGenerator:
         recipient_name = delivery_address.get("recipient_name") or c_name
         street = delivery_address.get("address_line1") or delivery_address.get("street_address") or ""
         area = delivery_address.get("address_line2") or delivery_address.get("area") or ""
-        city = delivery_address.get("city", "Bengaluru")
-        state = delivery_address.get("state", "Karnataka")
+        city = delivery_address.get("city", "Mumbai")
+        state = delivery_address.get("state", "Maharashtra")
         pincode = delivery_address.get("pincode", "")
         text(42, 648, f"Deliver To: {recipient_name}", font="F1", size=8)
         text(42, 636, f"Address: {street[:40]}", font="F1", size=8)
         text(42, 624, f"{area[:30]}, {city}, {state} - {pincode}", font="F1", size=8)
-        text(42, 610, "State Code: 29 (Karnataka)", font="F1", size=7.5)
+        text(42, 610, "State Code: 27 (Maharashtra)", font="F1", size=7.5)
 
         # Right: Invoice & Order Credentials
         rect(304, 600, 255, 100)

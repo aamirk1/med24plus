@@ -39,12 +39,12 @@ class InvoiceService:
         """
         details = {
             "name": getattr(settings, "PHARMACY_LEGAL_NAME", "Med24Plus Retail Pharmacy Pvt Ltd"),
-            "dl_number": getattr(settings, "PHARMACY_DL_NUMBER", "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)"),
-            "gstin": getattr(settings, "PHARMACY_GSTIN", "29AABCM2424P1Z3"),
+            "dl_number": getattr(settings, "PHARMACY_DL_NUMBER", "DL-MH-MUM-2026-094182 / DL-MH-MUM-2026-094183 (Form 20/21)"),
+            "gstin": getattr(settings, "PHARMACY_GSTIN", "27AABCM2424P1Z3"),
             "fssai": getattr(settings, "PHARMACY_FSSAI", "11226999000123"),
-            "address": getattr(settings, "PHARMACY_ADDRESS", "Plot 42, 27th Main Road, HSR Layout Sector 2, Bengaluru, Karnataka 560102"),
+            "address": getattr(settings, "PHARMACY_ADDRESS", "Plot 15, Bandra Kurla Complex (BKC), Bandra East, Mumbai, Maharashtra 400051"),
             "contact_email": getattr(settings, "PHARMACY_EMAIL", "dispensing@med24plus.com"),
-            "contact_phone": getattr(settings, "PHARMACY_PHONE", "+91 80 4920 2400"),
+            "contact_phone": getattr(settings, "PHARMACY_PHONE", "+91 22 4920 2400"),
         }
 
         # Check required fields
@@ -164,10 +164,10 @@ class InvoiceService:
         now_utc = invoice.invoice_date or datetime.now(timezone.utc)
         pharmacy_details = invoice.pharmacy_details_snapshot or {
             "name": "MED24PLUS PHARMACY PRIVATE LIMITED",
-            "dl_number": "DL-KA-BLR-2026-094182 / DL-KA-BLR-2026-094183 (Form 20/21)",
-            "gstin": "29AABCM2424P1Z3",
+            "dl_number": "DL-MH-MUM-2026-094182 / DL-MH-MUM-2026-094183 (Form 20/21)",
+            "gstin": "27AABCM2424P1Z3",
             "fssai": "11226999000123",
-            "address": "Plot 42, HSR Layout Sector 2, Bengaluru, Karnataka 560102",
+            "address": "Plot 15, Bandra Kurla Complex (BKC), Bandra East, Mumbai, Maharashtra 400051",
         }
         customer_details = invoice.customer_details_snapshot or {
             "name": order.customer.full_name if (order and order.customer) else "Registered Customer",

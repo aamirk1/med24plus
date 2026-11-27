@@ -515,7 +515,7 @@ class CreateStaffRequest(BaseModel):
     department: Optional[str] = Field("Operations", max_length=100)
     designation: Optional[str] = Field("Staff Executive", max_length=100)
     registration_number: Optional[str] = Field(None, max_length=100)
-    state_pharmacy_council: Optional[str] = Field("Karnataka State Pharmacy Council", max_length=150)
+    state_pharmacy_council: Optional[str] = Field("Maharashtra State Pharmacy Council", max_length=150)
     registration_valid_upto: Optional[str] = None
 
 
@@ -608,7 +608,7 @@ async def create_admin_staff(
     # If role is pharmacist, create PharmacistProfile
     if target_role_slug == "pharmacist":
         reg_no = payload.registration_number or f"PCI-{uuid.uuid4().hex[:6].upper()}/2024"
-        council = payload.state_pharmacy_council or "Karnataka State Pharmacy Council"
+        council = payload.state_pharmacy_council or "Maharashtra State Pharmacy Council"
         valid_date = date.today() + timedelta(days=365 * 5)
         if payload.registration_valid_upto:
             try:

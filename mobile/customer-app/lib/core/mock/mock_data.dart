@@ -318,7 +318,7 @@ class MobileOrder {
       hasPrescription: json['has_prescription'] == true || json['hasPrescription'] == true,
       paymentMethod: json['payment_method']?.toString() ?? json['paymentMethod']?.toString() ?? 'Razorpay Secure',
       paymentStatus: json['payment_status']?.toString() ?? json['paymentStatus']?.toString() ?? 'pending',
-      deliveryPincode: json['shipping_pincode']?.toString() ?? json['deliveryPincode']?.toString() ?? '560034',
+      deliveryPincode: json['shipping_pincode']?.toString() ?? json['deliveryPincode']?.toString() ?? '400051',
       items: parsedItems,
       couponCode: json['coupon_code']?.toString(),
       discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0.0,
@@ -334,6 +334,7 @@ class MobileAddress {
   final String phone;
   final String addressLine;
   final String city;
+  final String state;
   final String pincode;
   final bool isDefault;
 
@@ -344,6 +345,7 @@ class MobileAddress {
     required this.phone,
     required this.addressLine,
     required this.city,
+    this.state = 'Maharashtra',
     required this.pincode,
     this.isDefault = false,
   });
@@ -355,8 +357,9 @@ class MobileAddress {
       recipientName: json['recipient_name']?.toString() ?? json['recipientName']?.toString() ?? 'Patient',
       phone: json['phone']?.toString() ?? '',
       addressLine: json['address_line1']?.toString() ?? json['addressLine']?.toString() ?? '',
-      city: json['city']?.toString() ?? 'Bengaluru',
-      pincode: json['pincode']?.toString() ?? '560034',
+      city: json['city']?.toString() ?? 'Mumbai',
+      state: json['state']?.toString() ?? 'Maharashtra',
+      pincode: json['pincode']?.toString() ?? '400051',
       isDefault: json['is_default'] == true || json['isDefault'] == true,
     );
   }

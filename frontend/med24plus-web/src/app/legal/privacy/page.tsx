@@ -190,7 +190,7 @@ export default function PrivacyPolicyPage() {
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-700 space-y-1">
             <p><strong>Entity:</strong> Med24Plus Central Pharmacy (Technosolz)</p>
             <p><strong>Grievance Officer:</strong> Ramesh Sharma (PCI-REG-94821)</p>
-            <p><strong>Address:</strong> Ground Floor, Health Horizon Hub, Koramangala 4th Block, Bengaluru, Karnataka - 560001, India</p>
+            <p><strong>Address:</strong> Plot 15, Bandra Kurla Complex (BKC), Bandra East, Mumbai, Maharashtra - 400051, India</p>
             <p><strong>Support &amp; Privacy Email:</strong> <a href="mailto:care@med24plus.in" className="text-teal-700 underline">care@med24plus.in</a> / <a href="mailto:privacy@med24plus.in" className="text-teal-700 underline">privacy@med24plus.in</a></p>
             <p><strong>Helpline:</strong> +91 8000 124 247</p>
           </div>

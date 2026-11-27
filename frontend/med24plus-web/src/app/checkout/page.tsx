@@ -68,8 +68,8 @@ export default function CheckoutPage() {
   const [newAddressLine1, setNewAddressLine1] = useState("");
   const [newAddressLine2, setNewAddressLine2] = useState("");
   const [newLandmark, setNewLandmark] = useState("");
-  const [newCity, setNewCity] = useState("Bengaluru");
-  const [newState, setNewState] = useState("Karnataka");
+  const [newCity, setNewCity] = useState("Mumbai");
+  const [newState, setNewState] = useState("Maharashtra");
   const [newPincode, setNewPincode] = useState("");
   const [newAddressType, setNewAddressType] = useState("home");
 
@@ -444,7 +444,7 @@ export default function CheckoutPage() {
                       </p>
                       <p className="text-[11px] mt-0.5 text-teal-800">
                         {validation.serviceability_message ||
-                          "This address is within our verified Bengaluru delivery geofence."}
+                          "This address is within our verified Mumbai delivery geofence."}
                       </p>
                     </div>
                   </>
@@ -455,7 +455,7 @@ export default function CheckoutPage() {
                       <p className="font-bold">Outside Serviceable Delivery Geofence</p>
                       <p className="text-[11px] mt-0.5 text-red-800">
                         {validation.serviceability_message ||
-                          "Selected PIN code is outside our active delivery area. Please choose a Bengaluru address."}
+                          "Selected PIN code is outside our active delivery area. Please choose a Mumbai address."}
                       </p>
                     </div>
                   </>
@@ -833,7 +833,7 @@ export default function CheckoutPage() {
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
         title="Add Delivery Address"
-        description="Delivery available within Bengaluru city limits (4-Hour Medicine Dispatch)"
+        description="Delivery available within Mumbai city limits (4-Hour Medicine Dispatch)"
       >
         <form onSubmit={handleCreateAddress} className="space-y-3.5">
           {addressModalError && (

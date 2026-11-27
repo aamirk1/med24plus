@@ -12,8 +12,8 @@ INDIAN_PINCODE_REGEX = re.compile(r"^[1-9][0-9]{5}$")
 class ServiceablePincodeCreate(BaseModel):
     pincode: str = Field(..., description="6-digit Indian PIN code")
     area_name: Optional[str] = Field(None, max_length=100, description="Area / Locality name")
-    city: str = Field("Bengaluru", max_length=100)
-    state: str = Field("Karnataka", max_length=100)
+    city: str = Field("Mumbai", max_length=100)
+    state: str = Field("Maharashtra", max_length=100)
     is_active: bool = Field(True, description="Whether this PIN code is currently serviceable")
     estimated_delivery_hours: int = Field(4, ge=1, le=72, description="Estimated turnaround hours")
     min_order_value: Decimal = Field(Decimal("0.00"), ge=0, description="Minimum order value for this area")
@@ -23,7 +23,7 @@ class ServiceablePincodeCreate(BaseModel):
     def validate_pincode(cls, v: str) -> str:
         clean = v.strip()
         if not INDIAN_PINCODE_REGEX.match(clean):
-            raise ValueError("Invalid Indian PIN code format. Must be 6 digits (e.g. 560001).")
+            raise ValueError("Invalid Indian PIN code format. Must be 6 digits (e.g. 400001).")
         return clean
 
 

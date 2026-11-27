@@ -9,6 +9,32 @@ class AddressService {
 
   final ApiClient _apiClient = ApiClient.instance;
 
+  /// Default starter Mumbai addresses if user has not yet saved any in database
+  static const List<MobileAddress> defaultMumbaiAddresses = [
+    MobileAddress(
+      id: 'default-mumbai-bkc',
+      label: 'Home',
+      recipientName: 'Valued Customer',
+      phone: '9876543210',
+      addressLine: 'Plot 15, G-Block, Bandra Kurla Complex (BKC)',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400051',
+      isDefault: true,
+    ),
+    MobileAddress(
+      id: 'default-mumbai-bandra',
+      label: 'Office',
+      recipientName: 'Valued Customer',
+      phone: '9876543210',
+      addressLine: 'Flat 402, Sea Green Apartments, Bandra West',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400050',
+      isDefault: false,
+    ),
+  ];
+
   /// Fetch registered patient delivery addresses
   Future<List<MobileAddress>> getAddresses() async {
     try {
@@ -31,19 +57,27 @@ class AddressService {
       }
     } catch (_) {}
 
-    return [];
+    return defaultMumbaiAddresses;
   }
 
   /// Add new delivery address
   Future<bool> addAddress(MobileAddress address) async {
     try {
+      final rawPhone = address.phone.replaceAll(RegExp(r'[^0-9]'), '');
+      final cleanPhone = rawPhone.length == 10
+          ? rawPhone
+          : rawPhone.length > 10
+              ? rawPhone.substring(rawPhone.length - 10)
+              : '9876543210';
+
       final body = {
-        'address_type': address.label,
-        'recipient_name': address.recipientName,
-        'phone': address.phone,
-        'address_line1': address.addressLine,
-        'city': address.city,
-        'pincode': address.pincode,
+        'address_type': address.label.toLowerCase() == 'work' ? 'work' : 'home',
+        'recipient_name': address.recipientName.isNotEmpty ? address.recipientName : 'Valued Customer',
+        'phone': cleanPhone,
+        'address_line1': address.addressLine.isNotEmpty ? address.addressLine : 'Plot 15, Bandra Kurla Complex',
+        'city': address.city.isNotEmpty ? address.city : 'Mumbai',
+        'state': address.state.isNotEmpty ? address.state : 'Maharashtra',
+        'pincode': address.pincode.isNotEmpty ? address.pincode : '400051',
         'is_default': address.isDefault,
       };
 

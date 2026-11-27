@@ -37,8 +37,8 @@ export default function AddressManagementPage() {
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
   const [landmark, setLandmark] = useState("");
-  const [city, setCity] = useState("Bengaluru");
-  const [state, setState] = useState("Karnataka");
+  const [city, setCity] = useState("Mumbai");
+  const [state, setState] = useState("Maharashtra");
   const [pincode, setPincode] = useState("");
   const [addressType, setAddressType] = useState("home");
   const [isDefault, setIsDefault] = useState(false);
@@ -67,8 +67,8 @@ export default function AddressManagementPage() {
     setAddressLine1("");
     setAddressLine2("");
     setLandmark("");
-    setCity("Bengaluru");
-    setState("Karnataka");
+    setCity("Mumbai");
+    setState("Maharashtra");
     setPincode("");
     setAddressType("home");
     setIsDefault(false);
@@ -293,7 +293,7 @@ export default function AddressManagementPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingAddress ? "Edit Delivery Address" : "Add New Delivery Address"}
-        description="Delivery available across Bengaluru city pincodes (4-Hour Medicine Dispatch)"
+        description="Delivery available across Mumbai city pincodes (4-Hour Medicine Dispatch)"
       >
         <form onSubmit={handleSaveAddress} className="space-y-3.5">
           {formError && (

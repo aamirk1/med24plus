@@ -26,7 +26,7 @@ class AddressBase(BaseModel):
     def validate_pincode(cls, v: str) -> str:
         clean = v.strip()
         if not INDIAN_PINCODE_REGEX.match(clean):
-            raise ValueError("Invalid Indian PIN code format. Must be a valid 6-digit postal code (e.g. 560001).")
+            raise ValueError("Invalid Indian PIN code format. Must be a valid 6-digit postal code (e.g. 400001).")
         return clean
 
     @field_validator("phone")

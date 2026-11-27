@@ -36,6 +36,15 @@ class AddressRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
+    async def get_by_id(self, address_id: uuid.UUID) -> Optional[UserAddress]:
+        """Fetch a specific non-deleted address by ID."""
+        stmt = select(UserAddress).where(
+            UserAddress.id == address_id,
+            UserAddress.is_deleted == False,  # noqa: E712
+        )
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
+
     async def get_default_by_user(self, user_id: uuid.UUID) -> Optional[UserAddress]:
         """Retrieve customer's designated default delivery address."""
         stmt = select(UserAddress).where(
